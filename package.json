@@ -1,0 +1,51 @@
+{
+  "name": "bringid-widget",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL3",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "npx rimraf .next"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.3.0",
+    "@semaphore-protocol/core": "^4.13.1",
+    "@semaphore-protocol/data": "^4.11.1",
+    "@semaphore-protocol/identity": "^4.13.1",
+    "@tanstack/react-query": "^5.62.11",
+    "@walletconnect/utils": "2.0.0-beta.100",
+    "alchemy-sdk": "^3.5.0",
+    "axios": "^1.7.7",
+    "bringid-sdk": "0.0.8",
+    "ethers": "^6.8.0",
+    "is-mobile": "^5.0.0",
+    "next": "15.0.7",
+    "next-plausible": "^3.12.4",
+    "randombytes": "^2.1.0",
+    "react": "19.0.0-rc-66855b96-20241106",
+    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "react-redux": "^9.1.2",
+    "redux": "^4.1.1",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.4.1",
+    "siwe": "^2.3.2",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/randombytes": "^2.0.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/redux-logger": "^3.0.6",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5"
+  },
+  "browser": {
+    "fs": false
+  }
+}

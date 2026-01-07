@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Geist';
+  font-weight: 400;
+  src: url('./Geist-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-weight: 700;
+  src: url('./Geist-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Menlo';
+  font-weight: 400;
+  src: url('./Menlo-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Menlo';
+  font-weight: 700;
+  src: url('./Menlo-Bold.ttf') format('truetype');
+}
