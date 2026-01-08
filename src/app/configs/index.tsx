@@ -1,5 +1,5 @@
 const EXTENSION_ID = 'fjlmbkpfjmbjokokgmfcijlliceljbeh';
-const ZUPLO_API_KEY = process.env.ZUPLO_API_KEY;
+const ZUPLO_API_KEY = process.env.NEXT_PUBLIC_ZUPLO_API_KEY;
 const ZUPLO_API_URL = 'https://api.bringid.org';
 const TELEGRAM_URL = 'https://t.me/bringid_chat';
 const PROJECT_ID = 'e4ba4a16546043645e1a25b82ca7dc63';

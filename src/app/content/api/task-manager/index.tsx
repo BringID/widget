@@ -4,9 +4,11 @@ import {
   TGetVerification,
   TGetVerificationResponse,
 } from './types';
-import configs from '../../../configs';
+import configs from '@/app/configs/index';
 import { defineZuploNetworkName, api } from '@/utils';
-import modeConfigs from '../../../configs/mode-configs';
+import modeConfigs from '@/app/configs/mode-configs';
+
+console.log('CONFIGS: ', { configs })
 
 const addVerification: TAddVerification = async (
   apiUrl,
