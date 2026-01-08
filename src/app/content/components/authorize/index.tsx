@@ -1,3 +1,4 @@
+'use client'
 import React, { FC } from 'react';
 import TProps from './types';
 import { Container, Title, ButtonsStyled } from './styled-components'
