@@ -59,7 +59,15 @@ const defineTaskContent = (
                     task,
                     semaphoreIdentity,
                     modeConfigs.REGISTRY
-                  ) 
+                  )
+
+                  console.log('WIDGET data received: ', {
+                    signature,
+                    verifier_hash,
+                    verifier_message: {
+                      id_hash
+                    }
+                  })
 
                   const { task: taskCreated, success } = await taskManagerApi.addVerification(
                     configs.ZUPLO_API_URL,
@@ -87,6 +95,7 @@ const defineTaskContent = (
                 }
               } catch (err) {
                 setLoading(false)
+                console.log({ err })
                 alert((err as any).message)
               }
             }}

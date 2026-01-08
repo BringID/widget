@@ -52,6 +52,14 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
           }
         } = event.data.payload
 
+        console.log({
+          signature,
+          verifier_hash,
+          verifier_message: {
+            id_hash
+          }
+        })
+
         
         window.removeEventListener("message", handler)
         resolve({
