@@ -121,9 +121,12 @@ const InnerContent: FC<TProps> = ({
 
       if (parentUrl) {
         const url = new URL(parentUrl)
+
+        console.log('WIDGET: ', event, url, payload, type)
         if (event.origin === url.origin) { // event comes from the place where the widget is rendered
           if (type === 'USER_KEY_READY') {
             // save it in store
+            dispatch(setKey(payload.signature))
           }
         } else if (event.source === window) {
           if (type === 'GENERATE_USER_KEY') {

@@ -16,7 +16,11 @@ const Widget: FC = () => {
 
   const address = searchParams.get('address') || ''
   const apiKey = searchParams.get('apiKey') || ''
-
+  console.log({
+    decodedRedirectUrl,
+    address,
+    apiKey
+  })
   return <ThemeProvider theme={light}>
     <ReduxProvider store={store}>
       <InnerContent
