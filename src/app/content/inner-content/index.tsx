@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux'
 //   registerOpenModal
 // } from '../events/event-bus';
 import { setIsOpen, setLoading, useModal } from '../store/reducers/modal';
-import { setAddress, setApiKey, setKey, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setKey, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask } from '@/types';
 import semaphore from '../semaphore';
 import { tasks } from '../../core'
@@ -37,14 +37,13 @@ const defineContent = (
         closeModal()
       }}
       onConfirm={(proofs, pointsSelected) => {
-        // if (!callProofsGeneratedCallback) {
-        //   return alert('proofsGeneratedCallback not passed')
-        // }
-
-        // callProofsGeneratedCallback(
-        //   proofs,
-        //   pointsSelected
-        // )
+        window.postMessage({
+          type: 'PROOFS_READY',
+          payload: {
+            proofs,
+            points: pointsSelected
+          }
+        }, window.location.origin)
       }}
     />
 
@@ -104,7 +103,8 @@ const uploadPrevVerifications = async (
 const InnerContent: FC<TProps> = ({
   apiKey,
   address,
-  parentUrl
+  parentUrl,
+  scope
 }) => {
 
   const dispatch = useDispatch()
@@ -112,8 +112,6 @@ const InnerContent: FC<TProps> = ({
   const { isOpen, loading } = useModal()
   const user = useUser()
   const { verifications } = useVerifications()
-
-
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -130,11 +128,18 @@ const InnerContent: FC<TProps> = ({
           }
         } else if (event.source === window) {
           if (type === 'GENERATE_USER_KEY') {
-
             window.parent.postMessage(
               {
                 type: "GENERATE_USER_KEY",
-                requestId,
+                payload
+              },
+              url.origin
+            )
+            return
+          } else if (type === 'PROOFS_READY') {
+            window.parent.postMessage(
+              {
+                type: "PROOFS_READY",
                 payload
               },
               url.origin
@@ -145,17 +150,6 @@ const InnerContent: FC<TProps> = ({
       console.warn("Blocked message from untrusted origin:", event.origin);
     });
   }, [])
-
-  // useEffect(() => {
-  //   registerOpenModal((
-  //     args
-  //   ) => {
-  //     setPage('home');
-  //     dispatch(setIsOpen(true))
-  //     dispatch(setScope(args.scope || null))
-  //     setProofsGeneratedCallback(args.proofsGeneratedCallback)
-  //   });
-  // }, []);
 
 
   useEffect(() => {
@@ -225,10 +219,15 @@ const InnerContent: FC<TProps> = ({
     if (apiKey) {
       dispatch(setApiKey(apiKey));
     }
+
+    if (scope) {
+      dispatch(setScope(scope));
+    }
   }, [
     user.address,
     apiKey,
-    address 
+    address,
+    scope
   ]);
 
   useEffect(() => {

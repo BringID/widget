@@ -16,7 +16,7 @@ const Authorize: FC<TProps> = ({ className }) => {
               message: `Sign to derive your BringID key.
 Recoverable by re-signing with the same wallet.`
             }
-          })          
+          }, window.location.origin)
         }}
       >
         Create BringID key
