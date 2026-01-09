@@ -1,14 +1,25 @@
 import styled, { css } from "styled-components"
 
-export const DialogWindowClassName = 'DialogWindowClassName'
+import {
+  Footer,
+  Header
+} from '../components' 
 
 export const Container = styled.div`
-  .${DialogWindowClassName} {
-    position: relative;
-    width: 400px;
-    padding: 8px;
-    border-radius: 8px;
-    height: 600px;
-    margin: auto;
-  }
+  position: relative;
+  width: 400px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  margin: auto;
+  background-color:${props => props.theme.widgetBackgroundColor};
 `
+
+export const Content = styled.div`
+  flex: 1;
+`
+
+export const FooterStyled = styled(Footer)``
+
+export const HeaderStyled = styled(Header)``

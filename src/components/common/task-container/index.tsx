@@ -14,6 +14,7 @@ import {
   Footer,
 } from './styled-components';
 import { TNotarizationGroup } from '@/types';
+import { defineTaskPointsRange } from '@/utils';
 
 const defineTiers = (groups?: TNotarizationGroup[]) => {
   if (!groups || groups.length === 1) return null;
@@ -43,6 +44,8 @@ const TaskContainer: FC<TProps> = ({
   onSelect,
 }) => {
   const tiers = groups ? defineTiers(groups) : undefined
+  const taskPoints = groups ? defineTaskPointsRange(groups) : description
+
   return (
     <Container status={status}>
       <Body selectable={selectable}>
@@ -58,7 +61,7 @@ const TaskContainer: FC<TProps> = ({
         </ImageWrapper>
         <Content>
           <Title>{title}</Title>
-          <Subtitle>{description}</Subtitle>
+          <Subtitle>{taskPoints}</Subtitle>
         </Content>
         {children}
       </Body>

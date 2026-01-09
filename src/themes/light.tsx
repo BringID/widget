@@ -23,8 +23,8 @@ const theme = {
   errorStatusBackgroundColor: 'rgb(254, 242, 242)',
   errorStatusBorderColor: 'rgb(254, 202, 202)',
   errorStatusTextColor: 'rgb(153, 27, 27)',
-  buttonDisabledBackgroundColor: 'rgb(229, 231, 235)',
-
+  buttonDisabledBackgroundColor: '#D3C7FC',
+  buttonDisabledTextColor: '#FFF',
   warningStatusBackgroundColor: 'rgb(254, 252, 232)',
   warningStatusBorderColor: 'rgb(254, 240, 138)',
   warningStatusTextColor: 'rgb(180, 83, 9)',
@@ -40,10 +40,12 @@ const theme = {
   pendingStatusBackgroundColor: 'rgb(254, 252, 232)',
   pendingStatusBorderColor: 'rgb(254, 240, 138)',
 
+  iconContainerBackgroundColor: '#F6F3FF',
 
-  buttonActionBackgroundColor: '#000',
-  buttonActionBackgroundHoverColor: '#000',
-  buttonActionBackgroundActiveColor: '#000',
+
+  buttonActionBackgroundColor: '#6B43F4',
+  buttonActionBackgroundHoverColor: '#6B43F4',
+  buttonActionBackgroundActiveColor: '#6B43F4',
   buttonActionBorderHoverColor: 'transparent',
   buttonActionBorderActiveColor: 'transparent',
   buttonActionBorderColor: 'transparent',

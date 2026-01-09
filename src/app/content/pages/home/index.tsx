@@ -4,9 +4,9 @@ import { FC } from 'react';
 import {
   Container,
   VerificationsListStyled,
-  ButtonStyled
+  ButtonStyled,
+  AuthorizeContent
 } from './styled-components';
-import { Header } from '../../components';
 import { useVerifications } from '../../store/reducers/verifications';
 import { tasks } from '@/app/core/tasks';
 import {
@@ -26,7 +26,9 @@ const renderContent = (
   setPage: (page: string) => void,
 ) => {
   if (!userKey) {
-    return <Authorize />
+    return <AuthorizeContent>
+      <Authorize />
+    </AuthorizeContent>
   }
 
   const finishedVerifications = verifications.filter(verification => {
@@ -61,17 +63,9 @@ const Home: FC<TProps> = ({
 
   const availableTasks = tasks(true); //devMode
 
-  const availablePoints = calculateAvailablePoints(verifications, true); //devMode
-
   return (
     <Container>
       {loading && <LoadingOverlay title="Processing verification..." />}
-      <Header
-        points={availablePoints}
-        address={user.address}
-        userKey={user.key}
-      />
-
       {renderContent(
         user.key,
         availableTasks,

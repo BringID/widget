@@ -30,15 +30,12 @@ const definePluginContent = (
 
     case 'completed':
       if (fetched) {
-        return null;
+        return null
       }
       return (
-        <>
-          <Tag status="info">+{points}</Tag>
-          <Button onClick={onCheckTransactionClick} size="small">
-            Check TX
-          </Button>
-        </>
+        <Button onClick={onCheckTransactionClick} size="small">
+          Check TX
+        </Button>
       );
 
     default:

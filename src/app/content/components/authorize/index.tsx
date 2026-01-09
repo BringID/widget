@@ -1,15 +1,27 @@
 'use client'
 import React, { FC } from 'react';
 import TProps from './types';
-import { Container, Title, ButtonsStyled } from './styled-components'
+import {
+  Container,
+  Title,
+  ButtonsStyled,
+  IconContainer,
+  KeyIcon
+} from './styled-components'
+import { Icons } from '@/components/common';
 
 const Authorize: FC<TProps> = ({ className }) => {
   
   return (
     <Container className={className}>
-      <Title>Connect your wallet to start verifying</Title>
+
+      <IconContainer>
+        <KeyIcon></KeyIcon>
+      </IconContainer>
+      <Title>Create your private key to start verification</Title>
 
       <ButtonsStyled
+        appearance='action'
         onClick={async() => {
           window.postMessage({
             type: 'GENERATE_USER_KEY',

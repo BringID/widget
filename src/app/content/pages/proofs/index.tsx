@@ -112,12 +112,6 @@ const Proofs: FC<TProps> = ({
 
   return (
     <Container>
-      <Header
-        points={availablePoints}
-        address={user.address}
-        userKey={user.key}
-      />
-
       <TitleStyled>Prove your trust level</TitleStyled>
       <TextStyled>
         A website is requesting verification of your trust score. This process is private and no personal information will be shared.

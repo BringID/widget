@@ -14,6 +14,7 @@ import ConnectionIcon from './connection';
 import Copy from './copy';
 import Lock from './lock';
 import CloseIcon from './close-icon';
+import KeyIcon from './key'
 
 const Icons = {
   VehicleIcon,
@@ -31,7 +32,8 @@ const Icons = {
   ConnectionIcon,
   Copy,
   Lock,
-  CloseIcon
+  CloseIcon,
+  KeyIcon
 };
 
 export default Icons;

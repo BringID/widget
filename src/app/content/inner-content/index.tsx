@@ -2,13 +2,14 @@
 import { FC, useEffect, useState } from 'react'
 import {
   Container,
+  FooterStyled,
+  Content,
+  HeaderStyled
 } from './styled-components'
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-// import {
-//   registerOpenModal
-// } from '../events/event-bus';
+import { calculateAvailablePoints } from '@/utils'
 import { setIsOpen, setLoading, useModal } from '../store/reducers/modal';
 import { setAddress, setApiKey, setKey, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask } from '@/types';
@@ -19,7 +20,6 @@ import {
   useVerifications
 } from '../store/reducers/verifications';
 import { LoadingOverlay } from '../components'
-// import { setProofsGeneratedCallback, callProofsGeneratedCallback } from '../callbacks'
 
 const defineContent = (
   page: string,
@@ -208,8 +208,7 @@ const InnerContent: FC<TProps> = ({
       }
       dispatch(setAddress(address))
     } else {
-      if (user.address) {
-        // new address is undefined
+      if (user.address) {        
         dispatch(setKey(null))
         dispatch(addVerifications([]))
         dispatch(setAddress(null))
@@ -246,8 +245,15 @@ const InnerContent: FC<TProps> = ({
     user.key
   ]);
 
-    return <Container>
-      {loading && <LoadingOverlay title="Loading..."/>}
+  const availablePoints = calculateAvailablePoints(verifications, true); //devMode
+
+  return <Container>
+    <HeaderStyled
+      address={user.address}
+      userKey={user.key}
+    />
+    {loading && <LoadingOverlay title="Loading..."/>}
+    <Content>
       {defineContent(
         page,
         setPage,
@@ -255,7 +261,13 @@ const InnerContent: FC<TProps> = ({
           dispatch(setIsOpen(false))
         }
       )}
-    </Container>
+    </Content>
+    <FooterStyled
+      points={availablePoints}
+      address={user.address}
+      userKey={user.key}
+    />
+  </Container>
 }
 
 export default InnerContent

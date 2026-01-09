@@ -4,6 +4,7 @@ import VerificationsList from './verifications-list';
 import VerificationSelectList from './verifications-select-list';
 import LoadingOverlay from './loading-overlay';
 import Authorize from './authorize';
+import Footer from './footer'
 
 export {
   Header,
@@ -11,5 +12,6 @@ export {
   NoTasksFound,
   VerificationsList,
   LoadingOverlay,
-  Authorize
+  Authorize,
+  Footer
 };

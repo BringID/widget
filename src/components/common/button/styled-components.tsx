@@ -7,6 +7,7 @@ export const Button = styled.button<TProps>`
   font-feature-settings: inherit;
   font-variation-settings: inherit;
   font-size: 100%;
+  border-radius: 12px;
   font-weight: inherit;
   line-height: inherit;
   letter-spacing: inherit;
@@ -19,7 +20,6 @@ export const Button = styled.button<TProps>`
   height: 40px;
   line-height: 16px;
   font-weight: 500;
-  border-radius: 6px;
   border: 1px solid ${(props) => props.theme && props.theme.primaryBorderColor};
   color: ${(props) => props.theme && props.theme.primaryTextColor};
   background-color: ${(props) => props.theme.backgroundColor};
@@ -44,9 +44,8 @@ export const Button = styled.button<TProps>`
   ${(props) =>
     props.disabled &&
     css`
-      opacity: 0.5;
       cursor: not-allowed;
-      color: ${(props) => props.theme.additionalTextColor};
+      color: ${(props) => props.theme.buttonDisabledTextColor};
       background-color: ${(props) => props.theme.buttonDisabledBackgroundColor};
     `}
 

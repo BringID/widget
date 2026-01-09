@@ -7,7 +7,7 @@ const defineTaskPointsRange: TDefineTaskPointsRange = (groups) => {
     return null;
   }
   if (groups.length === 1) {
-    return `${groups[0].points} pts.`;
+    return `+ ${groups[0].points} pts.`;
   }
   const mostPointsAmongGroups = groups.reduce<number>((sum, group) => {
     if (sum < group.points) sum = group.points;
