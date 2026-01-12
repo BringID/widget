@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import {
-  VerificationSelectList
+  VerificationSelectList,
+  Footer
 } from '../../components'
 import {
   Button,
@@ -8,6 +9,8 @@ import {
   Text,
   Message
 } from '@/components/common'
+
+export const FooterStyled = styled(Footer)``
 
 export const Container = styled.div`
   padding: 16px;
@@ -36,10 +39,3 @@ export const MessageStyled = styled(Message)`
   align-items: center;
   justify-content: space-between;
 `
-
-export const ButtonsContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-`;

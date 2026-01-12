@@ -5,7 +5,8 @@ import {
   Container,
   VerificationsListStyled,
   ButtonStyled,
-  AuthorizeContent
+  AuthorizeContent,
+  FooterStyled
 } from './styled-components';
 import { useVerifications } from '../../store/reducers/verifications';
 import { tasks } from '@/app/core/tasks';
@@ -23,7 +24,6 @@ const renderContent = (
   availableTasks: TTask[],
   verifications: TVerification[],
   devMode: boolean,
-  setPage: (page: string) => void,
 ) => {
   if (!userKey) {
     return <AuthorizeContent>
@@ -31,28 +31,12 @@ const renderContent = (
     </AuthorizeContent>
   }
 
-  const finishedVerifications = verifications.filter(verification => {
-    return verification.status === 'completed'
-  })
-
-  return <>
-    <VerificationsListStyled
-      tasks={availableTasks}
-      devMode={devMode}
-      verifications={verifications}
-    />
-
-    <ButtonStyled
-      disabled={finishedVerifications.length === 0}
-      appearance='action'
-      onClick={() => {
-        setPage('proofs')
-      }}
-    >
-      Continue
-    </ButtonStyled>
-  </>
-};
+  return <VerificationsListStyled
+    tasks={availableTasks}
+    devMode={devMode}
+    verifications={verifications}
+  />
+}
 
 const Home: FC<TProps> = ({
   setPage
@@ -62,18 +46,39 @@ const Home: FC<TProps> = ({
   const user = useUser();
 
   const availableTasks = tasks(true); //devMode
+  const availablePoints = calculateAvailablePoints(verifications, true); //devMode
+  const finishedVerifications = verifications.filter(verification => {
+    return verification.status === 'completed'
+  })
 
   return (
-    <Container>
-      {loading && <LoadingOverlay title="Processing verification..." />}
-      {renderContent(
-        user.key,
-        availableTasks,
-        verifications,
-        true, // dev
-        setPage
-      )}
-    </Container>
+    <>
+      <Container>
+        {loading && <LoadingOverlay title="Processing verification..." />}
+        {renderContent(
+          user.key,
+          availableTasks,
+          verifications,
+          true, // dev
+        )}
+      </Container>
+
+      <FooterStyled
+        points={availablePoints}
+        address={user.address}
+        userKey={user.key}
+      >
+        <ButtonStyled
+          disabled={finishedVerifications.length === 0}
+          appearance='action'
+          onClick={() => {
+            setPage('proofs')
+          }}
+        >
+          Continue
+        </ButtonStyled>
+      </FooterStyled>
+    </>
   );
 };
 

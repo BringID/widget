@@ -2,20 +2,17 @@ import { FC } from 'react'
 import {
   Footer,
   TextStyled,
-  AddressText,
   TitleStyled,
   Content,
-  Texts,
-  Address,
+  Texts
 } from './styled-components'
 import TProps from './types'
-import { shortenString } from '@/utils'
-import Icons from '@/components/common/icons'
 
 const defineContent = (
   address: string | null,
   points: number,
-  userKey: string | null
+  userKey: string | null,
+  children?: React.ReactNode | React.ReactNode[]
 ) => {
 
   if (!address || !userKey) {
@@ -24,15 +21,12 @@ const defineContent = (
     </TitleStyled>
   }
 
-
   return (
     <Content>
       <Texts>
-        <Address>
-          <Icons.AddressIcon /> <AddressText>{shortenString(address)}</AddressText>
-        </Address>
         <TextStyled>Total Bring Score: {points}</TextStyled>
       </Texts>
+      {children}
     </Content>
   );
 };
@@ -40,13 +34,15 @@ const defineContent = (
 const FooterComponent: FC<TProps> = ({
   points,
   address,
-  userKey
+  userKey,
+  children
 }) => {
   return <Footer>
     {defineContent(
       address,
       points,
-      userKey
+      userKey,
+      children
     )}
   </Footer>
 };

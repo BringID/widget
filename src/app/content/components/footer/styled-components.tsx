@@ -29,19 +29,6 @@ export const Content = styled.div`
 
 export const Texts = styled.div``;
 
-export const Address = styled.div`
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: ${(props) => props.theme.secondaryTextColor};
-`;
-
-export const AddressText = styled.span`
-  color: ${(props) => props.theme.primaryTextColor};
-  font-weight: 700;
-`;
-
 export const TextStyled = styled(Text)`
   font-size: 15px;
   width: 100%;

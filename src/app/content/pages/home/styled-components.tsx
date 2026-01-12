@@ -1,6 +1,9 @@
 import styled from 'styled-components'
-import { VerificationsList } from '../../components'
+import { VerificationsList, Footer } from '../../components'
 import { Button } from '@/components/common'
+
+
+export const FooterStyled = styled(Footer)``
 
 export const Container = styled.div`
   padding: 16px;

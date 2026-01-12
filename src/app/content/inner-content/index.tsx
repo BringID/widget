@@ -112,6 +112,7 @@ const InnerContent: FC<TProps> = ({
   const { isOpen, loading } = useModal()
   const user = useUser()
   const { verifications } = useVerifications()
+  const [ page, setPage ] = useState('home')
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -137,6 +138,7 @@ const InnerContent: FC<TProps> = ({
             )
             return
           } else if (type === 'PROOFS_READY') {
+            setPage('home')
             window.parent.postMessage(
               {
                 type: "PROOFS_READY",
@@ -196,7 +198,6 @@ const InnerContent: FC<TProps> = ({
 
   const availableTasks = tasks(true)
 
-  const [ page, setPage ] = useState('home')
 
   useEffect(() => {
     if (address) {
@@ -245,7 +246,6 @@ const InnerContent: FC<TProps> = ({
     user.key
   ]);
 
-  const availablePoints = calculateAvailablePoints(verifications, true); //devMode
 
   return <Container>
     <HeaderStyled
@@ -262,11 +262,6 @@ const InnerContent: FC<TProps> = ({
         }
       )}
     </Content>
-    <FooterStyled
-      points={availablePoints}
-      address={user.address}
-      userKey={user.key}
-    />
   </Container>
 }
 

@@ -13,9 +13,8 @@ import {
   TextStyled,
   TitleStyled,
   MessageStyled,
-  ButtonsContainer
+  FooterStyled
 } from './styled-components'
-import { Header } from '../../components'
 import { useVerifications } from '../../store/reducers/verifications'
 import { tasks } from '@/app/core/tasks'
 import {
@@ -111,27 +110,31 @@ const Proofs: FC<TProps> = ({
   }, [verifications]);
 
   return (
-    <Container>
-      <TitleStyled>Prove your trust level</TitleStyled>
-      <TextStyled>
-        A website is requesting verification of your trust score. This process is private and no personal information will be shared.
-      </TextStyled>
+    <>
+      <Container>
+        <TitleStyled>Prove your trust level</TitleStyled>
+        <TextStyled>
+          A website is requesting verification of your trust score. This process is private and no personal information will be shared.
+        </TextStyled>
 
-      <MessageStyled>
-        <span>Current score:</span>
-        <Tag status="info">{pointsSelected} pts</Tag>
-      </MessageStyled>
+        <MessageStyled>
+          <span>Current score:</span>
+          <Tag status="info">{pointsSelected} pts</Tag>
+        </MessageStyled>
 
-      {renderContent(
-        availableTasks,
-        verifications,
-        true, // dev
-        selected,
-        setSelected
-      )}
-
-      
-      <ButtonsContainer>
+        {renderContent(
+          availableTasks,
+          verifications,
+          true, // dev
+          selected,
+          setSelected
+        )}
+      </Container>
+      <FooterStyled
+        points={availablePoints}
+        address={user.address}
+        userKey={user.key}
+      >
         <ButtonStyled
           appearance='action'
           loading={loading}
@@ -145,7 +148,7 @@ const Proofs: FC<TProps> = ({
                 pointsSelected,
                 selected,
               );
-
+              
               onConfirm(
                 proofs,
                 pointsSelected
@@ -160,17 +163,9 @@ const Proofs: FC<TProps> = ({
         >
           Confirm
         </ButtonStyled>
-
-
-        <ButtonStyled
-          onClick={onCancel}
-        >
-          Cancel
-        </ButtonStyled>
-      </ButtonsContainer>
-      
-
-    </Container>
+      </FooterStyled>
+    </>
+    
   );
 };
 

@@ -18,6 +18,9 @@ export const Container = styled.div`
 
 export const Content = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `
 
 export const FooterStyled = styled(Footer)``

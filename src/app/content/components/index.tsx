@@ -14,4 +14,4 @@ export {
   LoadingOverlay,
   Authorize,
   Footer
-};
+}
