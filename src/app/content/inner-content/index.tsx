@@ -260,7 +260,7 @@ const InnerContent: FC<TProps> = ({
       address={user.address}
       userKey={user.key}
     />
-    {loading && <LoadingOverlay title="Loading..."/>}
+    {loading && <LoadingOverlay title="Thinking..."/>}
     <Content>
       {defineContent(
         page,

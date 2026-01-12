@@ -17,7 +17,6 @@ export const Container = styled.div`
 export const TitleStyled = styled(Title)`
   text-align: center;
   font-size: 24px;
-  margin-bottom: 20px;
 `;
 
 export const Content = styled.div`
@@ -36,6 +35,6 @@ export const Wrapper = styled.div`
 `;
 
 export const SpinnerStyled = styled(Spinner)`
-  margin: 0 auto;
+  margin: 0 auto 20px;
   border-color: ${(props) => props.theme.primaryTextColor};
 `;

@@ -25,7 +25,6 @@ import { useUser } from '../../store/reducers/user'
 import { TVerification, TTask } from '@/types'
 import { TProps } from './types'
 import { prepareProofs } from '../../utils'
-import { Tag } from '@/components/common'
 
 const renderContent = (
   availableTasks: TTask[],
@@ -156,7 +155,7 @@ const Proofs: FC<TProps> = ({
             
           }}
         >
-          Confirm ({pointsSelected} selected)
+          Confirm ({pointsSelected} pts selected)
         </ButtonStyled>
       </FooterStyled>
     </>

@@ -11,8 +11,8 @@ const LoadingOverlay: FC<TProps> = ({ title }) => {
   return (
     <Container>
       <Content>
-        <TitleStyled>{title}</TitleStyled>
         <SpinnerStyled size="large" />
+        <TitleStyled>{title}</TitleStyled>
       </Content>
     </Container>
   );

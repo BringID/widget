@@ -10,20 +10,6 @@ export const Container = styled.div<{
 
   background-color: ${(props) => props.theme.defaultStatusBackgroundColor};
   border: 1px solid ${(props) => props.theme.defaultStatusBorderColor};
-
-  ${(props) =>
-    props.status === 'completed' &&
-    css`
-      background-color: ${(props) => props.theme.successStatusBackgroundColor};
-      border: 1px solid ${(props) => props.theme.successStatusBorderColor};
-    `}
-
-  ${(props) =>
-    (props.status === 'pending' || props.status === 'scheduled') &&
-    css`
-      background-color: ${(props) => props.theme.pendingStatusBackgroundColor};
-      border: 1px solid ${(props) => props.theme.pendingStatusBorderColor};
-    `}
 `;
 
 export const CheckboxStyled = styled(Checkbox)``;
@@ -90,3 +76,13 @@ export const Footer = styled.div`
   padding-top: 10px;
   padding-left: 40px;
 `;
+
+export const VerifiedIndicator = styled.div`
+  color: ${props => props.theme.highlightColor};
+  font-size: 13px;
+`
+
+export const PontsCount = styled.div`
+  color: ${props => props.theme.successStatusTextColor};
+  font-size: 13px;
+`
