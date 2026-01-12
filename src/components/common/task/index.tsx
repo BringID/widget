@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { TProps } from './types'
 import { Value } from './styled-components'
 import { TaskContainer, Icons, Tag } from '../'
@@ -7,7 +7,6 @@ import configs from '@/app/configs'
 import { TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
-  defineTaskPointsRange,
   getOAuthSemaphoreData,
   getZKTLSSemaphoreData
 } from '@/utils'
@@ -15,21 +14,22 @@ import getConfigs from '@/app/configs/mode-configs'
 import { taskManagerApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
-import { setLoading } from '@/app/content/store/reducers/modal'
 
 const defineTaskContent = (
   status: TVerificationStatus,
   task: TTask,
   userKey: string | null,
+  loading: boolean,
+  setLoading: (loading: boolean) => void,
   resultCallback: (verification: TVerification) => void
 ) => {
   switch (status) {
     case 'default':
-      const points = defineTaskPointsRange(task.groups);
       return (
         <Button
           appearance="action"
           size="small"
+          loading={loading}
           onClick={async () => {
             try {
               const modeConfigs = await getConfigs()
@@ -39,7 +39,7 @@ const defineTaskContent = (
               if (group) {
 
                 const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group?.credentialGroupId)
-
+                setLoading(true)
                 const {
                   signature,
                   verifier_hash,
@@ -87,7 +87,6 @@ const defineTaskContent = (
 
                 console.log({ taskCreated })
               
-                
               }
             } catch (err) {
               setLoading(false)
@@ -116,10 +115,14 @@ const Task: FC<TProps> = ({
 
   const dispatch = useDispatch()
 
+  const [ loading, setLoading ] = useState<boolean>(false)
+
   const content = defineTaskContent(
     status,
     task,
     userKey,
+    loading,
+    setLoading,
     (verification) => {
       console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))

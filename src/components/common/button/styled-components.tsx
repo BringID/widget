@@ -73,5 +73,6 @@ export const SpinnerStyled = styled(Spinner)`
   position: absolute;
   top: 50%;
   left: 50%;
+  border-color: ${props => props.theme.widgetBackgroundColor};
   translate: -50% -50%;
 `;
