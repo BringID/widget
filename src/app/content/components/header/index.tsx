@@ -2,10 +2,12 @@ import { FC } from 'react'
 import {
   Header,
   AddressText,
-  AddressIcon
+  AddressIcon,
+  CloseIcon
 } from './styled-components'
 import TProps from './types'
 import { shortenString } from '@/utils'
+import { Icons } from '@/components/common';
 
 const defineContent = (
   address: string | null,
@@ -32,6 +34,14 @@ const HeaderComponent: FC<TProps> = ({
       address,
       userKey
     )}
+    <CloseIcon
+      onClick={() => {
+        window.postMessage({
+          type: 'CLOSE_MODAL'
+        }, window.location.origin)
+      }}
+    
+    />
   </Header>
 };
 

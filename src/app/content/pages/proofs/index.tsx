@@ -138,6 +138,7 @@ const Proofs: FC<TProps> = ({
         <ButtonStyled
           appearance='action'
           loading={loading}
+          disabled={selected.length === 0}
           onClick={async () => {
             setLoading(true)
             try {
@@ -148,7 +149,7 @@ const Proofs: FC<TProps> = ({
                 pointsSelected,
                 selected,
               );
-              
+
               onConfirm(
                 proofs,
                 pointsSelected

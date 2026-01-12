@@ -21,7 +21,7 @@ export const VerificationSelectListStyled = styled(VerificationSelectList)`
 `
 
 export const ButtonStyled = styled(Button)`
-  flex: 1;
+
 `
 
 export const TitleStyled = styled(Title)`

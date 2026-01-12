@@ -25,6 +25,7 @@ export const Content = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
+  justify-content: space-between;
 `;
 
 export const Texts = styled.div``;

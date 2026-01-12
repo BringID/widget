@@ -146,6 +146,14 @@ const InnerContent: FC<TProps> = ({
               },
               url.origin
             )
+          } else if (type === 'CLOSE_MODAL') {
+            setPage('home')
+            window.parent.postMessage(
+              {
+                type: "CLOSE_MODAL"
+              },
+              url.origin
+            )
           }
         }
       }  

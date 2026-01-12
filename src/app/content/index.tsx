@@ -18,12 +18,6 @@ const Widget: FC = () => {
   const apiKey = searchParams.get('apiKey') || ''
   const scope = searchParams.get('scope') || undefined
 
-  console.log({
-    decodedRedirectUrl,
-    address,
-    apiKey,
-    scope
-  })
   return <ThemeProvider theme={light}>
     <ReduxProvider store={store}>
       <InnerContent
