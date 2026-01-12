@@ -32,8 +32,6 @@ const defineTaskContent = (
           size="small"
           onClick={async () => {
             try {
-
-
               const modeConfigs = await getConfigs()
               const group = task?.groups[0]
 
@@ -136,6 +134,7 @@ const Task: FC<TProps> = ({
       description={task.description}
       id={task.id}
       groups={task.groups}
+      icon={task.icon}
     >
       <Value>{content}</Value>
     </TaskContainer>
