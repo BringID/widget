@@ -13,7 +13,8 @@ import {
   Body,
   Footer,
   VerifiedIndicator,
-  PontsCount
+  PontsCount,
+  CheckIcon
 } from './styled-components';
 import { TTaskGroup, TVerificationStatus } from '@/types';
 import { defineTaskPointsRange } from '@/utils';
@@ -38,7 +39,7 @@ const defineDescription = (
   groups?: TTaskGroup[]
 ) => {
   if (status === 'completed') {
-    return <VerifiedIndicator>✓ Verified</VerifiedIndicator>
+    return <VerifiedIndicator><CheckIcon />Verified</VerifiedIndicator>
   }
   if (groups) {
     return <PontsCount>{defineTaskPointsRange(groups)}</PontsCount>
