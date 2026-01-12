@@ -4,7 +4,7 @@ const ZUPLO_API_URL = 'https://api.bringid.org';
 const TELEGRAM_URL = 'https://t.me/bringid_chat';
 const PROJECT_ID = 'e4ba4a16546043645e1a25b82ca7dc63';
 const ONCHAIN_API_KEY = 'e7556adc-77cf-4f59-9403-4d3c01f51386';
-const AUTH_DOMAIN = 'https://oauth-verifier-production.up.railway.app';
+const AUTH_DOMAIN = 'https://auth.bringid.org';
 
 export default {
   EXTENSION_ID,
