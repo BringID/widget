@@ -16,14 +16,12 @@ const Widget: FC = () => {
 
   const address = searchParams.get('address') || ''
   const apiKey = searchParams.get('apiKey') || ''
-  const scope = searchParams.get('scope') || undefined
 
   return <ThemeProvider theme={light}>
     <ReduxProvider store={store}>
       <InnerContent
         apiKey={apiKey}
         address={address}
-        scope={scope}
         parentUrl={decodedRedirectUrl}
       />
     </ReduxProvider>

@@ -103,8 +103,7 @@ const uploadPrevVerifications = async (
 const InnerContent: FC<TProps> = ({
   apiKey,
   address,
-  parentUrl,
-  scope
+  parentUrl
 }) => {
 
   const dispatch = useDispatch()
@@ -126,6 +125,14 @@ const InnerContent: FC<TProps> = ({
           if (type === 'USER_KEY_READY') {
             // save it in store
             dispatch(setKey(payload.signature))
+            return
+          }
+
+
+          if (type === 'CURRENT_SCOPE_READY') {
+            // save it in store
+            dispatch(setScope(payload.scope))
+            return
           }
         } else if (event.source === window) {
           if (type === 'GENERATE_USER_KEY') {
@@ -228,14 +235,10 @@ const InnerContent: FC<TProps> = ({
       dispatch(setApiKey(apiKey));
     }
 
-    if (scope) {
-      dispatch(setScope(scope));
-    }
   }, [
     user.address,
     apiKey,
-    address,
-    scope
+    address
   ]);
 
   useEffect(() => {
