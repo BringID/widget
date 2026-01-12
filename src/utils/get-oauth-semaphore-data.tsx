@@ -39,6 +39,14 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       reject("Popup blocked")
     }
 
+    const timer = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(timer);
+        console.log("Popup closed");
+        reject()
+      }
+    }, 500);
+
     const handler = async (event: MessageEvent) => {
       console.log({ event, AUTH_DOMAIN: configs.AUTH_DOMAIN })
       if (event.origin !== configs.AUTH_DOMAIN) return
@@ -60,7 +68,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
           }
         })
 
-        
+        clearInterval(timer)
         window.removeEventListener("message", handler)
         resolve({
           signature,
@@ -72,6 +80,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       }
 
       if (event.data?.type === "AUTH_ERROR") {
+        clearInterval(timer)
         window.removeEventListener("message", handler)
         reject(event.data.error)
       }
