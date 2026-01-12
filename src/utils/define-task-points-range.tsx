@@ -1,6 +1,6 @@
-import { TNotarizationGroup } from '../types';
+import { TTaskGroup } from '../types';
 
-type TDefineTaskPointsRange = (groups: TNotarizationGroup[]) => string | null;
+type TDefineTaskPointsRange = (groups: TTaskGroup[]) => string | null;
 
 const defineTaskPointsRange: TDefineTaskPointsRange = (groups) => {
   if (groups.length === 0) {

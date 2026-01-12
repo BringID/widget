@@ -12,7 +12,6 @@ import {
   ButtonStyled,
   TextStyled,
   TitleStyled,
-  MessageStyled,
   FooterStyled
 } from './styled-components'
 import { useVerifications } from '../../store/reducers/verifications'
@@ -117,11 +116,6 @@ const Proofs: FC<TProps> = ({
           A website is requesting verification of your trust score. This process is private and no personal information will be shared.
         </TextStyled>
 
-        <MessageStyled>
-          <span>Current score:</span>
-          <Tag status="info">{pointsSelected} pts</Tag>
-        </MessageStyled>
-
         {renderContent(
           availableTasks,
           verifications,
@@ -162,7 +156,7 @@ const Proofs: FC<TProps> = ({
             
           }}
         >
-          Confirm
+          Confirm ({pointsSelected} selected)
         </ButtonStyled>
       </FooterStyled>
     </>

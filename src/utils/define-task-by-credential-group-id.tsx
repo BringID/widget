@@ -1,5 +1,5 @@
 import { tasks } from '@/app/core'
-import { TNotarizationGroup } from '../types'
+import { TTaskGroup } from '../types'
 
 type TDefineTaskByCredentialGroupId = (
   credentialGroupId: string,
@@ -10,7 +10,7 @@ type TDefineTaskByCredentialGroupId = (
     title: string;
     description?: string;
     icon?: string;
-    group: TNotarizationGroup;
+    group: TTaskGroup;
   }
 | undefined;
 

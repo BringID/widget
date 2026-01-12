@@ -1,10 +1,10 @@
-import { TVerificationData, TTask, TNotarizationGroup } from '../types'
+import { TVerificationData, TTask, TTaskGroup } from '../types'
 import { createQueryString } from '../utils'
 import configs from '@/app/configs'
 
 type TGetOAuthSemaphoreData = (
   task: TTask,
-  group: TNotarizationGroup,
+  group: TTaskGroup,
   semaphoreIdentity: any,
   registry: string
 ) => Promise<

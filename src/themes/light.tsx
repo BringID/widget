@@ -9,8 +9,10 @@ const theme = {
   backgroundColor: 'rgb(255, 255, 255)',
   secondaryTextColor: 'rgb(115, 115, 115)',
   blankColor: 'rgb(245, 245, 245)',
-  overlayBackgroundColor: 'rgba(255, 255, 255, .9)',
+  overlayBackgroundColor: 'rgba(255, 255, 255, 1)',
   messageBackgroundColor: 'rgba(244, 244, 245, 0.3)',
+
+  highlightColor: '#6B43F4',
 
   additionalTextColor: 'rgb(156, 163, 175)',
 
@@ -49,6 +51,9 @@ const theme = {
   buttonActionBorderHoverColor: 'transparent',
   buttonActionBorderActiveColor: 'transparent',
   buttonActionBorderColor: 'transparent',
+
+
+  buttonDefaultBorderColor: '#E4DEFA'
 }
 
 export default theme

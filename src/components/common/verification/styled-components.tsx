@@ -68,3 +68,10 @@ export const Icon = styled.img`
   object-fit: cover;
   object-position: center;
 `;
+
+
+export const PointsCount = styled.div`
+  color: ${props => props.theme.highlightColor};
+  font-size: 15px;
+  font-weight: 500;
+`

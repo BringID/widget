@@ -1,4 +1,4 @@
-import { TNotarizationGroup } from '../types';
+import { TTaskGroup } from '../types';
 
 type GroupMatchResult = {
   semaphoreGroupId: string;
@@ -8,7 +8,7 @@ type GroupMatchResult = {
 
 function defineGroupByZKTLSResult (
   rawData: string,
-  groups: TNotarizationGroup[],
+  groups: TTaskGroup[],
 ): GroupMatchResult {
   if (groups.length === 1) {
     const group = groups[0];

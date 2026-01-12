@@ -20,8 +20,8 @@ export const Button = styled.button<TProps>`
   height: 40px;
   line-height: 16px;
   font-weight: 500;
-  border: 1px solid ${(props) => props.theme && props.theme.primaryBorderColor};
-  color: ${(props) => props.theme && props.theme.primaryTextColor};
+  border: 1px solid ${(props) => props.theme && props.theme.buttonDefaultBorderColor};
+  color: ${(props) => props.theme && props.theme.highlightColorColor};
   background-color: ${(props) => props.theme.backgroundColor};
 
   ${(props) =>

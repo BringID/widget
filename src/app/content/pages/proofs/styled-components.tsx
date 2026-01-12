@@ -7,7 +7,6 @@ import {
   Button,
   Title,
   Text,
-  Message
 } from '@/components/common'
 
 export const FooterStyled = styled(Footer)``
@@ -27,15 +26,10 @@ export const ButtonStyled = styled(Button)`
 export const TitleStyled = styled(Title)`
   margin-bottom: 8px;
   font-size: 24px;
+  text-align: center;
 `
 
 export const TextStyled = styled(Text)`
   margin-bottom: 24px;
-`
-
-export const MessageStyled = styled(Message)`
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  text-align: center;
 `

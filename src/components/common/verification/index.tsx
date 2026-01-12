@@ -1,12 +1,12 @@
-import React, { FC, useState, useEffect } from 'react';
-import { TProps } from './types';
-import { Value } from './styled-components';
-import { TVerificationStatus } from '@/types';
-import { TaskContainer, Icons, Button, Tag } from '..';
+import React, { FC, useState, useEffect } from 'react'
+import { TProps } from './types'
+import { Value, PointsCount } from './styled-components'
+import { TVerificationStatus } from '@/types'
+import { TaskContainer, Icons, Button } from '..'
 
-import { msToTime, defineExplorerURL } from '@/utils';
-import modeConfigs from '@/app/configs/mode-configs';
-import { taskManagerApi } from '@/app/content/api';
+import { msToTime, defineExplorerURL } from '@/utils'
+import modeConfigs from '@/app/configs/mode-configs'
+import { taskManagerApi } from '@/app/content/api'
 
 const definePluginContent = (
   status: TVerificationStatus,
@@ -17,7 +17,7 @@ const definePluginContent = (
 ) => {
   switch (status) {
     case 'default':
-      return <Tag status="default">{points} pts</Tag>;
+      return <PointsCount>{points} pts</PointsCount>
     case 'pending':
       return <Icons.Clock />;
     case 'scheduled':

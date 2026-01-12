@@ -13,10 +13,10 @@ import {
   Body,
   Footer,
 } from './styled-components';
-import { TNotarizationGroup } from '@/types';
+import { TTaskGroup, TVerificationStatus } from '@/types';
 import { defineTaskPointsRange } from '@/utils';
 
-const defineTiers = (groups?: TNotarizationGroup[]) => {
+const defineTiers = (groups?: TTaskGroup[]) => {
   if (!groups || groups.length === 1) return null;
 
   return groups
@@ -29,13 +29,25 @@ const defineTiers = (groups?: TNotarizationGroup[]) => {
       return `${checks[0].value}+: ${group.points} pts.`;
     })
     .filter((item) => item);
-};
+}
+
+const defineDescription = (
+  status: TVerificationStatus,
+  groups?: TTaskGroup[]
+) => {
+  if (status === 'completed') {
+    return 'Verified'
+  }
+  if (groups) {
+    return defineTaskPointsRange(groups)
+  }
+}
+
 
 const TaskContainer: FC<TProps> = ({
   status,
   children,
   title,
-  description,
   icon,
   id,
   selectable,
@@ -44,7 +56,7 @@ const TaskContainer: FC<TProps> = ({
   onSelect,
 }) => {
   const tiers = groups ? defineTiers(groups) : undefined
-  const taskPoints = groups ? defineTaskPointsRange(groups) : description
+  const descriptionContent = defineDescription(status, groups)
 
   return (
     <Container status={status}>
@@ -61,7 +73,7 @@ const TaskContainer: FC<TProps> = ({
         </ImageWrapper>
         <Content>
           <Title>{title}</Title>
-          <Subtitle>{taskPoints}</Subtitle>
+          <Subtitle>{descriptionContent}</Subtitle>
         </Content>
         {children}
       </Body>
