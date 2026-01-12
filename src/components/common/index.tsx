@@ -16,6 +16,7 @@ import LogoWrapper from './logo-wrapper';
 import Checkbox from './checkbox';
 import List from './list';
 import ExpandableContainer from './expandable-container';
+import CloseButton from './close-button';
 
 export {
   Spinner,
@@ -36,4 +37,5 @@ export {
   Checkbox,
   List,
   ExpandableContainer,
+  CloseButton
 };

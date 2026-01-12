@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Text } from '@/components/common';
+import { Text, CloseButton } from '@/components/common';
 import { Icons } from '@/components/common';
 
 export const Header = styled.header`
@@ -20,9 +20,8 @@ export const AddressIcon = styled(Icons.AddressIcon)`
   margin-right: 4px;
 `
 
-export const CloseIcon = styled(Icons.CloseIcon)`
+export const CloseButtonStyled = styled(CloseButton)`
   position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 20px;
+  bottom: 20px;
 `

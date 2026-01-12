@@ -23,5 +23,4 @@ export const VerificationsListStyled = styled(VerificationsList)`
 `;
 
 export const ButtonStyled = styled(Button)`
-  width: 100%;
 `
