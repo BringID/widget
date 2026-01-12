@@ -8,6 +8,7 @@ export const Header = styled.header`
   align-items: center;
   justify-content: center;
   padding: 28px 0 12px;
+  min-height: 64px;
 `;
 
 export const AddressText = styled(Text)`
@@ -23,5 +24,5 @@ export const AddressIcon = styled(Icons.AddressIcon)`
 export const CloseButtonStyled = styled(CloseButton)`
   position: absolute;
   right: 20px;
-  bottom: 20px;
+  bottom: 10px;
 `
