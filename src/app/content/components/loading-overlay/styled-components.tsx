@@ -36,5 +36,4 @@ export const Wrapper = styled.div`
 
 export const SpinnerStyled = styled(Spinner)`
   margin: 0 auto 20px;
-  border-color: ${(props) => props.theme.primaryTextColor};
 `;

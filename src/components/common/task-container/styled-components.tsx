@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
 import { TVerificationStatus } from '@/types';
 import Checkbox from '../checkbox';
+import Icons from '../icons';
 
 export const Container = styled.div<{
   status: TVerificationStatus;
@@ -78,11 +79,19 @@ export const Footer = styled.div`
 `;
 
 export const VerifiedIndicator = styled.div`
+  font-size: 13px;
+  color: ${props => props.theme.successStatusTextColor};
+  display: flex;
+  align-items: center;
+  gap: 2px;
+`
+
+export const PontsCount = styled.div`
   color: ${props => props.theme.highlightColor};
   font-size: 13px;
 `
 
-export const PontsCount = styled.div`
+export const CheckIcon = styled(Icons.Check)`
+  max-width: 16px;
   color: ${props => props.theme.successStatusTextColor};
-  font-size: 13px;
 `
