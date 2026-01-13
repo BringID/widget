@@ -1,6 +1,5 @@
 import toHex from './to-hex'
 import alertError from './alert-error'
-import defineJSONRPC from './define-json-rpc'
 import defineNetworkName from './define-network-name'
 import defineExplorerURL from "./define-explorer-url"
 import shortenString from './shorten-string'
@@ -70,7 +69,6 @@ export {
   defineNetworkIcon,
   defineIfKeyHasAlreadyBeenCreated,
   shortenString,
-  defineJSONRPC,
   defineNetworkName,
   defineExplorerURL,
   checkApproveTransaction,
