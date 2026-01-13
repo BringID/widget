@@ -17,7 +17,7 @@ const Widget: FC = () => {
   const address = searchParams.get('address') || ''
   const apiKey = searchParams.get('apiKey') || ''
 
-  const mode = searchParams.get('apiKey') || 'production'
+  const mode = searchParams.get('mode') || 'production'
 
   console.log({ mode })
   return <ThemeProvider theme={light}>
