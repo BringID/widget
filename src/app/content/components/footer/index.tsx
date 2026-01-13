@@ -4,8 +4,11 @@ import {
   TextStyled,
   TitleStyled,
   Content,
-  Texts
+  Texts,
+  ProfileIcon,
+  LinkStyled
 } from './styled-components'
+import configs from '@/app/configs';
 import TProps from './types'
 
 const defineContent = (
@@ -17,7 +20,9 @@ const defineContent = (
 
   if (!address || !userKey) {
     return <TitleStyled>
-      Powered by BringID
+      <LinkStyled href={configs.BRINGID_URL} target='_blank'>
+        <ProfileIcon />Powered by BringID
+      </LinkStyled>
     </TitleStyled>
   }
 

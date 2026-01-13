@@ -22,6 +22,7 @@ const addVerification: TAddVerification = async (
   const configsResult = await modeConfigs(mode)
 
   const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
+
   return api<TAddVerificationResponse>(
     `${apiUrl}/v1/task-manager/${networkName}/verification/tasks`,
     'POST',
