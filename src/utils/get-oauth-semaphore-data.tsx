@@ -6,7 +6,8 @@ type TGetOAuthSemaphoreData = (
   task: TTask,
   group: TTaskGroup,
   semaphoreIdentity: any,
-  registry: string
+  registry: string,
+  mode: string
 ) => Promise<
   TVerificationData
 >
@@ -15,13 +16,15 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
   task,
   group,
   semaphoreIdentity,
-  registry
+  registry,
+  mode
 ) => {
   const statePayload = {
     registry: registry,
     credential_group_id: group?.credentialGroupId,
     semaphore_identity_commitment: String(semaphoreIdentity.commitment),
-    origin: window.location.origin
+    origin: window.location.origin,
+    mode
   }
 
   const queryParams = createQueryString({

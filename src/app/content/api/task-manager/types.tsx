@@ -12,6 +12,7 @@ type TAddVerification = (
   idHash: string,
   identityCommitment: string,
   verifierSignature: string,
+  mode: string
 ) => Promise<TAddVerificationResponse>;
 
 type TGetVerificationResponse = {
@@ -21,6 +22,7 @@ type TGetVerificationResponse = {
 
 type TGetVerification = (
   verificationId: string,
+  mode: string
 ) => Promise<TGetVerificationResponse>;
 
 export type {

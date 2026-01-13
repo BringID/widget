@@ -7,6 +7,7 @@ import { TaskContainer, Icons, Button } from '..'
 import { msToTime, defineExplorerURL } from '@/utils'
 import modeConfigs from '@/app/configs/mode-configs'
 import { taskManagerApi } from '@/app/content/api'
+import { useUser } from '@/app/content/store/reducers/user'
 
 const definePluginContent = (
   status: TVerificationStatus,
@@ -58,6 +59,7 @@ const Verification: FC<TProps> = ({
   fetched,
 }) => {
   const [expiration, setExpiration] = useState<number | null>(null);
+  const user = useUser()
 
   useEffect(() => {
     const interval = window.setInterval(async () => {
@@ -87,11 +89,11 @@ const Verification: FC<TProps> = ({
       }
 
       try {
-        const result = await taskManagerApi.getVerification(taskId)
+        const result = await taskManagerApi.getVerification(taskId, user.mode)
 
         if (result) {
           const { task } = result
-          const configsResult = await modeConfigs()
+          const configsResult = await modeConfigs(user.mode)
           window.open(`${defineExplorerURL(Number(configsResult.CHAIN_ID || '84532'))}/tx/${task.tx_hash}`)
         }
       } catch (err) {

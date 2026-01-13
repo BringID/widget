@@ -11,7 +11,7 @@ import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { calculateAvailablePoints } from '@/utils'
 import { setIsOpen, setLoading, useModal } from '../store/reducers/modal';
-import { setAddress, setApiKey, setKey, setScope, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask } from '@/types';
 import semaphore from '../semaphore';
 import { tasks } from '../../core'
@@ -57,6 +57,7 @@ const uploadPrevVerifications = async (
   setLoading: (
     loading: boolean
   ) => void,
+  mode: string,
   addVerifications: (verifications: TVerification[]) => void
 ) => {
   setLoading(true)
@@ -77,6 +78,7 @@ const uploadPrevVerifications = async (
         const proof = await semaphore.getProof(
           String(commitment),
           group.semaphoreGroupId,
+          mode
         );
         if (proof) {
           const newTask = {
@@ -103,7 +105,8 @@ const uploadPrevVerifications = async (
 const InnerContent: FC<TProps> = ({
   apiKey,
   address,
-  parentUrl
+  parentUrl,
+  mode
 }) => {
 
   const dispatch = useDispatch()
@@ -211,8 +214,7 @@ const InnerContent: FC<TProps> = ({
     verifications
   ]);
 
-  const availableTasks = tasks(true)
-
+  const availableTasks = tasks(user.mode === 'dev')
 
   useEffect(() => {
     if (address) {
@@ -235,10 +237,15 @@ const InnerContent: FC<TProps> = ({
       dispatch(setApiKey(apiKey));
     }
 
+    if (mode) {
+      dispatch(setMode(mode));
+    }
+
   }, [
     user.address,
     apiKey,
-    address
+    address,
+    mode
   ]);
 
   useEffect(() => {
@@ -248,6 +255,7 @@ const InnerContent: FC<TProps> = ({
       availableTasks,
       user.key,
       (loading: boolean) => dispatch(setLoading(loading)),
+      user.mode,
       (verifications) => {
         console.log('HERE uploading verifications')
         dispatch(addVerifications(verifications))

@@ -6,7 +6,8 @@ import { verifierApi } from '@/app/content/api'
 type TGetZKTLSSemaphoreData = (
   task: TTask,
   semaphoreIdentity: any,
-  registry: string
+  registry: string,
+  mode: string
 ) => Promise<
   TVerificationData
 >
@@ -14,7 +15,8 @@ type TGetZKTLSSemaphoreData = (
 const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
   task,
   semaphoreIdentity,
-  registry
+  registry,
+  mode
 ) => {
   
 
@@ -51,7 +53,8 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
             presentationData,
             registry,
             credentialGroupId,
-            String(semaphoreIdentity.commitment)
+            String(semaphoreIdentity.commitment),
+            mode
           )
 
           const {

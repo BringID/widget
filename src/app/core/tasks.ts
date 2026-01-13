@@ -1,6 +1,6 @@
 import { TTask } from '@/types';
 import TasksSepolia from '../configs/tasks-sepolia.json'
-import Tasks from '../configs/tasks-sepolia.json'
+import Tasks from '../configs/tasks.json'
 
 function loadTasks(
   devMode: boolean

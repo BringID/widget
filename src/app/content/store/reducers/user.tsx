@@ -11,7 +11,8 @@ enum ActionType {
   '/user/setAddress' = '/user/setAddress',
   '/user/setApiKey' = '/user/setApiKey',
   '/user/destroy' = '/user/destroy',
-  '/user/setScope' = '/user/setScope'
+  '/user/setScope' = '/user/setScope',
+  '/user/setMode' = '/user/setMode'
 }
 
 type Action<payload> = {
@@ -28,12 +29,19 @@ const initState: State = {
   address: null,
   loading: false,
   apiKey: null,
-  scope: null
+  scope: null,
+  mode: 'production'
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({
   type: ActionType['/user/setKey'],
   payload: key,
+})
+
+
+export const setMode = (mode: string): Action<string> => ({
+  type: ActionType['/user/setMode'],
+  payload: mode,
 })
 
 export const destroy = () => ({
@@ -80,6 +88,9 @@ export default function user(state = initState, action: Action<any>): State {
 
     case ActionType['/user/setScope']:
       return  { ...state, scope: action.payload };
+    
+    case ActionType['/user/setMode']:
+      return  { ...state, mode: action.payload };
 
     case ActionType['/user/destroy']:
       return initState

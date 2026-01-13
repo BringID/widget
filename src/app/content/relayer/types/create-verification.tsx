@@ -5,6 +5,7 @@ type TCreateVerification = (
   idHash: string,
   identityCommitment: string,
   verifierSignature: string,
+  mode: string
 ) => Promise<TVerification | void>;
 
 export default TCreateVerification;

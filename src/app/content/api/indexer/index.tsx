@@ -12,9 +12,10 @@ const getProof: TGetProof = async (
   apiUrl,
   identityCommitment,
   semaphoreGroupId,
+  mode,
   fetchProofs,
 ) => {
-  const configsResult = await modeConfigs()
+  const configsResult = await modeConfigs(mode)
   const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
   const queryParams = createQueryString({
     identity_commitment: identityCommitment,

@@ -9,9 +9,10 @@ const verify: TVerify = async (
   registry,
   credentialGroupId,
   semaphoreIdentityCommitment,
+  mode
 ) => {
 
-  const configsResult = await modeConfigs()
+  const configsResult = await modeConfigs(mode)
   const queryParams = createQueryString({
     environment: configsResult.CHAIN_ID === '84532' ? 'staging' : undefined,
   });

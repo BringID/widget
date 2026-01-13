@@ -12,12 +12,14 @@ class Semaphore implements ISemaphore {
   getProof: TGetProof = async (
     identityCommitment,
     semaphoreGroupId,
+    mode,
     fetchProofs,
   ) => {
     const response = await indexerApi.getProof(
       this.#apiUrl,
       identityCommitment,
       semaphoreGroupId,
+      mode,
       fetchProofs,
     );
     const { success, proof } = response;

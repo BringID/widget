@@ -17,8 +17,9 @@ const addVerification: TAddVerification = async (
   idHash,
   identityCommitment,
   verifierSignature,
+  mode
 ) => {
-  const configsResult = await modeConfigs()
+  const configsResult = await modeConfigs(mode)
 
   const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
   return api<TAddVerificationResponse>(
@@ -37,8 +38,8 @@ const addVerification: TAddVerification = async (
   );
 };
 
-const getVerification: TGetVerification = async (taskId) => {
-  const configsResult = await modeConfigs()
+const getVerification: TGetVerification = async (taskId, mode) => {
+  const configsResult = await modeConfigs(mode)
   const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
 
   return api<TGetVerificationResponse>(

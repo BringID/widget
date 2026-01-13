@@ -13,7 +13,6 @@ import { useUser } from '../../store/reducers/user';
 const VerificationsList: FC<TProps> = ({
   verifications,
   className,
-  devMode,
   tasks
 }) => {
 
@@ -48,7 +47,7 @@ const VerificationsList: FC<TProps> = ({
           if (relatedVerification) {
              const relatedTaskData = defineTaskByCredentialGroupId(
               relatedVerification.credentialGroupId,
-              devMode //devmode
+              user.mode === 'dev' //devmode
             )
 
             console.log({ relatedTaskData })

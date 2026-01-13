@@ -10,6 +10,7 @@ type TGetProofs = (
   scope: string | null,
   pointsRequired: number,
   selectedVerifications: string[],
+  mode: string
 ) => Promise<TSemaphoreProof[]>;
 
 const prepareProofs: TGetProofs = async (
@@ -18,6 +19,7 @@ const prepareProofs: TGetProofs = async (
   scope,
   pointsRequired,
   selectedVerifications,
+  mode
 ) => {
 
   if (!userKey) {
@@ -44,7 +46,7 @@ const prepareProofs: TGetProofs = async (
       if (status !== 'completed') {
         continue;
       }
-      const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, true);
+      const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, mode === 'dev');
 
       if (!relatedTask) {
         continue;
@@ -59,6 +61,7 @@ const prepareProofs: TGetProofs = async (
       const data = await semaphore.getProof(
         String(commitment),
         group.semaphoreGroupId,
+        mode,
         true,
       );
 
@@ -66,7 +69,7 @@ const prepareProofs: TGetProofs = async (
         throw new Error('no proof found');
       }
 
-      const scopeToUse = scope || calculateScope((await getConfigs()).REGISTRY);
+      const scopeToUse = scope || calculateScope((await getConfigs(mode)).REGISTRY);
 
       const { merkleTreeDepth, merkleTreeRoot, message, points, nullifier } =
         await generateProof(identity, data as any, 'verification', scopeToUse);

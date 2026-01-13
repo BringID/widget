@@ -15,6 +15,7 @@ type TVerify = (
   registry: string,
   credentialGroupId: string,
   semaphoreIdentityCommitment: string,
+  mode: string
 ) => Promise<TVerifyResponse>;
 
 export type { TVerify, TVerifyResponse };

@@ -15,8 +15,9 @@ class Relayer implements IRelayer {
     idHash,
     identityCommitment,
     verifierSignature,
+    mode
   ) => {
-    const configsResult = await modeConfigs()
+    const configsResult = await modeConfigs(mode)
     const { success, task } = await taskManager.addVerification(
       this.#apiUrl,
       configsResult.REGISTRY,
@@ -24,6 +25,7 @@ class Relayer implements IRelayer {
       idHash,
       identityCommitment,
       verifierSignature,
+      mode
     );
 
     if (success) {
@@ -41,8 +43,10 @@ class Relayer implements IRelayer {
     }
   };
 
-  getVerification: TGetVerification = async (verificationId) => {
-    const { success, task } = await taskManager.getVerification(verificationId);
+  getVerification: TGetVerification = async (
+    verificationId, mode
+  ) => {
+    const { success, task } = await taskManager.getVerification(verificationId, mode);
     if (success) {
       const verification = {
         scheduledTime: task.scheduled_time,

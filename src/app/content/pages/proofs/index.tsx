@@ -63,10 +63,10 @@ const Proofs: FC<TProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
 
 
-  const availableTasks = tasks(true); //devMode
+  const availableTasks = tasks(user.mode === 'dev'); //devMode
 
 
-  const availablePoints = calculateAvailablePoints(verifications, true); //devMode
+  const availablePoints = calculateAvailablePoints(verifications, user.mode === 'dev'); //devMode
 
 
   const [selected, setSelected] = useState<string[]>([]);
@@ -77,7 +77,7 @@ const Proofs: FC<TProps> = ({
     verifications.forEach((verification) => {
       const relatedTask = defineTaskByCredentialGroupId(
         verification.credentialGroupId,
-        true // devmode
+        user.mode === 'dev' // devmode
       );
 
       if (!relatedTask) {
@@ -141,6 +141,7 @@ const Proofs: FC<TProps> = ({
                 user.scope,
                 pointsSelected,
                 selected,
+                user.mode
               );
 
               onConfirm(

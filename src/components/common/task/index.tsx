@@ -14,6 +14,7 @@ import getConfigs from '@/app/configs/mode-configs'
 import { taskManagerApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
+import { useUser } from '@/app/content/store/reducers/user'
 
 const defineTaskContent = (
   status: TVerificationStatus,
@@ -21,6 +22,7 @@ const defineTaskContent = (
   userKey: string | null,
   loading: boolean,
   setLoading: (loading: boolean) => void,
+  mode: string,
   resultCallback: (verification: TVerification) => void
 ) => {
   switch (status) {
@@ -32,7 +34,7 @@ const defineTaskContent = (
           loading={loading}
           onClick={async () => {
             try {
-              const modeConfigs = await getConfigs()
+              const modeConfigs = await getConfigs(mode)
               const group = task?.groups[0]
 
 
@@ -50,11 +52,13 @@ const defineTaskContent = (
                   task,
                   group,
                   semaphoreIdentity,
-                  modeConfigs.REGISTRY
+                  modeConfigs.REGISTRY,
+                  mode
                 ) : await getZKTLSSemaphoreData(
                   task,
                   semaphoreIdentity,
-                  modeConfigs.REGISTRY
+                  modeConfigs.REGISTRY,
+                  mode
                 )
 
                 console.log('WIDGET data received: ', {
@@ -71,7 +75,9 @@ const defineTaskContent = (
                   group?.credentialGroupId,
                   id_hash,
                   String(semaphoreIdentity.commitment),
-                  signature
+                  signature,
+                  mode
+
                 )
 
                 if (success) {
@@ -114,6 +120,7 @@ const Task: FC<TProps> = ({
 }) => {
 
   const dispatch = useDispatch()
+  const user = useUser()
 
   const [ loading, setLoading ] = useState<boolean>(false)
 
@@ -123,6 +130,7 @@ const Task: FC<TProps> = ({
     userKey,
     loading,
     setLoading,
+    user.mode,
     (verification) => {
       console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))
