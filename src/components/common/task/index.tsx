@@ -95,7 +95,7 @@ const defineTaskContent = (
             } catch (err) {
               setLoading(false)
               console.log({ err })
-              alert((err as any).message)
+              alert(err)
             }
           }}
         >
