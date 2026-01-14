@@ -1,8 +1,8 @@
-import { TVerification } from '@/types';
+import { TModeConfigs, TVerification } from '@/types';
 
 type TGetVerification = (
   verificationId: string,
-  mode: string
+  modeConfigs: TModeConfigs
 ) => Promise<TVerification | void>;
 
 export default TGetVerification;

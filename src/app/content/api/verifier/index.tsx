@@ -1,6 +1,5 @@
 import { TVerify, TVerifyResponse } from './types'
 import configs from '../../../configs'
-import modeConfigs from '../../../configs/mode-configs'
 import { createQueryString, api } from '@/utils'
 
 const verify: TVerify = async (
@@ -12,9 +11,8 @@ const verify: TVerify = async (
   mode
 ) => {
 
-  const configsResult = await modeConfigs(mode)
   const queryParams = createQueryString({
-    environment: configsResult.CHAIN_ID === '84532' ? 'staging' : undefined,
+    environment: mode === 'dev' ? 'staging' : undefined,
   });
 
   return api<TVerifyResponse>(

@@ -1,6 +1,7 @@
 import ISemaphore, { TGetProof, TCreateIdentity } from './types';
 import { indexerApi } from '../api';
 import { createSemaphoreIdentity, defineApiUrl } from '@/utils';
+import { TModeConfigs } from '@/types';
 
 class Semaphore implements ISemaphore {
   #apiUrl: string;
@@ -12,14 +13,14 @@ class Semaphore implements ISemaphore {
   getProof: TGetProof = async (
     identityCommitment,
     semaphoreGroupId,
-    mode,
+    modeConfigs,
     fetchProofs,
   ) => {
     const response = await indexerApi.getProof(
       this.#apiUrl,
       identityCommitment,
       semaphoreGroupId,
-      mode,
+      modeConfigs,
       fetchProofs,
     );
     const { success, proof } = response;

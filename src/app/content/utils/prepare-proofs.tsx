@@ -1,25 +1,26 @@
-import { TSemaphoreProof, TVerification } from "@/types";
+import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
 import { defineTaskByCredentialGroupId, calculateScope } from "@/utils";
 import semaphore from "../semaphore";
 import { generateProof } from '@semaphore-protocol/core';
-import getConfigs from "@/app/configs/mode-configs";
 
 type TGetProofs = (
+  tasks: TTask[],
   userKey: string,
   verifications: TVerification[],
   scope: string | null,
   pointsRequired: number,
   selectedVerifications: string[],
-  mode: string
+  modeConfigs: TModeConfigs
 ) => Promise<TSemaphoreProof[]>;
 
 const prepareProofs: TGetProofs = async (
+  tasks,
   userKey,
   verifications,
   scope,
   pointsRequired,
   selectedVerifications,
-  mode
+  modeConfigs
 ) => {
 
   if (!userKey) {
@@ -46,7 +47,7 @@ const prepareProofs: TGetProofs = async (
       if (status !== 'completed') {
         continue;
       }
-      const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, mode === 'dev');
+      const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, tasks);
 
       if (!relatedTask) {
         continue;
@@ -61,7 +62,7 @@ const prepareProofs: TGetProofs = async (
       const data = await semaphore.getProof(
         String(commitment),
         group.semaphoreGroupId,
-        mode,
+        modeConfigs,
         true,
       );
 
@@ -69,7 +70,7 @@ const prepareProofs: TGetProofs = async (
         throw new Error('no proof found');
       }
 
-      const scopeToUse = scope || calculateScope((await getConfigs(mode)).REGISTRY);
+      const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
 
       const { merkleTreeDepth, merkleTreeRoot, message, points, nullifier } =
         await generateProof(identity, data as any, 'verification', scopeToUse);

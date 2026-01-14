@@ -15,6 +15,7 @@ import Copy from './copy';
 import Lock from './lock';
 import CloseIcon from './close-icon';
 import KeyIcon from './key'
+import ProfileIcon from './profile-icon'
 
 const Icons = {
   VehicleIcon,
@@ -33,7 +34,8 @@ const Icons = {
   Copy,
   Lock,
   CloseIcon,
-  KeyIcon
+  KeyIcon,
+  ProfileIcon
 };
 
 export default Icons;

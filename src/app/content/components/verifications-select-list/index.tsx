@@ -3,17 +3,16 @@ import { Container } from './styled-components';
 import { Verification } from '@/components/common';
 import TProps from './types';
 import { defineTaskByCredentialGroupId } from '@/utils';
-import { useUser } from '../../store/reducers/user';
+import { useConfigs } from '../../store/reducers/configs';
 
 const VerificationsSelectList: FC<TProps> = ({
-  tasks,
   verifications,
   onSelect,
   selected,
   className,
 }) => {
 
-  const user = useUser()
+  const userConfigs = useConfigs()
   return (
     <Container className={className}>
       {verifications.map((verification) => {
@@ -23,7 +22,7 @@ const VerificationsSelectList: FC<TProps> = ({
 
         const relatedTaskData = defineTaskByCredentialGroupId(
           verification.credentialGroupId,
-          user.mode === 'dev'
+          userConfigs.tasks
         );
 
         if (relatedTaskData) {

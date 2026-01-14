@@ -1,9 +1,8 @@
-import { tasks } from '@/app/core'
-import { TTaskGroup } from '../types'
+import { TTaskGroup, TTask } from '../types'
 
 type TDefineTaskByCredentialGroupId = (
   credentialGroupId: string,
-  devMode: boolean
+  tasks: TTask[]
 ) =>
   {
     taskId: string;
@@ -16,10 +15,9 @@ type TDefineTaskByCredentialGroupId = (
 
 const defineTaskByCredentialGroupId: TDefineTaskByCredentialGroupId = (
   credentialGroupId,
-  devMode
+  tasks
 ) => {
-  const availableTasks = tasks(devMode);
-  for (const task of availableTasks) {
+  for (const task of tasks) {
     for (const group of task.groups) {
       if (group.credentialGroupId === credentialGroupId) {
         return {

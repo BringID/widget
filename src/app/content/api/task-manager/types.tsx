@@ -1,4 +1,4 @@
-import { TTaskServer } from '@/types';
+import { TModeConfigs, TTaskServer } from '@/types';
 
 type TAddVerificationResponse = {
   success: boolean;
@@ -7,12 +7,11 @@ type TAddVerificationResponse = {
 
 type TAddVerification = (
   apiUrl: string,
-  registry: string,
   credentialGroupId: string,
   idHash: string,
   identityCommitment: string,
   verifierSignature: string,
-  mode: string
+  modeConfigs: TModeConfigs
 ) => Promise<TAddVerificationResponse>;
 
 type TGetVerificationResponse = {
@@ -22,7 +21,7 @@ type TGetVerificationResponse = {
 
 type TGetVerification = (
   verificationId: string,
-  mode: string
+  modeConfigs: TModeConfigs
 ) => Promise<TGetVerificationResponse>;
 
 export type {

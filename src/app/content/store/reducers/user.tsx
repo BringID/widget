@@ -30,7 +30,7 @@ const initState: State = {
   loading: false,
   apiKey: null,
   scope: null,
-  mode: 'production'
+  mode: ''
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({

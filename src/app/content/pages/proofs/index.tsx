@@ -15,29 +15,25 @@ import {
   FooterStyled
 } from './styled-components'
 import { useVerifications } from '../../store/reducers/verifications'
-import { tasks } from '@/app/core/tasks'
 import {
   calculateAvailablePoints,
   defineTaskByCredentialGroupId,
   defineInitialSelectedVerifications
 } from '@/utils'
 import { useUser } from '../../store/reducers/user'
-import { TVerification, TTask } from '@/types'
+import { TVerification, TTask, TModeConfigs } from '@/types'
 import { TProps } from './types'
 import { prepareProofs } from '../../utils'
+import { useConfigs } from '../../store/reducers/configs'
 
 const renderContent = (
-  availableTasks: TTask[],
   verifications: TVerification[],
-  devMode: boolean,
   selected: string[],
   setSelected: (selected: string[]) => void
 ) => {
 
   return (
     <VerificationSelectListStyled
-      tasks={availableTasks}
-      devMode={devMode}
       verifications={verifications}
       selected={selected}
       onSelect={(id, isSelected) => {
@@ -60,13 +56,10 @@ const Proofs: FC<TProps> = ({
 }) => {
   const { verifications } = useVerifications();
   const user = useUser()
+  const userConfigs = useConfigs()
   const [loading, setLoading] = useState<boolean>(false);
 
-
-  const availableTasks = tasks(user.mode === 'dev'); //devMode
-
-
-  const availablePoints = calculateAvailablePoints(verifications, user.mode === 'dev'); //devMode
+  const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
 
 
   const [selected, setSelected] = useState<string[]>([]);
@@ -77,7 +70,7 @@ const Proofs: FC<TProps> = ({
     verifications.forEach((verification) => {
       const relatedTask = defineTaskByCredentialGroupId(
         verification.credentialGroupId,
-        user.mode === 'dev' // devmode
+        userConfigs.tasks
       );
 
       if (!relatedTask) {
@@ -116,9 +109,7 @@ const Proofs: FC<TProps> = ({
         </TextStyled>
 
         {renderContent(
-          availableTasks,
           verifications,
-          true, // dev
           selected,
           setSelected
         )}
@@ -136,12 +127,13 @@ const Proofs: FC<TProps> = ({
             setLoading(true)
             try {
               const proofs = await prepareProofs(
+                userConfigs.tasks,
                 user.key as string,
                 verifications,
                 user.scope,
                 pointsSelected,
                 selected,
-                user.mode
+                userConfigs.modeConfigs
               );
 
               onConfirm(

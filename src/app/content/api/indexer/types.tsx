@@ -1,4 +1,4 @@
-import { TSemaphoreProofServer } from '@/types';
+import { TModeConfigs, TSemaphoreProofServer } from '@/types';
 
 type TGetProofResponse = {
   success: boolean;
@@ -9,7 +9,7 @@ type TGetProof = (
   apiUrl: string,
   identityCommitment: string,
   semaphoreGroupId: string,
-  mode: string,
+  modeConfigs: TModeConfigs,
   fetchProofs?: boolean,
 ) => Promise<TGetProofResponse>;
 

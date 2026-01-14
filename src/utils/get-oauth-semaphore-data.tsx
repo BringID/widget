@@ -19,6 +19,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
   registry,
   mode
 ) => {
+
   const statePayload = {
     registry: registry,
     credential_group_id: group?.credentialGroupId,

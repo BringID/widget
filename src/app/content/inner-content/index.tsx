@@ -9,17 +9,17 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { calculateAvailablePoints } from '@/utils'
 import { setIsOpen, setLoading, useModal } from '../store/reducers/modal';
 import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
-import { TVerification, TVerificationStatus, TTask } from '@/types';
+import { TVerification, TVerificationStatus, TTask, TModeConfigs } from '@/types';
 import semaphore from '../semaphore';
-import { tasks } from '../../core'
+import { configs } from '../../core'
 import {
   addVerifications,
   useVerifications
 } from '../store/reducers/verifications';
 import { LoadingOverlay } from '../components'
+import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 
 const defineContent = (
   page: string,
@@ -57,7 +57,7 @@ const uploadPrevVerifications = async (
   setLoading: (
     loading: boolean
   ) => void,
-  mode: string,
+  modeConfigs: TModeConfigs,
   addVerifications: (verifications: TVerification[]) => void
 ) => {
   setLoading(true)
@@ -78,7 +78,7 @@ const uploadPrevVerifications = async (
         const proof = await semaphore.getProof(
           String(commitment),
           group.semaphoreGroupId,
-          mode
+          modeConfigs
         );
         if (proof) {
           const newTask = {
@@ -111,10 +111,11 @@ const InnerContent: FC<TProps> = ({
 
   const dispatch = useDispatch()
 
-  const { isOpen, loading } = useModal()
+  const { loading } = useModal()
   const user = useUser()
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
+  const userConfigs = useConfigs()
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -214,8 +215,6 @@ const InnerContent: FC<TProps> = ({
     verifications
   ]);
 
-  const availableTasks = tasks(user.mode === 'dev')
-
   useEffect(() => {
     if (address) {
       if (user.address) {
@@ -249,19 +248,41 @@ const InnerContent: FC<TProps> = ({
   ]);
 
   useEffect(() => {
+    if (!user.address) { return }
+    if (!user.mode) { return }
+  
+    const init = async () => {
+      const userConfigs = await configs(user.mode === 'dev')
+      dispatch(addModeConfigs(userConfigs.configs))
+      dispatch(addTasks(userConfigs.tasks))
+    }
+    init()
+  }, [
+    user.address,
+    user.mode
+  ])
+
+  useEffect(() => {
     if (!user.key) return
+    if (
+      userConfigs.tasks.length === 0
+    ) return
+    if (
+      !userConfigs.modeConfigs.REGISTRY
+    ) return
 
     uploadPrevVerifications(
-      availableTasks,
+      userConfigs.tasks,
       user.key,
       (loading: boolean) => dispatch(setLoading(loading)),
-      user.mode,
+      userConfigs.modeConfigs,
       (verifications) => {
         console.log('HERE uploading verifications')
         dispatch(addVerifications(verifications))
       }
     )
   }, [
+    userConfigs,
     user.key
   ]);
 

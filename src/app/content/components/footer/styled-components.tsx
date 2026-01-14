@@ -1,5 +1,9 @@
 import styled from 'styled-components';
-import { Text } from '@/components/common';
+import {
+  Text,
+  Icons,
+  Link
+ } from '@/components/common';
 
 export const TitleStyled = styled(Text)`
   font-size: 15px;
@@ -7,6 +11,20 @@ export const TitleStyled = styled(Text)`
   text-align: center;
   width: 100%;
 `;
+
+export const LinkStyled = styled(Link)`
+  display: flex;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 400;
+  color: ${props => props.theme.secondaryTextColor};
+  align-items: center;
+  justify-content: center;
+`
+
+export const ProfileIcon = styled(Icons.ProfileIcon)`
+  max-width: 16px;
+`
 
 export const Footer = styled.footer`
   display: flex;

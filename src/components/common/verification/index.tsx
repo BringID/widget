@@ -5,9 +5,9 @@ import { TVerificationStatus } from '@/types'
 import { TaskContainer, Icons, Button } from '..'
 
 import { msToTime, defineExplorerURL } from '@/utils'
-import modeConfigs from '@/app/configs/mode-configs'
 import { taskManagerApi } from '@/app/content/api'
 import { useUser } from '@/app/content/store/reducers/user'
+import { useConfigs } from '@/app/content/store/reducers/configs'
 
 const definePluginContent = (
   status: TVerificationStatus,
@@ -60,6 +60,7 @@ const Verification: FC<TProps> = ({
 }) => {
   const [expiration, setExpiration] = useState<number | null>(null);
   const user = useUser()
+  const userConfigs = useConfigs()
 
   useEffect(() => {
     const interval = window.setInterval(async () => {
@@ -89,12 +90,11 @@ const Verification: FC<TProps> = ({
       }
 
       try {
-        const result = await taskManagerApi.getVerification(taskId, user.mode)
+        const result = await taskManagerApi.getVerification(taskId, userConfigs.modeConfigs)
 
         if (result) {
           const { task } = result
-          const configsResult = await modeConfigs(user.mode)
-          window.open(`${defineExplorerURL(Number(configsResult.CHAIN_ID || '84532'))}/tx/${task.tx_hash}`)
+          window.open(`${defineExplorerURL(Number(userConfigs.modeConfigs.CHAIN_ID || '84532'))}/tx/${task.tx_hash}`)
         }
       } catch (err) {
         alert('verification fetch has failed')

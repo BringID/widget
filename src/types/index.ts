@@ -7,6 +7,7 @@ import TResponse from './response'
 import TGenerateSignature from './generate-signature'
 import TTask from "./task"
 import TVerificationData from './verification-data'
+import TModeConfigs from "./mode-configs"
 export type { TTaskGroupCheck } from './task-group-check'
 export type { TTaskGroup } from './task-group'
 
@@ -31,6 +32,7 @@ export type {
   TRequest,
   TGenerateSignature,
   TResponse,
+  TModeConfigs,
   TTask,
   TVerificationData
 }

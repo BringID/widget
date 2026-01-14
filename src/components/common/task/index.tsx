@@ -4,17 +4,17 @@ import { Value } from './styled-components'
 import { TaskContainer, Icons, Tag } from '../'
 import Button from '../button'
 import configs from '@/app/configs'
-import { TTask, TVerification, TVerificationStatus } from '@/types'
+import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
   getOAuthSemaphoreData,
   getZKTLSSemaphoreData
 } from '@/utils'
-import getConfigs from '@/app/configs/mode-configs'
 import { taskManagerApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
+import { useConfigs } from '@/app/content/store/reducers/configs'
 
 const defineTaskContent = (
   status: TVerificationStatus,
@@ -22,6 +22,7 @@ const defineTaskContent = (
   userKey: string | null,
   loading: boolean,
   setLoading: (loading: boolean) => void,
+  modeConfigs: TModeConfigs,
   mode: string,
   resultCallback: (verification: TVerification) => void
 ) => {
@@ -34,7 +35,6 @@ const defineTaskContent = (
           loading={loading}
           onClick={async () => {
             try {
-              const modeConfigs = await getConfigs(mode)
               const group = task?.groups[0]
 
 
@@ -71,12 +71,11 @@ const defineTaskContent = (
 
                 const { task: taskCreated, success } = await taskManagerApi.addVerification(
                   configs.ZUPLO_API_URL,
-                  modeConfigs.REGISTRY,
                   group?.credentialGroupId,
                   id_hash,
                   String(semaphoreIdentity.commitment),
                   signature,
-                  mode
+                  modeConfigs
 
                 )
 
@@ -121,6 +120,7 @@ const Task: FC<TProps> = ({
 
   const dispatch = useDispatch()
   const user = useUser()
+  const userConfigs = useConfigs()
 
   const [ loading, setLoading ] = useState<boolean>(false)
 
@@ -130,6 +130,7 @@ const Task: FC<TProps> = ({
     userKey,
     loading,
     setLoading,
+    userConfigs.modeConfigs,
     user.mode,
     (verification) => {
       console.log('IS GOINT TO BE ADD: ', { verification })
