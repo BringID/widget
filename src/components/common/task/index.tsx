@@ -56,7 +56,7 @@ const defineTaskContent = (
                   mode
                 ) : await getZKTLSSemaphoreData(
                   task,
-                  semaphoreIdentity,
+                  userKey as string,
                   modeConfigs.REGISTRY,
                   mode
                 )

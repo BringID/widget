@@ -6,7 +6,7 @@ import {createSemaphoreIdentity} from './'
 
 type TGetZKTLSSemaphoreData = (
   task: TTask,
-  semaphoreIdentity: any,
+  userKey: string,
   registry: string,
   mode: string
 ) => Promise<
