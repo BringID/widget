@@ -9,12 +9,14 @@ import { Task, Verification } from '@/components/common';
 import TProps from './types';
 import { defineRelatedVerification, defineTaskByCredentialGroupId } from '@/utils';
 import { useUser } from '../../store/reducers/user';
+import { useConfigs } from '../../store/reducers/configs';
 
 const VerificationsList: FC<TProps> = ({
   verifications,
   className,
-  tasks
 }) => {
+
+  const userConfigs = useConfigs()
 
   const user = useUser()
   const hasAnyPendingVerification = verifications.find(
@@ -36,7 +38,7 @@ const VerificationsList: FC<TProps> = ({
         <NoVerificationsFound title="No verifications yet" />
       )} */}
       {
-        tasks.map((task) => {
+        userConfigs.tasks.map((task) => {
           const relatedVerification = defineRelatedVerification(
             task,
             verifications
@@ -47,7 +49,7 @@ const VerificationsList: FC<TProps> = ({
           if (relatedVerification) {
              const relatedTaskData = defineTaskByCredentialGroupId(
               relatedVerification.credentialGroupId,
-              user.mode === 'dev' //devmode
+              userConfigs.tasks
             )
 
             console.log({ relatedTaskData })

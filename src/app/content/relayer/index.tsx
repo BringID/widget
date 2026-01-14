@@ -1,6 +1,5 @@
 import IRelayer, { TCreateVerification, TGetVerification } from './types'
 import taskManager from '../api/task-manager';
-import modeConfigs from '@/app/configs/mode-configs'
 import { defineApiUrl } from '@/utils'
 
 class Relayer implements IRelayer {
@@ -15,17 +14,15 @@ class Relayer implements IRelayer {
     idHash,
     identityCommitment,
     verifierSignature,
-    mode
+    modeConfigs
   ) => {
-    const configsResult = await modeConfigs(mode)
     const { success, task } = await taskManager.addVerification(
       this.#apiUrl,
-      configsResult.REGISTRY,
       credentialGroupId,
       idHash,
       identityCommitment,
       verifierSignature,
-      mode
+      modeConfigs
     );
 
     if (success) {
@@ -44,9 +41,9 @@ class Relayer implements IRelayer {
   };
 
   getVerification: TGetVerification = async (
-    verificationId, mode
+    verificationId, modeConfigs
   ) => {
-    const { success, task } = await taskManager.getVerification(verificationId, mode);
+    const { success, task } = await taskManager.getVerification(verificationId, modeConfigs);
     if (success) {
       const verification = {
         scheduledTime: task.scheduled_time,

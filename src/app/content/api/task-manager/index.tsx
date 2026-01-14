@@ -6,22 +6,19 @@ import {
 } from './types';
 import configs from '@/app/configs/index';
 import { defineZuploNetworkName, api } from '@/utils';
-import modeConfigs from '@/app/configs/mode-configs';
 
 console.log('CONFIGS: ', { configs })
 
 const addVerification: TAddVerification = async (
   apiUrl,
-  registry,
   credentialGroupId,
   idHash,
   identityCommitment,
   verifierSignature,
-  mode
+  modeConfigs
 ) => {
-  const configsResult = await modeConfigs(mode)
 
-  const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
+  const networkName = defineZuploNetworkName(modeConfigs.CHAIN_ID);
 
   return api<TAddVerificationResponse>(
     `${apiUrl}/v1/task-manager/${networkName}/verification/tasks`,
@@ -30,7 +27,7 @@ const addVerification: TAddVerification = async (
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
     {
-      registry: registry,
+      registry: modeConfigs.REGISTRY,
       credential_group_id: credentialGroupId,
       id_hash: idHash,
       identity_commitment: identityCommitment,
@@ -39,9 +36,8 @@ const addVerification: TAddVerification = async (
   );
 };
 
-const getVerification: TGetVerification = async (taskId, mode) => {
-  const configsResult = await modeConfigs(mode)
-  const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
+const getVerification: TGetVerification = async (taskId, modeConfigs) => {
+  const networkName = defineZuploNetworkName(modeConfigs.CHAIN_ID);
 
   return api<TGetVerificationResponse>(
     `${configs.ZUPLO_API_URL}/v1/task-manager/${networkName}/verification/tasks/${taskId}`,

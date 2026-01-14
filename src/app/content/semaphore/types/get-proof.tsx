@@ -1,9 +1,9 @@
-import { TSemaphoreProofServer } from '@/types';
+import { TModeConfigs, TSemaphoreProofServer } from '@/types';
 
 type TGetProof = (
   identityCommitment: string,
   semaphoreGroupId: string,
-  mode: string,
+  modeConfigs: TModeConfigs,
   fetchProofs?: boolean,
 ) => Promise<TSemaphoreProofServer | void>;
 

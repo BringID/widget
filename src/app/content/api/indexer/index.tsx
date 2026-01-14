@@ -1,5 +1,4 @@
 import configs from '../../../configs'
-import modeConfigs from '../../../configs/mode-configs'
 
 import {
   api,
@@ -12,11 +11,10 @@ const getProof: TGetProof = async (
   apiUrl,
   identityCommitment,
   semaphoreGroupId,
-  mode,
+  modeConfigs,
   fetchProofs,
 ) => {
-  const configsResult = await modeConfigs(mode)
-  const networkName = defineZuploNetworkName(configsResult.CHAIN_ID);
+  const networkName = defineZuploNetworkName(modeConfigs.CHAIN_ID);
   const queryParams = createQueryString({
     identity_commitment: identityCommitment,
     semaphore_group_id: semaphoreGroupId,

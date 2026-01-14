@@ -1,7 +1,10 @@
-import { TVerification } from '../types'
+import { TTask, TVerification } from '../types'
 import defineTaskByCredentialGroupId from './define-task-by-credential-group-id';
 
-function calculateAvailablePoints(verifications: TVerification[], devMode: boolean): number {
+function calculateAvailablePoints(
+  verifications: TVerification[],
+  tasks: TTask[]
+): number {
   let points = 0;
   verifications.forEach((verification) => {
     if (verification.status !== 'completed') {
@@ -9,7 +12,7 @@ function calculateAvailablePoints(verifications: TVerification[], devMode: boole
     }
     const relatedTask = defineTaskByCredentialGroupId(
       verification.credentialGroupId,
-      devMode
+      tasks
     );
 
     if (!relatedTask) {

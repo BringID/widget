@@ -9,7 +9,6 @@ import {
   FooterStyled
 } from './styled-components';
 import { useVerifications } from '../../store/reducers/verifications';
-import { tasks } from '@/app/core/tasks';
 import {
   LoadingOverlay,
   Authorize,
@@ -18,12 +17,11 @@ import { calculateAvailablePoints } from '@/utils';
 import { useUser } from '../../store/reducers/user';
 import { TVerification, TTask } from '@/types';
 import { TProps } from './types'
+import { useConfigs } from '../../store/reducers/configs';
 
 const renderContent = (
   userKey: string | null,
-  availableTasks: TTask[],
   verifications: TVerification[],
-  devMode: boolean,
 ) => {
   if (!userKey) {
     return <AuthorizeContent>
@@ -32,8 +30,6 @@ const renderContent = (
   }
 
   return <VerificationsListStyled
-    tasks={availableTasks}
-    devMode={devMode}
     verifications={verifications}
   />
 }
@@ -44,9 +40,9 @@ const Home: FC<TProps> = ({
   const verificationsStore = useVerifications();
   const { verifications, loading } = verificationsStore;
   const user = useUser();
+  const userConfigs = useConfigs()
 
-  const availableTasks = tasks(user.mode === 'dev'); //devMode
-  const availablePoints = calculateAvailablePoints(verifications, user.mode === 'dev'); //devMode
+  const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
   const finishedVerifications = verifications.filter(verification => {
     return verification.status === 'completed'
   })
@@ -57,9 +53,7 @@ const Home: FC<TProps> = ({
         {loading && <LoadingOverlay title="Processing verification..." />}
         {renderContent(
           user.key,
-          availableTasks,
           verifications,
-          true, // dev
         )}
       </Container>
 
