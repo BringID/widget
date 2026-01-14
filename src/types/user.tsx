@@ -5,5 +5,5 @@ export type TUser = {
   loading: boolean
   apiKey: string | null
   scope: null | string
-  mode: string | null
+  mode: string
 };
