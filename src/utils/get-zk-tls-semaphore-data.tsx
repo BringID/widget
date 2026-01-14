@@ -2,10 +2,11 @@ import { TVerificationData, TTask } from '../types'
 import configs from '@/app/configs'
 import { defineGroupByZKTLSResult } from './'
 import { verifierApi } from '@/app/content/api'
+import {createSemaphoreIdentity} from './'
 
 type TGetZKTLSSemaphoreData = (
   task: TTask,
-  semaphoreIdentity: any,
+  userKey: string,
   registry: string,
   mode: string
 ) => Promise<
@@ -14,7 +15,7 @@ type TGetZKTLSSemaphoreData = (
 
 const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
   task,
-  semaphoreIdentity,
+  userKey,
   registry,
   mode
 ) => {
@@ -24,8 +25,14 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
 
     // send the request to extension
 
-
+    window.postMessage({
+      type: 'REQUEST_ZKTLS_VERIFICATION',
+      payload: {
+        taskId: task.id,
+        origin: window.location.origin
+      }
     
+    }, '*') // You can restrict the origin in production
 
 
     const handler = async (event: MessageEvent) => {
@@ -43,10 +50,9 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
         if (groupData) {
           const { credentialGroupId, semaphoreGroupId } = groupData
 
+          const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
+
           // GET VERIFICATION
-
-
-
 
           const verify = await verifierApi.verify(
             configs.ZUPLO_API_URL,

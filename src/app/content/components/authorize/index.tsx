@@ -6,9 +6,11 @@ import {
   Title,
   ButtonsStyled,
   IconContainer,
-  KeyIcon
+  KeyIcon,
+  ButtonInvisible
 } from './styled-components'
-import { Icons } from '@/components/common';
+import { getZKTLSSemaphoreData } from '@/utils';
+
 
 const Authorize: FC<TProps> = ({ className }) => {
   
@@ -16,7 +18,7 @@ const Authorize: FC<TProps> = ({ className }) => {
     <Container className={className}>
 
       <IconContainer>
-        <KeyIcon></KeyIcon>
+        <KeyIcon />
       </IconContainer>
       <Title>Create your private key to start verification</Title>
 
@@ -34,6 +36,52 @@ Recoverable by re-signing with the same wallet.`
       >
         Create BringID key
       </ButtonsStyled>
+
+      <ButtonInvisible
+        onClick={async () => {
+          
+          const data = await getZKTLSSemaphoreData(
+            {
+              "title": "Uber Rides",
+              "id": "2",
+              "service": "Uber",
+              "description": "Prove that you had at least 5 uber trips",
+              "icon": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png",
+              "permissionUrl": [
+                "https://riders.uber.com/graphql",
+                "https://riders.uber.com/trips"
+              ],
+              "groups": [
+                {
+                  "points": 10,
+                  "semaphoreGroupId": "0",
+                  "credentialGroupId": "1"
+                }
+              ],
+            
+              "steps": [
+                {
+                  "text": "Visit website"
+                },
+                {
+                  "text": "Wait for request capture"
+                },
+                {
+                  "text": "MPC-TLS verification progress",
+                  "notarization": true
+                }
+              ]
+            },
+            '0x202002022',
+            '0xFEA4133236B093eC727286473286A45c5d4443BC',
+            'dev'
+          )
+
+          console.log({ data })
+        }}
+      ></ButtonInvisible>
+
+
     </Container>
   );
 };
