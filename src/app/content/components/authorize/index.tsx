@@ -42,23 +42,19 @@ Recoverable by re-signing with the same wallet.`
           
           const data = await getZKTLSSemaphoreData(
             {
-              "title": "Uber Rides",
-              "id": "2",
-              "service": "Uber",
-              "description": "Prove that you had at least 5 uber trips",
-              "icon": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png",
-              "permissionUrl": [
-                "https://riders.uber.com/graphql",
-                "https://riders.uber.com/trips"
-              ],
+              "id": "4",
+              "title": "Apple Devices",
+              "service": "Apple ID",
+              "description": "Prove you own an Apple device",
+              "icon": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+              "permissionUrl": ["https://appleid.apple.com/account/manage/security/devices", "https://account.apple.com/account/manage/section/devices"],
               "groups": [
                 {
                   "points": 10,
-                  "semaphoreGroupId": "0",
-                  "credentialGroupId": "1"
+                  "semaphoreGroupId": "72",
+                  "credentialGroupId": "5"
                 }
               ],
-            
               "steps": [
                 {
                   "text": "Visit website"

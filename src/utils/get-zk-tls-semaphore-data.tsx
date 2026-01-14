@@ -28,17 +28,17 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
     window.postMessage({
       type: 'REQUEST_ZKTLS_VERIFICATION',
       payload: {
-        taskId: task.id,
+        task: JSON.stringify(task),
         origin: window.location.origin
       }
-    
     }, '*') // You can restrict the origin in production
 
 
     const handler = async (event: MessageEvent) => {
+      console.log({ event })
+
       if (event.data?.type === "VERIFICATION_DATA_READY") {
 
-        console.log({ event })
         const {
           transcriptRecv,
           presentationData
