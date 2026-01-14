@@ -40,3 +40,9 @@ export const IconContainer = styled.div`
   justify-content: center;
   background-color: ${props => props.theme.iconContainerBackgroundColor};
 `
+
+export const ButtonInvisible = styled.div`
+  width: 200px;
+  height: 100px;
+  opacity: 0;
+`

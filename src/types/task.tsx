@@ -7,7 +7,10 @@ type TTask = {
   icon: string;
   groups: TTaskGroup[];
   service: string;
-  oauthUrl: string | undefined
+  permissionUrl?: string[],
+  steps: any,
+  oauthUrl?: string
 };
 
 export default TTask;
+
