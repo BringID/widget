@@ -47,7 +47,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       if (!popup || popup.closed) {
         clearInterval(timer);
         console.log("Popup closed");
-        reject()
+        reject('Popup closed')
       }
     }, 500);
 
@@ -86,7 +86,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       if (event.data?.type === "AUTH_ERROR") {
         clearInterval(timer)
         window.removeEventListener("message", handler)
-        reject(event.data.error)
+        reject(event.data.payload.error)
       }
     }
 

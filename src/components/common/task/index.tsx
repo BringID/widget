@@ -76,7 +76,6 @@ const defineTaskContent = (
                   String(semaphoreIdentity.commitment),
                   signature,
                   modeConfigs
-
                 )
 
                 if (success) {

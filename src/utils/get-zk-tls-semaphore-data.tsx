@@ -24,6 +24,10 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
   return new Promise((resolve, reject) => {
 
     // send the request to extension
+    const bringIdInstalled = (window as any).bringID
+    if (!bringIdInstalled) {
+      reject('No extension installed')
+    }
 
     window.postMessage({
       type: 'REQUEST_ZKTLS_VERIFICATION',
@@ -86,7 +90,7 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
 
       if (event.data?.type === "VERIFICATION_DATA_ERROR") {
         window.removeEventListener("message", handler)
-        reject(event.data.error)
+        reject(event.data.payload.error)
       }
     }
 
