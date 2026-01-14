@@ -37,6 +37,8 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
 
     const handler = async (event: MessageEvent) => {
       if (event.data?.type === "VERIFICATION_DATA_READY") {
+
+        console.log({ event })
         const {
           transcriptRecv,
           presentationData
