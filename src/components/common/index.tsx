@@ -15,7 +15,6 @@ import Message from './message';
 import LogoWrapper from './logo-wrapper';
 import Checkbox from './checkbox';
 import List from './list';
-import ExpandableContainer from './expandable-container';
 import CloseButton from './close-button';
 
 export {
@@ -36,6 +35,5 @@ export {
   LogoWrapper,
   Checkbox,
   List,
-  ExpandableContainer,
   CloseButton
 };
