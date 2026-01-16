@@ -40,14 +40,14 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
     )
 
     if (!popup) {
-      reject("Popup blocked")
+      reject("POPUP_BLOCKED")
     }
 
     const timer = setInterval(() => {
       if (!popup || popup.closed) {
         clearInterval(timer);
         console.log("Popup closed");
-        reject('Popup closed')
+        reject('POPUP_CLOSED')
       }
     }, 500);
 

@@ -5,6 +5,7 @@ import VerificationSelectList from './verifications-select-list';
 import LoadingOverlay from './loading-overlay';
 import Authorize from './authorize';
 import Footer from './footer'
+import ErrorOverlay from './error-overlay'
 
 export {
   Header,
@@ -13,5 +14,6 @@ export {
   VerificationsList,
   LoadingOverlay,
   Authorize,
-  Footer
+  Footer,
+  ErrorOverlay
 }

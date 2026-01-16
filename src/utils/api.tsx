@@ -17,7 +17,9 @@ function api<T>(
   }).then(async (response) => {
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error);
+
+      // errors response
+      throw new Error(data.errors[0]);
     }
 
     return response.json() as Promise<T>;
