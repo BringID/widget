@@ -26,6 +26,7 @@ export const TitleStyled = styled(Title)`
 
 export const TextStyled = styled(Text)`
   margin: 0 0 28px;
+  text-align: center;
 `
 
 export const Content = styled.div`
@@ -45,4 +46,5 @@ export const Wrapper = styled.div`
 
 
 export const ButtonStyled = styled(Button)`
+  width: 100%;
 `
