@@ -24,7 +24,8 @@ const defineTaskContent = (
   setLoading: (loading: boolean) => void,
   modeConfigs: TModeConfigs,
   mode: string,
-  resultCallback: (verification: TVerification) => void
+  resultCallback: (verification: TVerification) => void,
+  errorCallback: (errorText: string) => void
 ) => {
   switch (status) {
     case 'default':
@@ -36,7 +37,6 @@ const defineTaskContent = (
           onClick={async () => {
             try {
               const group = task?.groups[0]
-
 
               if (group) {
 
@@ -94,8 +94,11 @@ const defineTaskContent = (
               }
             } catch (err) {
               setLoading(false)
-              console.log({ err })
-              alert(err)
+              if (typeof err === 'string') {
+                errorCallback(err)
+              } else{
+                errorCallback((err as Error).message)
+              }
             }
           }}
         >
@@ -114,7 +117,8 @@ const defineTaskContent = (
 const Task: FC<TProps> = ({
   status,
   userKey,
-  task
+  task,
+  onError
 }) => {
 
   const dispatch = useDispatch()
@@ -134,7 +138,8 @@ const Task: FC<TProps> = ({
     (verification) => {
       console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))
-    }
+    },
+    onError
   );
 
   return (

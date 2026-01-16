@@ -1,10 +1,11 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 
 import {
   Container,
   NoteStyled,
   LinkStyled,
 } from './styled-components';
+import ErrorOverlay from '../error-overlay';
 import { Task, Verification } from '@/components/common';
 import TProps from './types';
 import { defineRelatedVerification, defineTaskByCredentialGroupId } from '@/utils';
@@ -24,8 +25,18 @@ const VerificationsList: FC<TProps> = ({
       verification.status === 'scheduled' || verification.status === 'pending',
   );
 
+  const [ error, setError ] = useState<string | null>(null)
+
   return (
     <Container className={className}>
+
+      {error && <ErrorOverlay
+        errorText={error}
+        onClose={() => {
+          setError(null)
+        }}
+      />}
+
       {hasAnyPendingVerification && (
         <NoteStyled>
           We batch verifications for better privacy.{' '}
@@ -79,6 +90,9 @@ const VerificationsList: FC<TProps> = ({
                 task={task}
                 status='default'
                 userKey={user.key}
+                onError={(errorText => {
+                  setError(errorText)
+                })}
               />
             );
           }
