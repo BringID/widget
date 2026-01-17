@@ -48,7 +48,7 @@ const verifyOAuth: TVerifyOAuth = async (
     `${apiUrl}/verify/oauth`, // https://verifier-staging.up.railway.app
     'POST',
     {
-      // Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
+      Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
     {
       message,
