@@ -5,11 +5,14 @@ const TELEGRAM_URL = 'https://t.me/bringid_chat';
 const AUTH_DOMAIN = 'https://auth.bringid.org';
 const BRINGID_URL = 'https://bringid.org'
 
+const OAUTH_VERIFIER_URL = 'https://verifier-staging.up.railway.app'
+
 export default {
   EXTENSION_ID,
   ZUPLO_API_KEY,
   TELEGRAM_URL,
   ZUPLO_API_URL,
   AUTH_DOMAIN,
-  BRINGID_URL
+  BRINGID_URL,
+  OAUTH_VERIFIER_URL
 };
