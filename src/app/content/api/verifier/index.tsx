@@ -45,7 +45,7 @@ const verifyOAuth: TVerifyOAuth = async (
   });
 
   return api<TVerifyResponse>(
-    `${apiUrl}/verify/oauth`, // https://verifier-staging.up.railway.app
+    `${apiUrl}/v1/verifier/verify/oauth?${queryParams}`, // https://verifier-staging.up.railway.app
     'POST',
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
