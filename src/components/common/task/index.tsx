@@ -66,7 +66,7 @@ const defineTaskContent = (
                 const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
                 console.log({ semaphoreIdentity })
                 const verify = await verifierApi.verifyOAuth(
-                  configs.OAUTH_VERIFIER_URL,
+                  configs.ZUPLO_API_URL,
                   message,
                   signature,
                   modeConfigs.REGISTRY,
@@ -83,7 +83,6 @@ const defineTaskContent = (
                     id_hash
                   }
                 } = verify
-
 
                 const { task: taskCreated, success } = await taskManagerApi.addVerification(
                   configs.ZUPLO_API_URL,
