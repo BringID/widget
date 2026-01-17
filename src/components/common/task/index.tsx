@@ -7,10 +7,11 @@ import configs from '@/app/configs'
 import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
+  defineGroupForOAuth,
   getOAuthSemaphoreData,
   getZKTLSSemaphoreData
 } from '@/utils'
-import { taskManagerApi } from '@/app/content/api'
+import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
@@ -36,47 +37,64 @@ const defineTaskContent = (
           loading={loading}
           onClick={async () => {
             try {
-              const group = task?.groups[0]
+              setLoading(true)
+
+              const {
+                message,
+                signature
+              } = await getOAuthSemaphoreData(
+                task
+              )
+
+              console.log({
+                message,
+                signature
+              })
+
+              const group = defineGroupForOAuth(
+                task,
+                message.score
+              )
+
+              console.log({
+                group
+              })
+
 
               if (group) {
 
-                const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group?.credentialGroupId)
-                setLoading(true)
-                const {
+                const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+                console.log({ semaphoreIdentity })
+                const verify = await verifierApi.verifyOAuth(
+                  configs.ZUPLO_API_URL,
+                  message,
                   signature,
-                  verifier_hash,
-                  verifier_message: {
-                    id_hash
-                  }
-                } = task.oauthUrl ? await getOAuthSemaphoreData(
-                  task,
-                  group,
-                  semaphoreIdentity,
                   modeConfigs.REGISTRY,
-                  mode
-                ) : await getZKTLSSemaphoreData(
-                  task,
-                  userKey as string,
-                  modeConfigs.REGISTRY,
+                  group.credentialGroupId,
+                  String(semaphoreIdentity.commitment),
                   mode
                 )
 
-                console.log('WIDGET data received: ', {
-                  signature,
-                  verifier_hash,
+                console.log({ verify })
+
+                const {
+                  signature: verifierSignature,
                   verifier_message: {
                     id_hash
                   }
-                })
+                } = verify
+
 
                 const { task: taskCreated, success } = await taskManagerApi.addVerification(
                   configs.ZUPLO_API_URL,
-                  group?.credentialGroupId,
+                  group.credentialGroupId,
                   id_hash,
                   String(semaphoreIdentity.commitment),
-                  signature,
+                  verifierSignature,
                   modeConfigs
                 )
+
+                console.log({ task: taskCreated, success  })
 
                 if (success) {
                   setLoading(false)
@@ -90,8 +108,10 @@ const defineTaskContent = (
                 }
 
                 console.log({ taskCreated })
-              
+              } else {
+                throw new Error(`Group not defined for score ${message.score}`)
               }
+
             } catch (err) {
               setLoading(false)
               if (typeof err === 'string') {

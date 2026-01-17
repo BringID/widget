@@ -22,6 +22,7 @@ import defineInitialSelectedVerifications from './define-initial-selected-verifi
 import getOAuthSemaphoreData from './get-oauth-semaphore-data'
 import defineGroupByZKTLSResult from './define-group-by-zktls-result'
 import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
+import defineGroupForOAuth from './define-group-for-oauth'
 
 export {
   defineGroup,
@@ -47,5 +48,6 @@ export {
   shortenString,
   defineExplorerURL,
   formatExpiration,
-  api
+  api,
+  defineGroupForOAuth
 }
