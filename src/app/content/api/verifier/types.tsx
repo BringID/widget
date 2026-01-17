@@ -1,3 +1,5 @@
+import { TOAuthMessage } from "@/types";
+
 type TVerifyResponse = {
   verifier_hash: string;
   signature: string;
@@ -6,8 +8,8 @@ type TVerifyResponse = {
     credential_group_id: string;
     id_hash: string;
     semaphore_identity_commitment: string;
-  };
-};
+  }
+}
 
 type TVerify = (
   apiUrl: string,
@@ -18,4 +20,15 @@ type TVerify = (
   mode: string
 ) => Promise<TVerifyResponse>;
 
-export type { TVerify, TVerifyResponse };
+
+type TVerifyOAuth = (
+  apiUrl: string,
+  message: TOAuthMessage,
+  signature: string,
+  registry: string,
+  credentialGroupId: string,
+  semaphoreIdentityCommitment: string,
+  mode: string
+) => Promise<TVerifyResponse>;
+
+export type { TVerify, TVerifyResponse, TVerifyOAuth };

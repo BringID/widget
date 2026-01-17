@@ -1,31 +1,19 @@
-import { TVerificationData, TTask, TTaskGroup } from '../types'
+import { OAuthResponse, OAuthResponsePayload, OAuthErrorPayload, TTask, TTaskGroup } from '../types'
 import { createQueryString } from '../utils'
 import configs from '@/app/configs'
 
 type TGetOAuthSemaphoreData = (
-  task: TTask,
-  group: TTaskGroup,
-  semaphoreIdentity: any,
-  registry: string,
-  mode: string
+  task: TTask
 ) => Promise<
-  TVerificationData
+  OAuthResponsePayload
 >
 
 const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
-  task,
-  group,
-  semaphoreIdentity,
-  registry,
-  mode
+  task
 ) => {
 
   const statePayload = {
-    registry: registry,
-    credential_group_id: group?.credentialGroupId,
-    semaphore_identity_commitment: String(semaphoreIdentity.commitment),
     origin: window.location.origin,
-    mode
   }
 
   const queryParams = createQueryString({
@@ -51,42 +39,27 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       }
     }, 500);
 
-    const handler = async (event: MessageEvent) => {
-      console.log({ event, AUTH_DOMAIN: configs.AUTH_DOMAIN })
+    const handler = async (event: MessageEvent<OAuthResponse>) => {
       if (event.origin !== configs.AUTH_DOMAIN) return
 
-      if (event.data?.type === "AUTH_SUCCESS") {
-        const {
-          signature,
-          verifier_hash,
-          verifier_message: {
-            id_hash
-          }
-        } = event.data.payload
+      switch (event.data.type) {
+        case "AUTH_SUCCESS": {
+          const { message, signature } = event.data.payload
 
-        console.log({
-          signature,
-          verifier_hash,
-          verifier_message: {
-            id_hash
-          }
-        })
+          clearInterval(timer)
+          window.removeEventListener("message", handler)
 
-        clearInterval(timer)
-        window.removeEventListener("message", handler)
-        resolve({
-          signature,
-          verifier_hash,
-          verifier_message: {
-            id_hash
-          }
-        })
-      }
+          resolve({ message, signature })
+          break
+        }
 
-      if (event.data?.type === "AUTH_ERROR") {
-        clearInterval(timer)
-        window.removeEventListener("message", handler)
-        reject(event.data.payload.error)
+        case "AUTH_ERROR": {
+          clearInterval(timer)
+          window.removeEventListener("message", handler)
+
+          reject(event.data.payload.error)
+          break
+        }
       }
     }
 

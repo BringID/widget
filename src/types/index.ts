@@ -8,6 +8,9 @@ import TGenerateSignature from './generate-signature'
 import TTask from "./task"
 import TVerificationData from './verification-data'
 import TModeConfigs from "./mode-configs"
+import TOAuthMessage from './oauth-message'
+import OAuthResponse, { OAuthResponsePayload, OAuthErrorPayload } from './oauth-response'
+
 export type { TTaskGroupCheck } from './task-group-check'
 export type { TTaskGroup } from './task-group'
 
@@ -33,6 +36,10 @@ export type {
   TGenerateSignature,
   TResponse,
   TModeConfigs,
+  TOAuthMessage,
   TTask,
-  TVerificationData
+  TVerificationData,
+  OAuthResponse,
+  OAuthResponsePayload,
+  OAuthErrorPayload
 }
