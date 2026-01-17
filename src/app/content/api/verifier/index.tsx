@@ -51,7 +51,13 @@ const verifyOAuth: TVerifyOAuth = async (
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
     {
-      message,
+      message: {
+        ...message,
+        user_id: undefined,
+
+        // @ts-ignore
+        userId: message.user_id
+      },
       signature,
       registry,
       credential_group_id: credentialGroupId,
