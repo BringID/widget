@@ -1,26 +1,17 @@
-import { TVerificationData, TTask } from '../types'
-import configs from '@/app/configs'
-import { defineGroupByZKTLSResult } from './'
-import { verifierApi } from '@/app/content/api'
-import {createSemaphoreIdentity} from './'
+import { TTask } from '../types'
 
 type TGetZKTLSSemaphoreData = (
-  task: TTask,
-  userKey: string,
-  registry: string,
-  mode: string
+  task: TTask
 ) => Promise<
-  TVerificationData
+  {
+    transcriptRecv: string,
+    presentationData: string
+  }
 >
 
 const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
   task,
-  userKey,
-  registry,
-  mode
 ) => {
-  
-
   return new Promise((resolve, reject) => {
 
     // send the request to extension
@@ -48,44 +39,11 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
           presentationData
         } = event.data.payload
 
-        const groupData = defineGroupByZKTLSResult(
-          transcriptRecv as string,
-          task.groups
-        )
-
-        if (groupData) {
-          const { credentialGroupId, semaphoreGroupId } = groupData
-
-          const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
-
-          // GET VERIFICATION
-
-          const verify = await verifierApi.verify(
-            configs.ZUPLO_API_URL,
-            presentationData,
-            registry,
-            credentialGroupId,
-            String(semaphoreIdentity.commitment),
-            mode
-          )
-
-          const {
-            signature,
-            verifier_hash,
-            verifier_message: {
-              id_hash
-            }
-          } = verify
-
-          window.removeEventListener("message", handler)
-          resolve({
-            signature,
-            verifier_hash,
-            verifier_message: {
-              id_hash
-            }
-          })
-        }
+        window.removeEventListener("message", handler)
+        resolve({
+          transcriptRecv,
+          presentationData
+        })
       }
 
       if (event.data?.type === "VERIFICATION_DATA_ERROR") {
