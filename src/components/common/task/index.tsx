@@ -41,7 +41,7 @@ const defineTaskContent = (
               setLoading(true)
               
 
-              if (task .oauthUrl) {
+              if (task.oauthUrl) {
                 const {
                   message,
                   signature
