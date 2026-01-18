@@ -9,7 +9,8 @@ import {
   createSemaphoreIdentity,
   defineGroupForOAuth,
   getOAuthSemaphoreData,
-  getZKTLSSemaphoreData
+  getZKTLSSemaphoreData,
+  defineGroupByZKTLSResult
 } from '@/utils'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
@@ -38,77 +39,140 @@ const defineTaskContent = (
           onClick={async () => {
             try {
               setLoading(true)
+              
 
-              const {
-                message,
-                signature
-              } = await getOAuthSemaphoreData(
-                task
-              )
-
-              console.log({
-                message,
-                signature
-              })
-
-              const group = defineGroupForOAuth(
-                task,
-                message.score
-              )
-
-              console.log({
-                group
-              })
-
-
-              if (group) {
-
-                const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
-                console.log({ semaphoreIdentity })
-                const verify = await verifierApi.verifyOAuth(
-                  configs.ZUPLO_API_URL,
-                  message,
-                  signature,
-                  modeConfigs.REGISTRY,
-                  group.credentialGroupId,
-                  String(semaphoreIdentity.commitment),
-                  mode
-                )
-
-                console.log({ verify })
-
+              if (task .oauthUrl) {
                 const {
-                  signature: verifierSignature,
-                  verifier_message: {
-                    id_hash
-                  }
-                } = verify
-
-                const { task: taskCreated, success } = await taskManagerApi.addVerification(
-                  configs.ZUPLO_API_URL,
-                  group.credentialGroupId,
-                  id_hash,
-                  String(semaphoreIdentity.commitment),
-                  verifierSignature,
-                  modeConfigs
+                  message,
+                  signature
+                } = await getOAuthSemaphoreData(
+                  task
                 )
 
-                console.log({ task: taskCreated, success  })
 
-                if (success) {
-                  setLoading(false)
-                  resultCallback({
-                    status: 'scheduled',
-                    scheduledTime: taskCreated.scheduled_time,
-                    taskId: taskCreated.id,
-                    credentialGroupId: group?.credentialGroupId,
-                    fetched: false
-                  })
+                const group = defineGroupForOAuth(
+                  task,
+                  message.score
+                )
+
+                console.log({
+                  group
+                })
+
+
+                if (group) {
+
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+
+                  const verify = await verifierApi.verifyOAuth(
+                    configs.ZUPLO_API_URL,
+                    message,
+                    signature,
+                    modeConfigs.REGISTRY,
+                    group.credentialGroupId,
+                    String(semaphoreIdentity.commitment),
+                    mode
+                  )
+
+                  console.log({ verify })
+
+                  const {
+                    signature: verifierSignature,
+                    verifier_message: {
+                      id_hash
+                    }
+                  } = verify
+
+                  const { task: taskCreated, success } = await taskManagerApi.addVerification(
+                    configs.ZUPLO_API_URL,
+                    group.credentialGroupId,
+                    id_hash,
+                    String(semaphoreIdentity.commitment),
+                    verifierSignature,
+                    modeConfigs
+                  )
+
+                  console.log({ task: taskCreated, success  })
+
+                  if (success) {
+                    setLoading(false)
+                    resultCallback({
+                      status: 'scheduled',
+                      scheduledTime: taskCreated.scheduled_time,
+                      taskId: taskCreated.id,
+                      credentialGroupId: group?.credentialGroupId,
+                      fetched: false
+                    })
+                  }
+
+                  console.log({ taskCreated })
+                } else {
+                  throw new Error(`Group not defined for score ${message.score}`)
                 }
 
-                console.log({ taskCreated })
+
               } else {
-                throw new Error(`Group not defined for score ${message.score}`)
+
+                const {
+                  presentationData,
+                  transcriptRecv
+                } = await getZKTLSSemaphoreData(
+                  task
+                )
+
+              
+                const groupData = defineGroupByZKTLSResult(
+                  transcriptRecv as string,
+                  task.groups
+                )
+
+                if (groupData) {
+                  const { credentialGroupId, semaphoreGroupId } = groupData
+
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
+
+              
+
+                  const verify = await verifierApi.verify(
+                    configs.ZUPLO_API_URL,
+                    presentationData,
+                    modeConfigs.REGISTRY,
+                    credentialGroupId,
+                    String(semaphoreIdentity.commitment),
+                    mode
+                  )
+
+                  const {
+                    signature,
+                    verifier_message: {
+                      id_hash
+                    }
+                  } = verify
+
+                  const { task: taskCreated, success } = await taskManagerApi.addVerification(
+                    configs.ZUPLO_API_URL,
+                    credentialGroupId,
+                    id_hash,
+                    String(semaphoreIdentity.commitment),
+                    signature,
+                    modeConfigs
+                  )
+
+                  if (success) {
+                    setLoading(false)
+                    resultCallback({
+                      status: 'scheduled',
+                      scheduledTime: taskCreated.scheduled_time,
+                      taskId: taskCreated.id,
+                      credentialGroupId,
+                      fetched: false
+                    })
+                  }
+
+                  console.log({ taskCreated })
+                
+                }
+
               }
 
             } catch (err) {
