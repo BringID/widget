@@ -51,8 +51,7 @@ const renderContent = (
 };
 
 const Proofs: FC<TProps> = ({
-  onConfirm,
-  onCancel
+  onConfirm
 }) => {
   const { verifications } = useVerifications();
   const user = useUser()
@@ -140,7 +139,6 @@ const Proofs: FC<TProps> = ({
                 proofs,
                 pointsSelected
               )
-              onCancel()
             } catch (err) {
 
             }

@@ -31,18 +31,9 @@ const defineContent = (
       setPage={setPage}
     />
     case 'proofs': return <Proofs
-      onCancel={() => {
-        setPage('home')
-        window.postMessage({
-          type: 'PROOFS_RESPONSE',
-          requestId,
-          payload: {
-            proofs: [],
-            points: 0
-          }
-        }, window.location.origin)
-      }}
       onConfirm={(proofs, pointsSelected) => {
+
+        console.log('CALLED PROOFS_RESPONSE')
         window.postMessage({
           type: 'PROOFS_RESPONSE',
           requestId,
@@ -126,11 +117,10 @@ const InnerContent: FC<TProps> = ({
   useEffect(() => {
     window.addEventListener("message", async (event) => {
       const { type, requestId, payload } = event.data
-
+      console.log('WIDGET: ', { type, requestId, payload, parentUrl })
       if (parentUrl) {
         const url = new URL(parentUrl)
 
-        console.log('WIDGET: ', event, url, payload, type)
         if (event.origin === url.origin) { // event comes from the place where the widget is rendered
           if (type === 'USER_KEY_READY') {
             // save it in store
@@ -141,6 +131,7 @@ const InnerContent: FC<TProps> = ({
           if (type === 'PROOFS_REQUEST') {
             dispatch(setScope(payload.scope))
             dispatch(setRequestId(requestId))
+            console.log("HERE PROOFS_REQUEST", requestId, payload)
             return
           }
         } else if (event.source === window) {
@@ -165,6 +156,8 @@ const InnerContent: FC<TProps> = ({
               url.origin
             )
 
+            return
+
           } else if (type === 'CLOSE_MODAL') {
             setPage('home')
 
@@ -175,6 +168,8 @@ const InnerContent: FC<TProps> = ({
               },
               url.origin
             )
+
+            return
           }
         }
       }  
