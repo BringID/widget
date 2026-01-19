@@ -135,12 +135,18 @@ const Proofs: FC<TProps> = ({
                 userConfigs.modeConfigs
               );
 
+              console.log({ proofs })
+
               onConfirm(
                 proofs,
                 pointsSelected
               )
             } catch (err) {
-
+              console.log({ err })
+              onConfirm(
+                [],
+                0
+              )
             }
             setLoading(false)
             
