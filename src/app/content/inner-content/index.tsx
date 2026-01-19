@@ -132,9 +132,7 @@ const InnerContent: FC<TProps> = ({
             return
           }
 
-
-          if (type === 'CURRENT_SCOPE_READY') {
-            // save it in store
+          if (type === 'REQUEST_PROOFS') {
             dispatch(setScope(payload.scope))
             return
           }
@@ -148,17 +146,20 @@ const InnerContent: FC<TProps> = ({
               url.origin
             )
             return
-          } else if (type === 'PROOFS_READY') {
+          } else if (type === 'PROOFS_RESPONSE') {
             setPage('home')
             window.parent.postMessage(
               {
-                type: "PROOFS_READY",
+                type: "PROOFS_RESPONSE",
+                requestId,
                 payload
               },
               url.origin
             )
+
           } else if (type === 'CLOSE_MODAL') {
             setPage('home')
+
             window.parent.postMessage(
               {
                 type: "CLOSE_MODAL"
