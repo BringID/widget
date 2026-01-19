@@ -55,16 +55,11 @@ const VerificationsList: FC<TProps> = ({
             verifications
           )
 
-          console.log({ relatedVerification })
-
           if (relatedVerification) {
              const relatedTaskData = defineTaskByCredentialGroupId(
               relatedVerification.credentialGroupId,
               userConfigs.tasks
             )
-
-            console.log({ relatedTaskData })
-
 
             if (relatedTaskData) {
               return (

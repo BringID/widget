@@ -32,8 +32,6 @@ const defineContent = (
     />
     case 'proofs': return <Proofs
       onConfirm={(proofs, pointsSelected) => {
-
-        console.log('CALLED PROOFS_RESPONSE')
         window.postMessage({
           type: 'PROOFS_RESPONSE',
           requestId,
@@ -117,7 +115,6 @@ const InnerContent: FC<TProps> = ({
   useEffect(() => {
     window.addEventListener("message", async (event) => {
       const { type, requestId, payload } = event.data
-      console.log('WIDGET: ', { type, requestId, payload, parentUrl })
       if (parentUrl) {
         const url = new URL(parentUrl)
 
@@ -131,7 +128,6 @@ const InnerContent: FC<TProps> = ({
           if (type === 'PROOFS_REQUEST') {
             dispatch(setScope(payload.scope))
             dispatch(setRequestId(requestId))
-            console.log("HERE PROOFS_REQUEST", requestId, payload)
             return
           }
         } else if (event.source === window) {

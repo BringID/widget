@@ -7,8 +7,6 @@ import {
 import configs from '@/app/configs/index';
 import { defineZuploNetworkName, api } from '@/utils';
 
-console.log('CONFIGS: ', { configs })
-
 const addVerification: TAddVerification = async (
   apiUrl,
   credentialGroupId,
