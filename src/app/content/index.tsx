@@ -19,7 +19,6 @@ const Widget: FC = () => {
 
   const mode = searchParams.get('mode') || 'production'
 
-  console.log({ mode })
   return <ThemeProvider theme={light}>
     <ReduxProvider store={store}>
       <InnerContent

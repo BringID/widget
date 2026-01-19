@@ -55,10 +55,6 @@ const defineTaskContent = (
                   message.score
                 )
 
-                console.log({
-                  group
-                })
-
 
                 if (group) {
 
@@ -73,8 +69,6 @@ const defineTaskContent = (
                     String(semaphoreIdentity.commitment),
                     mode
                   )
-
-                  console.log({ verify })
 
                   const {
                     signature: verifierSignature,
