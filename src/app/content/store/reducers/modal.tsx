@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import deepEqual from 'fast-deep-equal';
 
 enum ActionType {
-  '/modal/setIsOpen' = '/modal/setIsOpen',
+  '/modal/setRequestId' = '/modal/setRequestId',
   '/modal/setLoading' = '/modal/setLoading'
 }
 
@@ -15,18 +15,18 @@ type Action<payload> = {
 };
 
 type State = {
-  isOpen: boolean,
+  requestId: string | null,
   loading: boolean
 };
 
 const initState: State = {
-  isOpen: false,
+  requestId: null,
   loading: false
 };
 
-export const setIsOpen = (isOpen: boolean): Action<boolean> => ({
-  type: ActionType['/modal/setIsOpen'],
-  payload: isOpen,
+export const setRequestId = (requestId: string): Action<string> => ({
+  type: ActionType['/modal/setRequestId'],
+  payload: requestId
 });
 
 export const setLoading = (loading: boolean): Action<boolean> => ({
@@ -36,8 +36,8 @@ export const setLoading = (loading: boolean): Action<boolean> => ({
 
 export default function modal(state = initState, action: Action<any>): State {
   switch (action.type) {
-    case ActionType['/modal/setIsOpen']:
-      return { ...state, isOpen: action.payload };
+    case ActionType['/modal/setRequestId']:
+      return { ...state, requestId: action.payload };
     case ActionType['/modal/setLoading']:
       return { ...state, loading: action.payload };
     default:

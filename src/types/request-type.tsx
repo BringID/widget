@@ -1,6 +1,4 @@
-type TRequestType = 'CHECK_EXTENSION_STATUS_REQUEST' |
-                    'PROOFS_REQUEST' |
-                    'CHECK_EXTENSION_STATUS_RESPONSE' |
+type TRequestType = 'PROOFS_REQUEST' |
                     'PROOFS_RESPONSE'
 
 export default TRequestType
