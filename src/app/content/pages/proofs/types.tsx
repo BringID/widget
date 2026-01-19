@@ -5,4 +5,5 @@ export type TProps = {
     proofs: TSemaphoreProof[],
     pointsSelected: number
   ) => void
+  onCancel: () => void
 }
