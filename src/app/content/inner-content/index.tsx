@@ -31,6 +31,12 @@ const defineContent = (
       setPage={setPage}
     />
     case 'proofs': return <Proofs
+      onCancel={() => {
+        window.postMessage({
+          type: 'CLOSE_MODAL',
+          requestId,
+        }, window.location.origin)
+      }}
       onConfirm={(proofs, pointsSelected) => {
         window.postMessage({
           type: 'PROOFS_RESPONSE',
