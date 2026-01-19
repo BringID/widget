@@ -132,7 +132,7 @@ const InnerContent: FC<TProps> = ({
             return
           }
 
-          if (type === 'REQUEST_PROOFS') {
+          if (type === 'PROOFS_REQUEST') {
             dispatch(setScope(payload.scope))
             return
           }
