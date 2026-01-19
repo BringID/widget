@@ -146,7 +146,12 @@ const Proofs: FC<TProps> = ({
               )
             } catch (err) {
               console.log({ err })
-              onCancel()
+              const myErr = err as Error
+              if (myErr.message) {
+                alert(myErr.message)
+              } else {
+                alert('Some error occured. Please try later')
+              }
             }
             setLoading(false)
             
