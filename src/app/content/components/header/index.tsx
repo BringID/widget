@@ -7,6 +7,8 @@ import {
 } from './styled-components'
 import TProps from './types'
 import { shortenString } from '@/utils'
+import { useModal } from '../../store/reducers/modal';
+import { request } from 'http';
 
 const defineContent = (
   address: string | null,
@@ -28,6 +30,7 @@ const HeaderComponent: FC<TProps> = ({
   address,
   userKey
 }) => {
+  const modal = useModal()
   return <Header>
     {defineContent(
       address,
@@ -36,7 +39,8 @@ const HeaderComponent: FC<TProps> = ({
     <CloseButtonStyled
       onClick={() => {
         window.postMessage({
-          type: 'CLOSE_MODAL'
+          type: 'CLOSE_MODAL',
+          requestId: modal.requestId
         }, window.location.origin)
       }}
     />

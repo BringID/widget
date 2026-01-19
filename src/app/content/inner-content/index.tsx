@@ -9,7 +9,7 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { setIsOpen, setLoading, useModal } from '../store/reducers/modal';
+import { setRequestId, setLoading, useModal } from '../store/reducers/modal';
 import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs } from '@/types';
 import semaphore from '../semaphore';
@@ -24,8 +24,7 @@ import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
-  closeModal: () => void,
-
+  requestId: null | string
 ) => {
   switch (page) {
     case 'home': return <Home
@@ -34,11 +33,19 @@ const defineContent = (
     case 'proofs': return <Proofs
       onCancel={() => {
         setPage('home')
-        closeModal()
+        window.postMessage({
+          type: 'PROOFS_RESPONSE',
+          requestId,
+          payload: {
+            proofs: [],
+            points: 0
+          }
+        }, window.location.origin)
       }}
       onConfirm={(proofs, pointsSelected) => {
         window.postMessage({
-          type: 'PROOFS_READY',
+          type: 'PROOFS_RESPONSE',
+          requestId,
           payload: {
             proofs,
             points: pointsSelected
@@ -65,8 +72,6 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
   for (const task of tasks) {
     for (const group of task.groups) {
-
-
       const identity = semaphore.createIdentity(
         String(userKey),
         group.credentialGroupId,
@@ -113,6 +118,7 @@ const InnerContent: FC<TProps> = ({
 
   const { loading } = useModal()
   const user = useUser()
+  const modal = useModal()
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const userConfigs = useConfigs()
@@ -134,6 +140,7 @@ const InnerContent: FC<TProps> = ({
 
           if (type === 'PROOFS_REQUEST') {
             dispatch(setScope(payload.scope))
+            dispatch(setRequestId(requestId))
             return
           }
         } else if (event.source === window) {
@@ -148,6 +155,7 @@ const InnerContent: FC<TProps> = ({
             return
           } else if (type === 'PROOFS_RESPONSE') {
             setPage('home')
+
             window.parent.postMessage(
               {
                 type: "PROOFS_RESPONSE",
@@ -162,7 +170,8 @@ const InnerContent: FC<TProps> = ({
 
             window.parent.postMessage(
               {
-                type: "CLOSE_MODAL"
+                type: "CLOSE_MODAL",
+                requestId
               },
               url.origin
             )
@@ -298,9 +307,7 @@ const InnerContent: FC<TProps> = ({
       {defineContent(
         page,
         setPage,
-        () => {
-          dispatch(setIsOpen(false))
-        }
+        modal.requestId
       )}
     </Content>
   </Container>
