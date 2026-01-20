@@ -133,6 +133,7 @@ const InnerContent: FC<TProps> = ({
 
           if (type === 'PROOFS_REQUEST') {
             dispatch(setScope(payload.scope))
+            console.log('PROOFS_REQUEST captured: ', { requestId })
             dispatch(setRequestId(requestId))
             return
           }
@@ -148,7 +149,7 @@ const InnerContent: FC<TProps> = ({
             return
           } else if (type === 'PROOFS_RESPONSE') {
             setPage('home')
-
+            console.log('PROOFS_RESPONSE captured by widget', { requestId })
             window.parent.postMessage(
               {
                 type: "PROOFS_RESPONSE",
