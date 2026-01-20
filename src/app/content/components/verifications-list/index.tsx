@@ -26,6 +26,7 @@ const VerificationsList: FC<TProps> = ({
   );
 
   const [ error, setError ] = useState<string | null>(null)
+  const [ isActive, setIsActive ] = useState<boolean>(false)
 
   return (
     <Container className={className}>
@@ -85,6 +86,8 @@ const VerificationsList: FC<TProps> = ({
                 task={task}
                 status='default'
                 userKey={user.key}
+                setIsActive={setIsActive}
+                isActive={isActive}
                 onError={(errorText => {
                   setError(errorText)
                 })}
