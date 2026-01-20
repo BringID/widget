@@ -39,8 +39,8 @@ const defineTaskContent = (
         <Button
           appearance="action"
           size="small"
-          loading={loading || isActive}
-          disabled={loading}
+          loading={loading}
+          disabled={loading || isActive}
           onClick={async () => {
             try {
               setLoading(true)
