@@ -133,7 +133,9 @@ const InnerContent: FC<TProps> = ({
 
           if (type === 'PROOFS_REQUEST') {
             console.log('PROOFS_REQUEST captured: ', { requestId })
-            dispatch(setScope(payload.scope))
+            if (payload) {
+              dispatch(setScope(payload.scope))
+            }
             dispatch(setRequestId(requestId))
             return
           }
