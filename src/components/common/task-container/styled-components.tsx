@@ -76,6 +76,7 @@ export const Footer = styled.div`
   color: ${(props) => props.theme.secondaryTextColor};
   padding-top: 10px;
   padding-left: 40px;
+  font-size: 13px;
 `;
 
 export const VerifiedIndicator = styled.div`

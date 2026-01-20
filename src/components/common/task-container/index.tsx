@@ -46,7 +46,6 @@ const defineDescription = (
   }
 }
 
-
 const TaskContainer: FC<TProps> = ({
   status,
   children,
@@ -54,11 +53,12 @@ const TaskContainer: FC<TProps> = ({
   icon,
   id,
   selectable,
+  description,
   groups,
   selected,
   onSelect,
 }) => {
-  const tiers = groups ? defineTiers(groups) : undefined
+  // const tiers = groups ? defineTiers(groups) : undefined
   const descriptionContent = defineDescription(status, groups)
 
   return (
@@ -80,7 +80,7 @@ const TaskContainer: FC<TProps> = ({
         </Content>
         {children}
       </Body>
-      {tiers && (
+      {/* {tiers && (
         <Footer>
           Tiers:
           <Tiers>
@@ -89,7 +89,11 @@ const TaskContainer: FC<TProps> = ({
             ))}
           </Tiers>
         </Footer>
-      )}
+      )} */}
+      {description && <Footer>
+        {description}
+      </Footer>}
+
     </Container>
   );
 };

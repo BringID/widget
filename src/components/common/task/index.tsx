@@ -26,6 +26,10 @@ const defineTaskContent = (
   setLoading: (loading: boolean) => void,
   modeConfigs: TModeConfigs,
   mode: string,
+  isActive: boolean,
+  setIsActive: (
+    active: boolean
+  ) => void,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void
 ) => {
@@ -35,11 +39,12 @@ const defineTaskContent = (
         <Button
           appearance="action"
           size="small"
-          loading={loading}
+          loading={loading || isActive}
+          disabled={loading}
           onClick={async () => {
             try {
               setLoading(true)
-              
+              setIsActive(true)
 
               if (task.oauthUrl) {
                 const {
@@ -90,6 +95,7 @@ const defineTaskContent = (
 
                   if (success) {
                     setLoading(false)
+                    setIsActive(false)
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time,
@@ -154,6 +160,7 @@ const defineTaskContent = (
 
                   if (success) {
                     setLoading(false)
+                    setIsActive(false)
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time,
@@ -165,12 +172,15 @@ const defineTaskContent = (
 
                   console.log({ taskCreated })
                 
+                } else {
+                  throw new Error(`Group is not defined`)
                 }
 
               }
 
             } catch (err) {
               setLoading(false)
+              setIsActive(false)
               if (typeof err === 'string') {
                 errorCallback(err)
               } else{
@@ -195,7 +205,9 @@ const Task: FC<TProps> = ({
   status,
   userKey,
   task,
-  onError
+  onError,
+  setIsActive,
+  isActive
 }) => {
 
   const dispatch = useDispatch()
@@ -212,6 +224,8 @@ const Task: FC<TProps> = ({
     setLoading,
     userConfigs.modeConfigs,
     user.mode,
+    isActive,
+    setIsActive,
     (verification) => {
       console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))
