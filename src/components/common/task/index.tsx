@@ -54,7 +54,6 @@ const defineTaskContent = (
                   task
                 )
 
-
                 const group = defineGroupForOAuth(
                   task,
                   message.score

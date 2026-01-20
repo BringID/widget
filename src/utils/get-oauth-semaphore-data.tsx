@@ -12,17 +12,9 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
   task
 ) => {
 
-  const statePayload = {
-    origin: window.location.origin,
-  }
-
-  const queryParams = createQueryString({
-    state: btoa(JSON.stringify(statePayload))
-  })
-
   return new Promise((resolve, reject) => {
     const popup = window.open(
-      `${configs.AUTH_DOMAIN}/${task.oauthUrl}?${queryParams}`,
+      `${configs.AUTH_DOMAIN}/${task.oauthUrl}`,
       "oauth",
       "width=400,height=600,popup=yes"
     )
