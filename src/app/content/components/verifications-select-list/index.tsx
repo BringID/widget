@@ -33,7 +33,6 @@ const VerificationsSelectList: FC<TProps> = ({
             <Verification
               key={credentialGroupId}
               title={relatedTaskData.title}
-              description={relatedTaskData.description}
               taskId={verification.taskId}
               points={points}
               scheduledTime={verification.scheduledTime}

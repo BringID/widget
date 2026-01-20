@@ -74,7 +74,7 @@ export const Body = styled.div<{
 
 export const Footer = styled.div`
   color: ${(props) => props.theme.secondaryTextColor};
-  padding-top: 10px;
+  padding-top: 0px;
   padding-left: 40px;
   font-size: 13px;
 `;

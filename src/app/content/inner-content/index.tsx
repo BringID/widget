@@ -123,7 +123,6 @@ const InnerContent: FC<TProps> = ({
       const { type, requestId, payload } = event.data
       if (parentUrl) {
         const url = new URL(parentUrl)
-        console.log({ url, event })
         if (event.origin === url.origin) { // event comes from the place where the widget is rendered
           if (type === 'USER_KEY_READY') {
             // save it in store
@@ -132,7 +131,6 @@ const InnerContent: FC<TProps> = ({
           }
 
           if (type === 'PROOFS_REQUEST') {
-            console.log('PROOFS_REQUEST captured: ', { requestId })
             if (payload) {
               dispatch(setScope(payload.scope))
             }
@@ -151,7 +149,6 @@ const InnerContent: FC<TProps> = ({
             return
           } else if (type === 'PROOFS_RESPONSE') {
             setPage('home')
-            console.log('PROOFS_RESPONSE captured by widget', { requestId })
             window.parent.postMessage(
               {
                 type: "PROOFS_RESPONSE",
