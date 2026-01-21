@@ -26,11 +26,11 @@ const defineErrorText = (
 ) => {
   switch (errorText) {
     case 'TASK_ALREADY_EXISTS_WITH_ANOTHER_IDENTITY_COMMITMENT':
-      return <>Please send email to m@bringid.org to unlink your account from current identity</>
+      return <>Please send email to dev@bringid.org to unlink your account from current identity</>
     case 'POPUP_CLOSED':
       return 'Please, do not close the window while OAuth process'
     default:
-      return <>Please contact m@bringid.org to define an actual reason: {errorText}</>
+      return <>Please contact dev@bringid.org to define an actual reason: {errorText}</>
   }  
 }
 
