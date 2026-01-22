@@ -12,7 +12,9 @@ import {
   ButtonStyled,
   TextStyled,
   TitleStyled,
-  FooterStyled
+  FooterStyled,
+  MessageStyled,
+  TagStyled
 } from './styled-components'
 import { useVerifications } from '../../store/reducers/verifications'
 import {
@@ -47,7 +49,11 @@ const renderContent = (
   const isEnoughPoints = availablePoints >= minPoints
 
   if (!isEnoughPoints) {
-    return null
+    return <MessageStyled status='error'>
+      Required points: <TagStyled status='info'>
+        {minPoints} pts.
+      </TagStyled>
+    </MessageStyled>
   }
 
   return (
