@@ -50,7 +50,7 @@ const renderContent = (
 
   if (!isEnoughPoints) {
     return <MessageStyled status='error'>
-      Required points: <TagStyled status='info'>
+      Required Bring Score: <TagStyled status='info'>
         {minPoints} pts.
       </TagStyled>
     </MessageStyled>
