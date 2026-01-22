@@ -135,9 +135,7 @@ const InnerContent: FC<TProps> = ({
             if (payload.scope) {
               dispatch(setScope(payload.scope))
             }
-            if (payload.minPoints) {
-              dispatch(setMinPoints(payload.minPoints))
-            }
+            dispatch(setMinPoints(payload.minPoints || 0))
             dispatch(setRequestId(requestId))
             return
           }
