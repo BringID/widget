@@ -5,7 +5,8 @@ import deepEqual from 'fast-deep-equal';
 
 enum ActionType {
   '/modal/setRequestId' = '/modal/setRequestId',
-  '/modal/setLoading' = '/modal/setLoading'
+  '/modal/setLoading' = '/modal/setLoading',
+  '/modal/setMinPoints' = '/modal/setMinPoints'
 }
 
 type Action<payload> = {
@@ -15,18 +16,25 @@ type Action<payload> = {
 };
 
 type State = {
-  requestId: string | null,
+  requestId: string | null
   loading: boolean
+  minPoints: number
 };
 
 const initState: State = {
   requestId: null,
-  loading: false
+  loading: false,
+  minPoints: 0
 };
 
 export const setRequestId = (requestId: string): Action<string> => ({
   type: ActionType['/modal/setRequestId'],
   payload: requestId
+});
+
+export const setMinPoints = (minPoints: number): Action<number> => ({
+  type: ActionType['/modal/setMinPoints'],
+  payload: minPoints
 });
 
 export const setLoading = (loading: boolean): Action<boolean> => ({
@@ -40,6 +48,8 @@ export default function modal(state = initState, action: Action<any>): State {
       return { ...state, requestId: action.payload };
     case ActionType['/modal/setLoading']:
       return { ...state, loading: action.payload };
+    case ActionType['/modal/setMinPoints']:
+      return { ...state, minPoints: action.payload };
     default:
       return state;
   }

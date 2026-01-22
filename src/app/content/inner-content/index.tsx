@@ -9,7 +9,7 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { setRequestId, setLoading, useModal } from '../store/reducers/modal';
+import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
 import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs } from '@/types';
 import semaphore from '../semaphore';
@@ -47,6 +47,7 @@ const defineContent = (
           }
         }, window.location.origin)
       }}
+      setPage={setPage}
     />
 
     default: return <Home setPage={setPage} />
@@ -131,8 +132,11 @@ const InnerContent: FC<TProps> = ({
           }
 
           if (type === 'PROOFS_REQUEST') {
-            if (payload) {
+            if (payload.scope) {
               dispatch(setScope(payload.scope))
+            }
+            if (payload.minPoints) {
+              dispatch(setMinPoints(payload.minPoints))
             }
             dispatch(setRequestId(requestId))
             return
