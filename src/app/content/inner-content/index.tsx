@@ -141,6 +141,7 @@ const InnerContent: FC<TProps> = ({
             dispatch(setRequestId(requestId))
             return
           }
+
         } else if (event.source === window) {
           if (type === 'GENERATE_USER_KEY') {
             window.parent.postMessage(
