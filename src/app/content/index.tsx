@@ -21,7 +21,8 @@ const Widget: FC = () => {
 
   const mode = searchParams.get('mode') || 'production'
 
-  const highlightColor = searchParams.get('highlightColor') || '#6B43F4'
+  const highlightColor = searchParams.get('highlightColor') ? decodeURIComponent(searchParams.get('highlightColor') as string) : '#6B43F4'
+
   console.log({ ...light, highlightColor, searchParams })
   return <PlausibleProvider domain={configs.PLAUSIBLE_DOMAIN}>
     <ThemeProvider theme={{
