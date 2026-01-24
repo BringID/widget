@@ -17,8 +17,10 @@ import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
+import { usePlausible } from 'next-plausible'
 
 const defineTaskContent = (
+  plausibleEvent: (eventName: string) => void,
   status: TVerificationStatus,
   task: TTask,
   userKey: string | null,
@@ -47,11 +49,14 @@ const defineTaskContent = (
               setIsActive(true)
 
               if (task.oauthUrl) {
+
+                plausibleEvent('oauth_verification_started')
                 const {
                   message,
                   signature
                 } = await getOAuthSemaphoreData(
-                  task
+                  task,
+                  plausibleEvent
                 )
 
                 const group = defineGroupForOAuth(
@@ -95,6 +100,7 @@ const defineTaskContent = (
                   if (success) {
                     setLoading(false)
                     setIsActive(false)
+                    plausibleEvent('oauth_verification_finished')
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time,
@@ -111,12 +117,14 @@ const defineTaskContent = (
 
 
               } else {
+                plausibleEvent('zktls_verification_started')
 
                 const {
                   presentationData,
                   transcriptRecv
                 } = await getZKTLSSemaphoreData(
-                  task
+                  task,
+                  plausibleEvent
                 )
 
               
@@ -129,8 +137,6 @@ const defineTaskContent = (
                   const { credentialGroupId, semaphoreGroupId } = groupData
 
                   const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
-
-              
 
                   const verify = await verifierApi.verify(
                     configs.ZUPLO_API_URL,
@@ -160,6 +166,7 @@ const defineTaskContent = (
                   if (success) {
                     setLoading(false)
                     setIsActive(false)
+                    plausibleEvent('zktls_verification_finished')
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time,
@@ -214,8 +221,9 @@ const Task: FC<TProps> = ({
   const userConfigs = useConfigs()
 
   const [ loading, setLoading ] = useState<boolean>(false)
-
+  const plausible = usePlausible()
   const content = defineTaskContent(
+    (eventName) => plausible(eventName),
     status,
     task,
     userKey,

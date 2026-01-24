@@ -37,6 +37,7 @@ import {
 import { prepareProofs } from '../../utils'
 import { useConfigs } from '../../store/reducers/configs'
 import { useModal } from '../../store/reducers/modal'
+import { usePlausible } from 'next-plausible'
 
 const renderContent = (
   minPoints: number,
@@ -99,6 +100,7 @@ const renderTitles = (
 }
 
 const renderButton = (
+  plausibleEvent: (eventName: string) => void,
   userKey: string,
   loading: boolean,
   setLoading: (loading: boolean) => void,
@@ -122,7 +124,10 @@ const renderButton = (
   ) {
     return <ButtonStyled
       appearance='action'
-      onClick={() => setPage('home')}
+      onClick={() => {
+        setPage('home')
+        plausibleEvent('back_to_home')
+      }}
     >
       Back
     </ButtonStyled>
@@ -137,6 +142,7 @@ const renderButton = (
     onClick={async () => {
       setLoading(true)
       try {
+        plausibleEvent('prepare_proofs_started')
         const proofs = await prepareProofs(
           tasks,
           userKey,
@@ -150,6 +156,7 @@ const renderButton = (
         if (!proofs || !pointsSelected) {
           return onCancel()
         }
+        plausibleEvent('prepare_proofs_finished')
 
         onConfirm(
           proofs,
@@ -157,6 +164,7 @@ const renderButton = (
         )
       } catch (err) {
         console.log({ err })
+        plausibleEvent('prepare_proofs_failed')
         const myErr = err as Error
         if (myErr.message) {
           alert(myErr.message)
@@ -165,7 +173,6 @@ const renderButton = (
         }
       }
       setLoading(false)
-      
     }}
   >
     Confirm ({pointsSelected} pts selected)
@@ -184,7 +191,7 @@ const Proofs: FC<TProps> = ({
   const userConfigs = useConfigs()
   const [loading, setLoading] = useState<boolean>(false);
   const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
-
+  const plausible = usePlausible()
   const [selected, setSelected] = useState<string[]>([]);
 
   const pointsSelected = useMemo(() => {
@@ -243,6 +250,7 @@ const Proofs: FC<TProps> = ({
         userKey={user.key}
       >
         {renderButton(
+          (eventName) => plausible(eventName),
           user.key as string,
           loading,
           setLoading,

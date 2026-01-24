@@ -20,6 +20,7 @@ import {
 } from '../store/reducers/verifications';
 import { LoadingOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
+import { usePlausible } from 'next-plausible'
 
 const defineContent = (
   page: string,
@@ -118,6 +119,7 @@ const InnerContent: FC<TProps> = ({
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const userConfigs = useConfigs()
+  const plausible = usePlausible()
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -127,11 +129,14 @@ const InnerContent: FC<TProps> = ({
         if (event.origin === url.origin) { // event comes from the place where the widget is rendered
           if (type === 'USER_KEY_READY') {
             // save it in store
+
+            plausible('generate_user_key_finished')
             dispatch(setKey(payload.signature))
             return
           }
 
           if (type === 'PROOFS_REQUEST') {
+            plausible('verify_humanity_request_started')
             dispatch(setScope(payload ? (payload.scope || null) : null))
             dispatch(setMinPoints(payload ? (payload.minPoints || 0) : 0))
             dispatch(setRequestId(requestId))
@@ -140,6 +145,7 @@ const InnerContent: FC<TProps> = ({
 
         } else if (event.source === window) {
           if (type === 'GENERATE_USER_KEY') {
+            plausible('generate_user_key_started')
             window.parent.postMessage(
               {
                 type: "GENERATE_USER_KEY",
@@ -150,6 +156,7 @@ const InnerContent: FC<TProps> = ({
             return
           } else if (type === 'PROOFS_RESPONSE') {
             setPage('home')
+            plausible('verify_humanity_request_finished')
             window.parent.postMessage(
               {
                 type: "PROOFS_RESPONSE",
@@ -163,7 +170,7 @@ const InnerContent: FC<TProps> = ({
 
           } else if (type === 'CLOSE_MODAL') {
             setPage('home')
-
+            plausible('close_modal')
             window.parent.postMessage(
               {
                 type: "CLOSE_MODAL",
