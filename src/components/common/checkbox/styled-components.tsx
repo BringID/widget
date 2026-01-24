@@ -19,7 +19,7 @@ export const Checkbox = styled.div<{ checked: boolean }>`
   ${(props) =>
     props.checked &&
     css`
-      background-color: ${props.theme.buttonActionBackgroundColor};
+      background-color: ${props.theme.highlightColor};
     `}
 `;
 

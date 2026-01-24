@@ -44,10 +44,6 @@ const theme = {
 
   iconContainerBackgroundColor: '#F6F3FF',
 
-
-  buttonActionBackgroundColor: '#6B43F4',
-  buttonActionBackgroundHoverColor: '#6B43F4',
-  buttonActionBackgroundActiveColor: '#6B43F4',
   buttonActionBorderHoverColor: 'transparent',
   buttonActionBorderActiveColor: 'transparent',
   buttonActionBorderColor: 'transparent',

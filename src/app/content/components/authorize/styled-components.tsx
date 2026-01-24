@@ -5,6 +5,7 @@ import { Icons } from '@/components/common';
 export const KeyIcon = styled(Icons.KeyIcon)`
   min-width: 36px;
   height: auto;
+  color: ${props => props.theme.highlightColor};
 `
 
 export const Container = styled.div`
