@@ -21,8 +21,10 @@ const Widget: FC = () => {
 
   const mode = searchParams.get('mode') || 'production'
 
+  const highlightColor = searchParams.get('highlightColor') || '#6B43F4'
+
   return <PlausibleProvider domain={configs.PLAUSIBLE_DOMAIN}>
-    <ThemeProvider theme={light}>
+    <ThemeProvider theme={{ ...light, highlightColor }}>
       <ReduxProvider store={store}>
         <InnerContent
           apiKey={apiKey}
