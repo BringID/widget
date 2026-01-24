@@ -8,6 +8,8 @@ import { ThemeProvider } from 'styled-components'
 import { Provider as ReduxProvider } from 'react-redux'
 import store from './store'
 import { light } from '@/themes'
+import PlausibleProvider from 'next-plausible'
+import configs from '../configs'
 
 const Widget: FC = () => {
   const searchParams = useSearchParams()
@@ -19,16 +21,18 @@ const Widget: FC = () => {
 
   const mode = searchParams.get('mode') || 'production'
 
-  return <ThemeProvider theme={light}>
-    <ReduxProvider store={store}>
-      <InnerContent
-        apiKey={apiKey}
-        address={address}
-        parentUrl={decodedRedirectUrl}
-        mode={mode}
-      />
-    </ReduxProvider>
-  </ThemeProvider>
+  return <PlausibleProvider domain={configs.PLAUSIBLE_DOMAIN}>
+    <ThemeProvider theme={light}>
+      <ReduxProvider store={store}>
+        <InnerContent
+          apiKey={apiKey}
+          address={address}
+          parentUrl={decodedRedirectUrl}
+          mode={mode}
+        />
+      </ReduxProvider>
+    </ThemeProvider>
+  </PlausibleProvider>
 }
 
 export default Widget
