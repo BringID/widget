@@ -27,7 +27,7 @@ export const Button = styled.button<TProps>`
   ${(props) =>
     props.appearance === 'action' &&
     css`
-      background-color: ${(props) => props.theme.buttonActionBackgroundColor};
+      background-color: ${(props) => props.theme.highlightColor};
       border-color: ${(props) => props.theme.buttonActionBorderColor};
       color: ${(props) => props.theme.buttonActionTextColor};
     `}
