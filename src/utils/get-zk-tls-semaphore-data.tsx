@@ -1,7 +1,9 @@
 import { TTask } from '../types'
 
 type TGetZKTLSSemaphoreData = (
-  task: TTask
+  task: TTask,
+  plausibleEvent: (eventName: string) => void
+
 ) => Promise<
   {
     transcriptRecv: string,
@@ -11,6 +13,7 @@ type TGetZKTLSSemaphoreData = (
 
 const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
   task,
+  plausibleEvent
 ) => {
   return new Promise((resolve, reject) => {
 
@@ -33,7 +36,7 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
       console.log({ event })
 
       if (event.data?.type === "VERIFICATION_DATA_READY") {
-
+        plausibleEvent('zktls_verification_response_received')
         const {
           transcriptRecv,
           presentationData
@@ -47,6 +50,7 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
       }
 
       if (event.data?.type === "VERIFICATION_DATA_ERROR") {
+        plausibleEvent('zktls_verification_failed')
         window.removeEventListener("message", handler)
         reject(event.data.payload.error)
       }

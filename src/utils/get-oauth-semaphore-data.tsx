@@ -3,13 +3,15 @@ import { createQueryString } from '../utils'
 import configs from '@/app/configs'
 
 type TGetOAuthSemaphoreData = (
-  task: TTask
+  task: TTask,
+  plausibleEvent: (eventName: string) => void
 ) => Promise<
   OAuthResponsePayload
 >
 
 const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
-  task
+  task,
+  plausibleEvent
 ) => {
 
   return new Promise((resolve, reject) => {
@@ -37,6 +39,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
       switch (event.data.type) {
         case "AUTH_SUCCESS": {
           const { message, signature } = event.data.payload
+        plausibleEvent('oauth_verification_response_received')
 
           clearInterval(timer)
           window.removeEventListener("message", handler)
@@ -48,6 +51,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
         case "AUTH_ERROR": {
           clearInterval(timer)
           window.removeEventListener("message", handler)
+          plausibleEvent('oauth_verification_failed')
 
           reject(event.data.payload.error)
           break
