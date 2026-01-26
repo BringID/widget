@@ -49,7 +49,7 @@ const theme = {
   buttonAdditionalBorderColor: '#272727',
 
 
-  buttonDisabledBackgroundColor: '#1F1F23',
+  buttonDisabledBackgroundColor: 'rgb(169, 169, 169)',
   buttonDisabledTextColor: '#4C4C4F',
   buttonDisabledBorderColor: 'transparent',
 
