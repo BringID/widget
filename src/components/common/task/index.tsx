@@ -103,7 +103,7 @@ const defineTaskContent = (
                     plausibleEvent('oauth_verification_finished')
                     resultCallback({
                       status: 'scheduled',
-                      scheduledTime: taskCreated.scheduled_time + Number(configs.PLAUSIBLE_DOMAIN || 0),
+                      scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId: group?.credentialGroupId,
                       fetched: false
@@ -169,7 +169,7 @@ const defineTaskContent = (
                     plausibleEvent('zktls_verification_finished')
                     resultCallback({
                       status: 'scheduled',
-                      scheduledTime: taskCreated.scheduled_time + Number(configs.PLAUSIBLE_DOMAIN || 0),
+                      scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId,
                       fetched: false
