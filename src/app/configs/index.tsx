@@ -6,6 +6,7 @@ const AUTH_DOMAIN = 'https://auth.bringid.org';
 const BRINGID_URL = 'https://bringid.org'
 const OAUTH_VERIFIER_URL = 'https://verifier-staging.up.railway.app'
 const PLAUSIBLE_DOMAIN = 'widget.bringid.org'
+const TASK_PENDING_TIME = process.env.NEXT_PUBLIC_TASK_PENDING_TIME
 
 export default {
   EXTENSION_ID,
@@ -15,5 +16,6 @@ export default {
   AUTH_DOMAIN,
   BRINGID_URL,
   OAUTH_VERIFIER_URL,
-  PLAUSIBLE_DOMAIN
+  PLAUSIBLE_DOMAIN,
+  TASK_PENDING_TIME
 };

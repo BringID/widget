@@ -13,7 +13,6 @@ import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reduc
 import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs } from '@/types';
 import semaphore from '../semaphore';
-import { configs } from '../../core'
 import {
   addVerifications,
   useVerifications
@@ -21,6 +20,8 @@ import {
 import { LoadingOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
+import configs from '@/app/configs'
+import { configs as coreConfigs } from '../../core'
 
 const defineContent = (
   page: string,
@@ -204,7 +205,7 @@ const InnerContent: FC<TProps> = ({
 
         const verificationsUpdated = verifications.map(item => {
           if (item.status !== 'completed') {
-            const now = +new Date();
+            const now = +new Date() + Number(configs.TASK_PENDING_TIME);
             const expiration = item.scheduledTime - now;
             if (expiration <= 0) {
               updated = true
@@ -267,7 +268,7 @@ const InnerContent: FC<TProps> = ({
     if (!user.mode) { return }
   
     const init = async () => {
-      const userConfigs = await configs(user.mode === 'dev')
+      const userConfigs = await coreConfigs(user.mode === 'dev')
       dispatch(addModeConfigs(userConfigs.configs))
       dispatch(addTasks(userConfigs.tasks))
     }
