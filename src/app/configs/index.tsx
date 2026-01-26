@@ -8,7 +8,6 @@ const OAUTH_VERIFIER_URL = 'https://verifier-staging.up.railway.app'
 const PLAUSIBLE_DOMAIN = 'widget.bringid.org'
 const TASK_PENDING_TIME = process.env.NEXT_PUBLIC_TASK_PENDING_TIME
 
-
 export default {
   EXTENSION_ID,
   ZUPLO_API_KEY,

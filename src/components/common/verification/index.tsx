@@ -2,18 +2,18 @@ import React, { FC, useState, useEffect } from 'react'
 import { TProps } from './types'
 import { Value, PointsCount } from './styled-components'
 import { TVerificationStatus } from '@/types'
-import { TaskContainer, Icons, Button } from '..'
+import { TaskContainer, Icons } from '..'
 
-import { msToTime, defineExplorerURL } from '@/utils'
-import { taskManagerApi } from '@/app/content/api'
+import { msToTime } from '@/utils'
 import { useConfigs } from '@/app/content/store/reducers/configs'
+import { TXScannerButton } from './components'
 
 const definePluginContent = (
   status: TVerificationStatus,
   points: number,
   expiration: null | number,
   fetched: boolean,
-  onCheckTransactionClick?: () => void,
+  taskId: string
 ) => {
   switch (status) {
     case 'default':
@@ -32,12 +32,7 @@ const definePluginContent = (
       if (fetched) {
         return null
       }
-      return (
-        <Button onClick={onCheckTransactionClick} size="small">
-          Check TX
-        </Button>
-      );
-
+      return <TXScannerButton taskId={taskId} />
     default:
       return <Icons.Check />;
   }
@@ -82,22 +77,7 @@ const Verification: FC<TProps> = ({
     points,
     expiration,
     fetched,
-    async () => {
-      if (!taskId) {
-        return alert('taskId not defined')
-      }
-
-      try {
-        const result = await taskManagerApi.getVerification(taskId, userConfigs.modeConfigs)
-
-        if (result) {
-          const { task } = result
-          window.open(`${defineExplorerURL(Number(userConfigs.modeConfigs.CHAIN_ID || '84532'))}/tx/${task.tx_hash}`)
-        }
-      } catch (err) {
-        alert('verification fetch has failed')
-      }
-    }
+    taskId as string
   );
 
   return (
