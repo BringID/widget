@@ -38,6 +38,7 @@ const TXScannerButton: FC<TProps> = ({
 
   return <Button
     loading={loading}
+    appearance='action'
     onClick={() => {
       if (!txHash) {
         return alert('txHash is not ready. Please try in few seconds')
