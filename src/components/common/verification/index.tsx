@@ -6,7 +6,6 @@ import { TaskContainer, Icons, Button } from '..'
 
 import { msToTime, defineExplorerURL } from '@/utils'
 import { taskManagerApi } from '@/app/content/api'
-import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
 
 const definePluginContent = (
@@ -59,7 +58,6 @@ const Verification: FC<TProps> = ({
   fetched,
 }) => {
   const [expiration, setExpiration] = useState<number | null>(null);
-  const user = useUser()
   const userConfigs = useConfigs()
 
   useEffect(() => {
