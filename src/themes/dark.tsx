@@ -49,8 +49,8 @@ const theme = {
   buttonAdditionalBorderColor: '#272727',
 
 
-  buttonDisabledBackgroundColor: '#1F1F23',
-  buttonDisabledTextColor: '#4C4C4F',
+  buttonDisabledBackgroundColor: '#D3C7FC',
+  buttonDisabledTextColor: '#FFF',
   buttonDisabledBorderColor: 'transparent',
 
 
