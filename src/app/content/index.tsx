@@ -10,6 +10,7 @@ import store from './store'
 import { light } from '@/themes'
 import PlausibleProvider from 'next-plausible'
 import configs from '../configs'
+import { lightenHex } from '@/utils'
 
 const Widget: FC = () => {
   const searchParams = useSearchParams()
@@ -27,7 +28,8 @@ const Widget: FC = () => {
   return <PlausibleProvider domain={configs.PLAUSIBLE_DOMAIN}>
     <ThemeProvider theme={{
         ...light,
-        highlightColor
+        highlightColor,
+        buttonDisabledBackgroundColor: lightenHex(highlightColor)
       }}>
       <ReduxProvider store={store}>
         <InnerContent
