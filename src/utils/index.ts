@@ -23,9 +23,11 @@ import getOAuthSemaphoreData from './get-oauth-semaphore-data'
 import defineGroupByZKTLSResult from './define-group-by-zktls-result'
 import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
 import defineGroupForOAuth from './define-group-for-oauth'
+import lightenHex from './lighten-hex'
 
 export {
   defineGroup,
+  lightenHex,
   createSemaphoreIdentity,
   msToTime,
   defineApiUrl,

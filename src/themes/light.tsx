@@ -25,7 +25,7 @@ const theme = {
   errorStatusBackgroundColor: 'rgb(254, 242, 242)',
   errorStatusBorderColor: 'rgb(254, 202, 202)',
   errorStatusTextColor: 'rgb(153, 27, 27)',
-  buttonDisabledBackgroundColor: 'rgb(169, 169, 169)',
+  buttonDisabledBackgroundColor: '#D3C7FC',
   buttonDisabledTextColor: '#FFF',
   warningStatusBackgroundColor: 'rgb(254, 252, 232)',
   warningStatusBorderColor: 'rgb(254, 240, 138)',
