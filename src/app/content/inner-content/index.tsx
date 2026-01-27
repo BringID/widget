@@ -152,12 +152,12 @@ const InnerContent: FC<TProps> = ({
           dispatch(setKey(payload.signature));
           return;
         }
-
+        
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
           dispatch(setScope(payload?.scope || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
-          dispatch(setRequestId(payload?.requestId || null));
+          dispatch(setRequestId(requestId || null));
           return;
         }
 
