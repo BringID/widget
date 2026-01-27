@@ -18,4 +18,5 @@ export const NoteStyled = styled(Note)`
 
 export const LinkStyled = styled(Link)`
   text-decoration: underline;
+  font-size: 12px;
 `;
