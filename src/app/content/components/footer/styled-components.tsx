@@ -32,6 +32,10 @@ export const Footer = styled.footer`
   justify-content: space-between;
   padding: 14px;
   border-top: 1px solid ${(props) => props.theme.primaryBorderColor};
+
+  @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+    padding: 8px 14px;
+  }
 `;
 
 export const UserStatus = styled.span`

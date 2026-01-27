@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { ThemeProvider } from 'styled-components'
 import { Provider as ReduxProvider } from 'react-redux'
 import store from './store'
-import { light } from '@/themes'
+import { dark, light } from '@/themes'
 import PlausibleProvider from 'next-plausible'
 import configs from '../configs'
 import { lightenHex } from '@/utils'
@@ -19,18 +19,24 @@ const Widget: FC = () => {
 
   const address = searchParams.get('address') || ''
   const apiKey = searchParams.get('apiKey') || ''
+  const themeParam = searchParams.get('theme') || 'light'
+  const defaultTheme = themeParam === 'dark' ? dark : light
 
   const mode = searchParams.get('mode') || 'production'
 
-  const highlightColor = searchParams.get('highlightColor') ? decodeURIComponent(searchParams.get('highlightColor') as string) : '#6B43F4'
+  const highlightColor = searchParams.get('highlightColor') ? decodeURIComponent(searchParams.get('highlightColor') as string) : undefined
 
-  console.log({ ...light, highlightColor, searchParams })
+  console.log({ ...dark, highlightColor, searchParams })
+
+  const finalTheme = { ...defaultTheme }
+
+  if (highlightColor) {
+    finalTheme.highlightColor = highlightColor
+    finalTheme.buttonDisabledBackgroundColor = lightenHex(highlightColor)
+  }
+
   return <PlausibleProvider domain={configs.PLAUSIBLE_DOMAIN}>
-    <ThemeProvider theme={{
-        ...light,
-        highlightColor,
-        buttonDisabledBackgroundColor: lightenHex(highlightColor)
-      }}>
+    <ThemeProvider theme={finalTheme}>
       <ReduxProvider store={store}>
         <InnerContent
           apiKey={apiKey}

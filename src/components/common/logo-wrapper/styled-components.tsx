@@ -6,7 +6,7 @@ export const LogoWrapper = styled.div<{
 }>`
   width: 58px;
   min-height: 58px;
-  border: 1px solid ${(props) => props.theme.secondaryBorderColor};
+  border: 1px solid ${(props) => props.theme.primaryBorderColor};
   border-radius: 6px;
   display: flex;
   align-items: center;

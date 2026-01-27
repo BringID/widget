@@ -11,7 +11,7 @@ import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
 import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
-import { TVerification, TVerificationStatus, TTask, TModeConfigs } from '@/types';
+import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
 import {
@@ -122,70 +122,100 @@ const InnerContent: FC<TProps> = ({
   const plausible = usePlausible()
 
   useEffect(() => {
-    window.addEventListener("message", async (event) => {
-      const { type, requestId, payload } = event.data
-      if (parentUrl) {
-        const url = new URL(parentUrl)
-        if (event.origin === url.origin) { // event comes from the place where the widget is rendered
-          if (type === 'USER_KEY_READY') {
-            // save it in store
+    if (!parentUrl) {
+      console.warn("No parent URL configured for iframe communication");
+      return;
+    }
 
-            plausible('generate_user_key_finished')
-            dispatch(setKey(payload.signature))
-            return
+    const parentOrigin = new URL(parentUrl).origin;
+
+    const handler = async (event: MessageEvent<TWidgetMessage>) => {
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
+
+      const { type, requestId, payload } = event.data;
+
+
+      if (typeof type !== 'string') {
+        return;
+      }
+
+      // Handle messages from parent website
+      if (event.origin === parentOrigin && event.source === window.parent) {
+        if (type === 'USER_KEY_READY') {
+          if (!payload?.signature) {
+            console.warn('Invalid USER_KEY_READY payload');
+            return;
           }
-
-          if (type === 'PROOFS_REQUEST') {
-            plausible('verify_humanity_request_started')
-            dispatch(setScope(payload ? (payload.scope || null) : null))
-            dispatch(setMinPoints(payload ? (payload.minPoints || 0) : 0))
-            dispatch(setRequestId(requestId))
-            return
-          }
-
-        } else if (event.source === window) {
-          if (type === 'GENERATE_USER_KEY') {
-            plausible('generate_user_key_started')
-            window.parent.postMessage(
-              {
-                type: "GENERATE_USER_KEY",
-                payload
-              },
-              url.origin
-            )
-            return
-          } else if (type === 'PROOFS_RESPONSE') {
-            setPage('home')
-            plausible('verify_humanity_request_finished')
-            window.parent.postMessage(
-              {
-                type: "PROOFS_RESPONSE",
-                requestId,
-                payload
-              },
-              url.origin
-            )
-
-            return
-
-          } else if (type === 'CLOSE_MODAL') {
-            setPage('home')
-            plausible('close_modal')
-            window.parent.postMessage(
-              {
-                type: "CLOSE_MODAL",
-                requestId
-              },
-              url.origin
-            )
-
-            return
-          }
+          plausible('generate_user_key_finished');
+          dispatch(setKey(payload.signature));
+          return;
         }
-      }  
-      console.warn("Blocked message from untrusted origin:", event.origin);
-    });
-  }, [])
+        
+        if (type === 'PROOFS_REQUEST') {
+          plausible('verify_humanity_request_started');
+          dispatch(setScope(payload?.scope || null));
+          dispatch(setMinPoints(payload?.minPoints || 0));
+          dispatch(setRequestId(requestId || null));
+          return;
+        }
+
+        console.warn('Unknown message type from parent:', type);
+        return;
+      }
+
+      console.log('EVENT::', { event })
+
+      if (event.source === window && event.origin === window.location.origin) {
+        if (type === 'GENERATE_USER_KEY') {
+          plausible('generate_user_key_started');
+          window.parent.postMessage(
+            { type: "GENERATE_USER_KEY", payload },
+            parentOrigin
+          );
+          return;
+        }
+
+        if (type === 'PROOFS_RESPONSE') {
+          setPage('home');
+          plausible('verify_humanity_request_finished');
+          console.log({ type: "PROOFS_RESPONSE", requestId, payload })
+          window.parent.postMessage(
+            { type: "PROOFS_RESPONSE", requestId, payload },
+            parentOrigin
+          );
+          return;
+        }
+
+        if (type === 'CLOSE_MODAL') {
+          setPage('home');
+          plausible('close_modal');
+          window.parent.postMessage(
+            { type: "CLOSE_MODAL", requestId },
+            parentOrigin
+          );
+          return;
+        }
+
+        return; // Ignore other self-messages
+      }
+
+
+      console.warn("Blocked message from untrusted source:", {
+        origin: event.origin,
+        expectedOrigin: parentOrigin,
+        type
+      });
+    }
+    window.addEventListener("message", handler);
+
+    return () => {
+      window.removeEventListener("message", handler);
+    }
+  }, [
+    parentUrl
+  ])
 
 
   useEffect(() => {

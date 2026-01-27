@@ -8,7 +8,7 @@ type TProps = {
 const Svg = styled.svg`
   width: 16px;
   height: 16px;
-  color: ${(props) => props.theme.backgroundColor};
+  color: ${(props) => props.theme.primaryBackgroundColor};
 `;
 
 const CheckIcon: FC<TProps> = ({ className }) => {

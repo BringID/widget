@@ -1,24 +1,24 @@
 import TOAuthMessage from './oauth-message'
 
-export type OAuthResponsePayload = {
+export type TOAuthResponsePayload = {
   message: TOAuthMessage,
   signature: string
 }
 
-export type OAuthErrorPayload = {
+export type TOAuthErrorPayload = {
   error: string
 }
 
-export type OAuthSuccessResponse = {
+export type TOAuthSuccessResponse = {
   type: "AUTH_SUCCESS"
-  payload: OAuthResponsePayload
+  payload: TOAuthResponsePayload
 }
 
-export type OAuthErrorResponse = {
+export type TOAuthErrorResponse = {
   type: "AUTH_ERROR"
-  payload: OAuthErrorPayload
+  payload: TOAuthErrorPayload
 }
 
-type OAuthResponse = OAuthSuccessResponse | OAuthErrorResponse
+type OAuthResponse = TOAuthSuccessResponse | TOAuthErrorResponse
 
 export default OAuthResponse

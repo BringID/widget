@@ -7,13 +7,14 @@ import {
 
 export const Container = styled.div`
   position: relative;
-  width: 400px;
+  max-width: 400px;
+  width: 100%;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   height: 600px;
   margin: auto;
-  background-color:${props => props.theme.widgetBackgroundColor};
+  background-color:${props => props.theme.primaryBackgroundColor};
 `
 
 export const Content = styled.div`

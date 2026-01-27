@@ -32,7 +32,7 @@ export const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${(props) => props.theme.backgroundColor};
+  background-color: ${(props) => props.theme.primaryBackgroundColor};
   border: 1px solid ${(props) => props.theme.primaryBorderColor};
   border-radius: 6px;
 `;

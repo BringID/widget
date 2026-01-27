@@ -27,7 +27,7 @@ const initState: State = {
   minPoints: 0
 };
 
-export const setRequestId = (requestId: string): Action<string> => ({
+export const setRequestId = (requestId: string | null): Action<string| null> => ({
   type: ActionType['/modal/setRequestId'],
   payload: requestId
 });

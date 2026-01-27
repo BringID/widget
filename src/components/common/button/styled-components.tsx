@@ -20,16 +20,16 @@ export const Button = styled.button<TProps>`
   height: 40px;
   line-height: 16px;
   font-weight: 500;
-  border: 1px solid ${(props) => props.theme && props.theme.buttonDefaultBorderColor};
-  color: ${(props) => props.theme && props.theme.highlightColorColor};
-  background-color: ${(props) => props.theme.backgroundColor};
+  border: 1px solid ${(props) => props.theme && props.theme.primaryBorderColor};
+  color: ${(props) => props.theme && props.theme.primaryTextColor};
+  background-color: ${(props) => props.theme.primaryBackgroundColor};
 
   ${(props) =>
     props.appearance === 'action' &&
     css`
       background-color: ${(props) => props.theme.highlightColor};
       border-color: ${(props) => props.theme.buttonActionBorderColor};
-      color: ${(props) => props.theme.buttonActionTextColor};
+      color: ${(props) => props.theme.additionalTextColor};
     `}
 
   ${(props) =>
@@ -45,7 +45,7 @@ export const Button = styled.button<TProps>`
     props.disabled &&
     css`
       cursor: not-allowed;
-      color: ${(props) => props.theme.buttonDisabledTextColor};
+      color: ${(props) => props.theme.secondaryTextColor};
       background-color: ${(props) => props.theme.buttonDisabledBackgroundColor};
     `}
 
@@ -73,6 +73,6 @@ export const SpinnerStyled = styled(Spinner)`
   position: absolute;
   top: 50%;
   left: 50%;
-  border-color: ${props => props.theme.widgetBackgroundColor};
+  border-color: ${props => props.theme.primaryBackgroundColor};
   translate: -50% -50%;
 `;

@@ -9,6 +9,11 @@ export const Header = styled.header`
   justify-content: center;
   padding: 28px 0 12px;
   min-height: 64px;
+
+  @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+    padding: 0px;
+    min-height: 54px;
+  }
 `;
 
 export const AddressText = styled(Text)`

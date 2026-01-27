@@ -8,9 +8,13 @@ export const Container = styled.div<{
 }>`
   padding: 12px;
   border-radius: 8px;
-
   background-color: ${(props) => props.theme.defaultStatusBackgroundColor};
   border: 1px solid ${(props) => props.theme.defaultStatusBorderColor};
+
+
+  @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+    padding: 8px;
+  }
 `;
 
 export const CheckboxStyled = styled(Checkbox)``;
@@ -43,7 +47,7 @@ export const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${(props) => props.theme.backgroundColor};
+  background-color: ${(props) => props.theme.additionalBackgroundColor};
   border: 1px solid ${(props) => props.theme.primaryBorderColor};
   border-radius: 6px;
 `;
