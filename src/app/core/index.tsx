@@ -16,11 +16,7 @@ async function loadConfigs(
     const configsResponse = await configs.json()
 
     return {
-      tasks: tasksResponse.map((task: any) => {
-        task.icon = 'x'
-        console.log(task)
-        return task
-      }),
+      tasks: tasksResponse,
       configs: configsResponse
     }
   } catch (error) {
