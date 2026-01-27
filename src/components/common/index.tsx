@@ -7,7 +7,6 @@ import Link from './link';
 import Text from './text';
 import Note from './note';
 import Tag from './tag';
-import ProgressBar from './progress-bar';
 import TaskContainer from './task-container';
 import Task from './task';
 import Verification from './verification';
@@ -27,7 +26,6 @@ export {
   Text,
   Note,
   Tag,
-  ProgressBar,
   TaskContainer,
   Task,
   Message,

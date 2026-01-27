@@ -1,5 +1,12 @@
-import { OAuthResponse, OAuthResponsePayload, TTask } from '../types'
-import { createQueryString } from '../utils'
+import {
+  OAuthResponse,
+  OAuthResponsePayload,
+  TTask
+} from '../types'
+import {
+  isValidAuthErrorPayload,
+  isValidAuthSuccessPayload
+} from '../utils'
 import configs from '@/app/configs'
 
 type TGetOAuthSemaphoreData = (
@@ -23,34 +30,55 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
 
     if (!popup) {
       reject("POPUP_BLOCKED")
+      return
+    }
+
+    const cleanup = () => {
+      clearInterval(timer)
+      window.removeEventListener("message", handler)
     }
 
     const timer = setInterval(() => {
       if (!popup || popup.closed) {
-        clearInterval(timer);
+        cleanup()
         console.log("Popup closed");
         reject('POPUP_CLOSED')
       }
     }, 500);
 
-    const handler = async (event: MessageEvent<OAuthResponse>) => {
+    const handler = async (event: MessageEvent) => {
       if (event.origin !== configs.AUTH_DOMAIN) return
+      if (event.source !== popup) return
+      if (!event.data || typeof event.data !== 'object' || !event.data.type) {
+        console.warn('Invalid message structure received')
+        return
+      }
 
-      switch (event.data.type) {
+      const data = event.data as OAuthResponse
+
+      switch (data.type) {
         case "AUTH_SUCCESS": {
-          const { message, signature } = event.data.payload
-        plausibleEvent('oauth_verification_response_received')
+          if (!isValidAuthSuccessPayload(data.payload)) {
+            cleanup()
+            reject('INVALID_PAYLOAD_STRUCTURE')
+            break
+          }
 
-          clearInterval(timer)
-          window.removeEventListener("message", handler)
-
+          const { message, signature } = data.payload
+          plausibleEvent('oauth_verification_response_received')
+          cleanup()
           resolve({ message, signature })
           break
         }
 
         case "AUTH_ERROR": {
-          clearInterval(timer)
-          window.removeEventListener("message", handler)
+          if (!isValidAuthErrorPayload(data.payload)) {
+            cleanup()
+            reject('INVALID_ERROR_PAYLOAD')
+            break
+          }
+
+          cleanup()
           plausibleEvent('oauth_verification_failed')
 
           reject(event.data.payload.error)

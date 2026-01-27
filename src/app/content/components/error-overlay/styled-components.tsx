@@ -15,7 +15,7 @@ export const Container = styled.div`
   top: 0;
   z-index: 1;
   left: 0;
-  background-color: ${(props) => props.theme.overlayBackgroundColor};
+  background-color: ${(props) => props.theme.primaryBackgroundColor};
 `;
 
 export const TitleStyled = styled(Title)`
@@ -32,7 +32,7 @@ export const TextStyled = styled(Text)`
 export const Content = styled.div`
   padding: 24px;
   border-radius: 8px;
-  border: 1px solid ${(props) => props.theme.secondaryBorderColor};
+  border: 1px solid ${(props) => props.theme.primaryBorderColor};
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -24,8 +24,14 @@ import defineGroupByZKTLSResult from './define-group-by-zktls-result'
 import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
 import defineGroupForOAuth from './define-group-for-oauth'
 import lightenHex from './lighten-hex'
+import isValidOAuthMessage from './is-valid-oauth-message'
+import isValidAuthErrorPayload from './is-valid-oauth-error-message'
+import isValidAuthSuccessPayload from './is-valid-oauth-success-payload'
 
 export {
+  isValidOAuthMessage,
+  isValidAuthErrorPayload,
+  isValidAuthSuccessPayload,
   defineGroup,
   lightenHex,
   createSemaphoreIdentity,
