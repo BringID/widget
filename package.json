@@ -16,9 +16,7 @@
     "@semaphore-protocol/data": "^4.11.1",
     "@semaphore-protocol/identity": "^4.13.1",
     "@walletconnect/utils": "2.0.0-beta.100",
-    "bringid-sdk": "0.0.8",
     "ethers": "^6.8.0",
-    "is-mobile": "^5.0.0",
     "next": "15.0.7",
     "next-plausible": "^3.12.4",
     "randombytes": "^2.1.0",
@@ -28,7 +26,6 @@
     "redux": "^4.1.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.4.1",
-    "siwe": "^2.3.2",
     "styled-components": "^6.1.13"
   },
   "devDependencies": {
