@@ -6,10 +6,7 @@ import {
   Subtitle,
   Content,
   ImageWrapper,
-  Icon,
   CheckboxStyled,
-  Tiers,
-  Tier,
   Body,
   Footer,
   VerifiedIndicator,
@@ -17,22 +14,7 @@ import {
   CheckIcon
 } from './styled-components';
 import { TTaskGroup, TVerificationStatus } from '@/types';
-import { defineTaskPointsRange } from '@/utils';
-
-const defineTiers = (groups?: TTaskGroup[]) => {
-  if (!groups || groups.length === 1) return null;
-
-  return groups
-    .map((group) => {
-      const checks = group.checks;
-      if (!checks) {
-        return '';
-      }
-
-      return `${checks[0].value}+: ${group.points} pts.`;
-    })
-    .filter((item) => item);
-}
+import { defineTaskIcon, defineTaskPointsRange } from '@/utils';
 
 const defineDescription = (
   status: TVerificationStatus,
@@ -60,7 +42,7 @@ const TaskContainer: FC<TProps> = ({
 }) => {
   // const tiers = groups ? defineTiers(groups) : undefined
   const descriptionContent = defineDescription(status, groups)
-
+  const TaskIcon = defineTaskIcon(icon)
   return (
     <Container status={status}>
       <Body selectable={selectable}>
@@ -72,7 +54,7 @@ const TaskContainer: FC<TProps> = ({
           />
         )}
         <ImageWrapper>
-          <Icon src={icon} />
+          {TaskIcon && <TaskIcon /> }
         </ImageWrapper>
         <Content>
           <Title>{title}</Title>
@@ -80,16 +62,6 @@ const TaskContainer: FC<TProps> = ({
         </Content>
         {children}
       </Body>
-      {/* {tiers && (
-        <Footer>
-          Tiers:
-          <Tiers>
-            {tiers.reverse().map((tier) => (
-              <Tier>{tier}</Tier>
-            ))}
-          </Tiers>
-        </Footer>
-      )} */}
       {description && <Footer>
         {description}
       </Footer>}

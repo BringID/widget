@@ -27,10 +27,12 @@ import lightenHex from './lighten-hex'
 import isValidOAuthMessage from './is-valid-oauth-message'
 import isValidAuthErrorPayload from './is-valid-oauth-error-message'
 import isValidAuthSuccessPayload from './is-valid-oauth-success-payload'
+import defineTaskIcon from './define-task-icon'
 
 export {
   isValidOAuthMessage,
   isValidAuthErrorPayload,
+  defineTaskIcon,
   isValidAuthSuccessPayload,
   defineGroup,
   lightenHex,

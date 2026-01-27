@@ -4,6 +4,7 @@ const theme = {
   additionalTextColor: '#FFF',
   primaryBackgroundColor: 'rgb(255, 255, 255)',
   secondaryBackgroundColor: 'rgb(250, 250, 250)',
+  additionalBackgroundColor: '#FFF',
   messageBackgroundColor: 'rgba(244, 244, 245, 0.3)',
   mobileBreakpoint: '380px',
   primaryBorderColor: 'rgb(229, 231, 235)',

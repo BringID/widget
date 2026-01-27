@@ -8,6 +8,7 @@ const theme = {
     primaryBackgroundColor: 'rgb(17, 24, 39)',
     secondaryBackgroundColor: 'rgb(31, 41, 55)',
     messageBackgroundColor: 'rgba(55, 65, 81, 0.3)',
+    additionalBackgroundColor: '#FFF',
 
     // Breakpoint stays the same
     mobileBreakpoint: '380px',
