@@ -8,6 +8,7 @@ import {
 export const Container = styled.div`
   position: relative;
   max-width: 400px;
+  width: 100%;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
