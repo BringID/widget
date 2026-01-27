@@ -6,6 +6,7 @@ import {
   TextStyled,
   ButtonStyled
 } from './styled-components';
+import { Link } from '@/components/common';
 import TProps from './types';
 
 const defineErrorTitle = (
@@ -16,6 +17,8 @@ const defineErrorTitle = (
       return 'Task failed'
     case 'POPUP_CLOSED':
       return 'Popup was accidentally closed'
+    case 'MEMBER_NOT_FOUND_WHILE_FETCHING_PROOFS':
+      return 'Proof data is not ready yet'
     default:
       return 'Some error occured'
   }  
@@ -26,11 +29,13 @@ const defineErrorText = (
 ) => {
   switch (errorText) {
     case 'TASK_ALREADY_EXISTS_WITH_ANOTHER_IDENTITY_COMMITMENT':
-      return <>Please send email to dev@bringid.org to unlink your account from current identity</>
+      return <>Please send an email to <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link> to unlink your account from current identity</>
     case 'POPUP_CLOSED':
       return 'Please, do not close the window while OAuth process'
+    case 'MEMBER_NOT_FOUND_WHILE_FETCHING_PROOFS':
+      return <>Try again in a few minutes. If the error persists, please contact <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link></>
     default:
-      return <>Please contact dev@bringid.org to define an actual reason: {errorText}</>
+      return <>Please contact <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link> to define an actual reason: {errorText}</>
   }  
 }
 
