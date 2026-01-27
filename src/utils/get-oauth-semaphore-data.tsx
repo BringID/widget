@@ -1,6 +1,6 @@
 import {
-  OAuthResponse,
-  OAuthResponsePayload,
+  TOAuthResponse,
+  TOAuthResponsePayload,
   TTask
 } from '../types'
 import {
@@ -13,7 +13,7 @@ type TGetOAuthSemaphoreData = (
   task: TTask,
   plausibleEvent: (eventName: string) => void
 ) => Promise<
-  OAuthResponsePayload
+  TOAuthResponsePayload
 >
 
 const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
@@ -54,7 +54,7 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
         return
       }
 
-      const data = event.data as OAuthResponse
+      const data = event.data as TOAuthResponse
 
       switch (data.type) {
         case "AUTH_SUCCESS": {
