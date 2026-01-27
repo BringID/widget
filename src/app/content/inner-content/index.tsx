@@ -179,6 +179,7 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
+          console.log({ type: "PROOFS_RESPONSE", requestId, payload })
           window.parent.postMessage(
             { type: "PROOFS_RESPONSE", requestId, payload },
             parentOrigin
