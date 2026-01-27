@@ -7,7 +7,7 @@ import {
 
 export const Container = styled.div`
   position: relative;
-  width: 400px;
+  max-width: 400px;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
