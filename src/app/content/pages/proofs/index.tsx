@@ -38,6 +38,7 @@ import { prepareProofs } from '../../utils'
 import { useConfigs } from '../../store/reducers/configs'
 import { useModal } from '../../store/reducers/modal'
 import { usePlausible } from 'next-plausible'
+import { ErrorOverlay } from '../../components'
 
 const renderContent = (
   minPoints: number,
@@ -114,6 +115,7 @@ const renderButton = (
   pointsSelected: number,
   onConfirm: TOnConfirm,
   onCancel: TOnCancel,
+  onError: (errorText: string) => void,
   setPage: TSetPage
 ) => {
 
@@ -167,9 +169,9 @@ const renderButton = (
         plausibleEvent('prepare_proofs_failed')
         const myErr = err as Error
         if (myErr.message) {
-          alert(myErr.message)
+          onError(myErr.message)
         } else {
-          alert('Some error occured. Please try later')
+          onError('SOME_ERROR_OCCURED_WHILE_FETCHING_PROOFS')
         }
       }
       setLoading(false)
@@ -187,6 +189,8 @@ const Proofs: FC<TProps> = ({
   const { verifications } = useVerifications();
   const user = useUser()
   const modal = useModal()
+
+  const [ error, setError ] = useState<string | null>(null)
 
   const userConfigs = useConfigs()
   const [loading, setLoading] = useState<boolean>(false);
@@ -233,6 +237,14 @@ const Proofs: FC<TProps> = ({
 
   return (
     <>
+
+      {error && <ErrorOverlay
+        errorText={error}
+        onClose={() => {
+          setError(null)
+        }}
+      />}
+
       <Container>
         {renderTitles(modal.minPoints, availablePoints)}
 
@@ -264,6 +276,7 @@ const Proofs: FC<TProps> = ({
           pointsSelected,
           onConfirm,
           onCancel,
+          (errorMessage) => setError(errorMessage),
           setPage
         )}
       </FooterStyled>
