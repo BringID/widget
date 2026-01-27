@@ -8,9 +8,13 @@ export const Container = styled.div<{
 }>`
   padding: 12px;
   border-radius: 8px;
-
   background-color: ${(props) => props.theme.defaultStatusBackgroundColor};
   border: 1px solid ${(props) => props.theme.defaultStatusBorderColor};
+
+
+  @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+    padding: 8px;
+  }
 `;
 
 export const CheckboxStyled = styled(Checkbox)``;
