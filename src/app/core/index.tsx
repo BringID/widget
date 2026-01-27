@@ -17,7 +17,7 @@ async function loadConfigs(
 
     return {
       tasks: tasksResponse.map((task: any) => {
-        task.icon = 'github'
+        task.icon = 'x'
         console.log(task)
         return task
       }),
