@@ -4,7 +4,8 @@ const isValidOAuthMessage = (message: any): boolean => {
     typeof message === 'object' &&
     typeof message.domain === 'string' &&
     typeof message.user_id === 'string' &&
-    typeof message.timestamp === 'number'
+    typeof message.timestamp === 'number' &&
+    typeof message.secret === 'string'
   )
 }
 

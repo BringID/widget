@@ -67,7 +67,7 @@ const defineTaskContent = (
 
                 if (group) {
 
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(message.domain, message.secret)
 
                   const verify = await verifierApi.verifyOAuth(
                     configs.ZUPLO_API_URL,

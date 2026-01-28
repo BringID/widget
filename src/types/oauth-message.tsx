@@ -3,6 +3,7 @@ type TOAuthMessage = {
   userId: string
   score: number
   timestamp: number
+  secret: string
 }
 
 export default TOAuthMessage
