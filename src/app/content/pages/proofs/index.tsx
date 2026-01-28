@@ -259,7 +259,6 @@ const Proofs: FC<TProps> = ({
       <FooterStyled
         points={availablePoints}
         address={user.address}
-        userKey={user.key}
       >
         {renderButton(
           (eventName) => plausible(eventName),

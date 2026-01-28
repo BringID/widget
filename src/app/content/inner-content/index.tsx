@@ -335,7 +335,6 @@ const InnerContent: FC<TProps> = ({
   return <Container>
     <HeaderStyled
       address={user.address}
-      userKey={user.key}
     />
     {loading && <LoadingOverlay title="Thinking..."/>}
     <Content>

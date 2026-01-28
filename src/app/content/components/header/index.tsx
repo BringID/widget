@@ -12,10 +12,9 @@ import { request } from 'http';
 
 const defineContent = (
   address: string | null,
-  userKey: string | null
 ) => {
 
-  if (!address || !userKey) {
+  if (!address) {
     return null
   }
 
@@ -28,13 +27,11 @@ const defineContent = (
 
 const HeaderComponent: FC<TProps> = ({
   address,
-  userKey
 }) => {
   const modal = useModal()
   return <Header>
     {defineContent(
       address,
-      userKey
     )}
     <CloseButtonStyled
       onClick={() => {

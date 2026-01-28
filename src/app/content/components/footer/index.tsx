@@ -14,11 +14,10 @@ import TProps from './types'
 const defineContent = (
   address: string | null,
   points: number,
-  userKey: string | null,
   children?: React.ReactNode | React.ReactNode[]
 ) => {
 
-  if (!address || !userKey) {
+  if (!address) {
     return <TitleStyled>
       <LinkStyled href={configs.BRINGID_URL} target='_blank'>
         <ProfileIcon />Powered by BringID
@@ -39,14 +38,12 @@ const defineContent = (
 const FooterComponent: FC<TProps> = ({
   points,
   address,
-  userKey,
   children
 }) => {
   return <Footer>
     {defineContent(
       address,
       points,
-      userKey,
       children
     )}
   </Footer>

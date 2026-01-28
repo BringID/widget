@@ -1,6 +1,5 @@
 type TProps = {
   address: string | null;
-  userKey: string | null;
 };
 
 export default TProps;

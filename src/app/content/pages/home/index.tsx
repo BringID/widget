@@ -5,34 +5,16 @@ import {
   Container,
   VerificationsListStyled,
   ButtonStyled,
-  AuthorizeContent,
   FooterStyled
 } from './styled-components';
 import { useVerifications } from '../../store/reducers/verifications';
 import {
   LoadingOverlay,
-  Authorize,
 } from '../../components';
 import { calculateAvailablePoints } from '@/utils';
 import { useUser } from '../../store/reducers/user';
-import { TVerification, TTask } from '@/types';
 import { TProps } from './types'
 import { useConfigs } from '../../store/reducers/configs';
-
-const renderContent = (
-  userKey: string | null,
-  verifications: TVerification[],
-) => {
-  if (!userKey) {
-    return <AuthorizeContent>
-      <Authorize />
-    </AuthorizeContent>
-  }
-
-  return <VerificationsListStyled
-    verifications={verifications}
-  />
-}
 
 const Home: FC<TProps> = ({
   setPage
@@ -51,16 +33,14 @@ const Home: FC<TProps> = ({
     <>
       <Container>
         {loading && <LoadingOverlay title="Processing verification..." />}
-        {renderContent(
-          user.key,
-          verifications,
-        )}
+        <VerificationsListStyled
+          verifications={verifications}
+        />
       </Container>
 
       <FooterStyled
         points={availablePoints}
         address={user.address}
-        userKey={user.key}
       >
         <ButtonStyled
           disabled={finishedVerifications.length === 0}
