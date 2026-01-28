@@ -53,7 +53,8 @@ const defineTaskContent = (
                 plausibleEvent('oauth_verification_started')
                 const {
                   message,
-                  signature
+                  signature,
+                  secret
                 } = await getOAuthSemaphoreData(
                   task,
                   plausibleEvent
@@ -67,7 +68,7 @@ const defineTaskContent = (
 
                 if (group) {
 
-                  const semaphoreIdentity = createSemaphoreIdentity(message.domain, message.secret)
+                  const semaphoreIdentity = createSemaphoreIdentity(message.domain, secret)
 
                   const verify = await verifierApi.verifyOAuth(
                     configs.ZUPLO_API_URL,

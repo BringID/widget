@@ -2,7 +2,8 @@ import TOAuthMessage from './oauth-message'
 
 export type TOAuthResponsePayload = {
   message: TOAuthMessage,
-  signature: string
+  signature: string,
+  secret: string
 }
 
 export type TOAuthErrorPayload = {

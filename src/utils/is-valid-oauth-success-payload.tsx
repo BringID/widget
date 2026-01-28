@@ -7,7 +7,8 @@ const isValidAuthSuccessPayload = (payload: any): boolean => {
     typeof payload === 'object' &&
     isValidOAuthMessage(payload.message) &&
     typeof payload.signature === 'string' &&
-    payload.signature.length > 0
+    payload.signature.length > 0 &&
+    typeof payload.secret === 'string'
   )
 }
 
