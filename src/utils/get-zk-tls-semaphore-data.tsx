@@ -1,4 +1,6 @@
 import { TTask } from '../types'
+import generateRequestId from './generate-request-id';
+import { isValidZKTLSErrorMessage, isValidZKTLSSuccessMessage } from '@/utils';
 
 type TGetZKTLSSemaphoreData = (
   task: TTask,
@@ -21,40 +23,50 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
     const bringIdInstalled = (window as any).bringID
     if (!bringIdInstalled) {
       reject('No extension installed')
+      return
     }
+
+    const cleanup = () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener("message", handler)
+    }
+
+    const requestId = generateRequestId()
 
     window.postMessage({
       type: 'REQUEST_ZKTLS_VERIFICATION',
       payload: {
         task: JSON.stringify(task),
         origin: window.location.origin
-      }
-    }, '*') // You can restrict the origin in production
+      },
+      requestId
+    }, '*')
 
 
     const handler = async (event: MessageEvent) => {
-      console.log({ event })
-
-      if (event.data?.type === "VERIFICATION_DATA_READY") {
+      if (event.source !== window) return
+  
+      const readyPayload = isValidZKTLSSuccessMessage(event.data, requestId)
+      if (readyPayload) {
         plausibleEvent('zktls_verification_response_received')
-        const {
-          transcriptRecv,
-          presentationData
-        } = event.data.payload
-
-        window.removeEventListener("message", handler)
-        resolve({
-          transcriptRecv,
-          presentationData
-        })
+        resolve(readyPayload)
+        cleanup()
+        return
       }
 
-      if (event.data?.type === "VERIFICATION_DATA_ERROR") {
+      const errorPayload = isValidZKTLSErrorMessage(event.data, requestId)
+      if (errorPayload) {
         plausibleEvent('zktls_verification_failed')
-        window.removeEventListener("message", handler)
-        reject(event.data.payload.error)
+        cleanup()
+        reject(errorPayload.error)
+        return
       }
     }
+
+    const timeoutId = setTimeout(() => {
+      cleanup()
+      reject('VERIFICATION_TIMED_OUT')
+    }, 1800000) // 30 mins to finish
 
     window.addEventListener("message", handler)
   })
