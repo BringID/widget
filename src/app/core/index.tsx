@@ -7,7 +7,6 @@ async function loadConfigs(
     configs: TModeConfigs
   }> {
   try {
-
     const configsFileName = devMode ? 'dev-configs' : 'configs'
     const tasksFileName = devMode ? 'tasks-sepolia' : 'tasks'
     const configs = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${configsFileName}.json`)
