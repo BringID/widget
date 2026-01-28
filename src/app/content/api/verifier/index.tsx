@@ -53,6 +53,7 @@ const verifyOAuth: TVerifyOAuth = async (
     {
       message: {
         ...message,
+        secret: undefined,
         user_id: undefined,
 
         // @ts-ignore
