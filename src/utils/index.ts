@@ -1,3 +1,5 @@
+import isValidZKTLSErrorMessage from './is-valid-zktls-error-message'
+import isValidZKTLSSuccessMessage from './is-valid-zktls-success-message'
 import alertError from './alert-error'
 import defineExplorerURL from "./define-explorer-url"
 import shortenString from './shorten-string'
@@ -25,11 +27,16 @@ import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
 import defineGroupForOAuth from './define-group-for-oauth'
 import lightenHex from './lighten-hex'
 import isValidOAuthMessage from './is-valid-oauth-message'
-import isValidAuthErrorPayload from './is-valid-oauth-error-message'
+import isValidAuthErrorPayload from './is-valid-oauth-error-payload'
 import isValidAuthSuccessPayload from './is-valid-oauth-success-payload'
 import defineTaskIcon from './define-task-icon'
+import generateRequestId from './generate-request-id'
+
 
 export {
+    isValidZKTLSErrorMessage,
+  isValidZKTLSSuccessMessage,
+  generateRequestId,
   isValidOAuthMessage,
   isValidAuthErrorPayload,
   defineTaskIcon,
@@ -59,5 +66,6 @@ export {
   defineExplorerURL,
   formatExpiration,
   api,
-  defineGroupForOAuth
+  defineGroupForOAuth,
+
 }
