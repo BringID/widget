@@ -3,8 +3,4 @@
   height: 550px;
   overflow: hidden;
   background: rgb(249 250 251);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
 }
