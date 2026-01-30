@@ -1,6 +1,9 @@
 .page {
   margin: 0;
-  height: 500px;
-  overflow: hidden;
+  min-height: 100vh;
   background: rgb(249 250 251);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }

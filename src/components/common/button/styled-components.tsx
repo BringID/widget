@@ -45,6 +45,7 @@ export const Button = styled.button<TProps>`
     props.disabled &&
     css`
       cursor: not-allowed;
+      color: ${(props) => props.theme.secondaryTextColor};
       background-color: ${(props) => props.theme.buttonDisabledBackgroundColor};
     `}
 
