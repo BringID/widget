@@ -23,5 +23,4 @@ export const Content = styled.div`
   min-height: 0;
 `
 
-
 export const HeaderStyled = styled(Header)``
