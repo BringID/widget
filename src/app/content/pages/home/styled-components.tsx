@@ -10,7 +10,23 @@ export const Container = styled.div`
   height: 100%;
   overflow-y: auto;
   min-height: 0;
-  box-shadow: inset 0 3px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor}, inset 0 -3px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor};
+
+  :before {
+    content: "";
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    pointer-events: none;
+    z-index: 1;
+
+    background: linear-gradient(
+      to bottom,
+      ${props => props.theme.scrollContainerInnerShadowColor},
+      transparent
+    );
+  }
 `;
 
 export const AuthorizeContent = styled.div`
