@@ -15,6 +15,9 @@ export const FooterStyled = styled(Footer)``
 
 export const Container = styled.div`
   padding: 16px;
+
+  overflow-y: auto;    /* ✅ only this scrolls */
+  min-height: 0;       /* 🔑 also critical */
 `
 
 export const VerificationSelectListStyled = styled(VerificationSelectList)`
