@@ -53,6 +53,9 @@ const theme = {
 
     // relates to configured color - darkened white (inverted from lightened black)
     buttonDisabledBackgroundColor: 'rgb(156, 156, 156)',
+
+
+    scrollContainerInnerShadowColor: 'rgba(255, 255, 255, 0.25)'
   }
 
   export default theme
