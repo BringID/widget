@@ -24,7 +24,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
 ) => {
 
   const popupURL = verificationType === 'oauth' ? `${configs.AUTH_DOMAIN}/${verificationUrl}` : verificationUrl
-  const awaitingEventSource = verificationType === 'oauth' ? configs.AUTH_DOMAIN : verificationUrl
+  const awaitingEventSource = verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(verificationUrl).origin
 
   return new Promise((resolve, reject) => {
     const popup = window.open(
@@ -53,6 +53,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     }, 500);
 
     const handler = async (event: MessageEvent) => {
+
       if (event.origin !== awaitingEventSource) return
       if (event.source !== popup) return
       if (!event.data || typeof event.data !== 'object' || !event.data.type) {
