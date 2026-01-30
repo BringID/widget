@@ -23,7 +23,8 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
 
   return new Promise((resolve, reject) => {
     const popup = window.open(
-      `${configs.AUTH_DOMAIN}/${task.oauthUrl}`,
+      // `${configs.AUTH_DOMAIN}/${task.oauthUrl}`,
+      `${task.oauthUrl}`,
       "oauth",
       "width=400,height=600,popup=yes"
     )
@@ -66,6 +67,8 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
           }
 
           const { message, signature } = data.payload
+
+          console.log({ message, signature })
           plausibleEvent('oauth_verification_response_received')
           cleanup()
           resolve({ message, signature })
