@@ -1,6 +1,7 @@
 import styled, { css } from "styled-components"
 
 import {
+  Footer,
   Header
 } from '../components' 
 
@@ -9,19 +10,20 @@ export const Container = styled.div`
   max-width: 400px;
   width: 100%;
   border-radius: 20px;
-  height: 100%;
-  display: grid;
-  grid-template-rows: min-content 1fr;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
   margin: auto;
   background-color:${props => props.theme.primaryBackgroundColor};
 `
 
 export const Content = styled.div`
-  display: grid;
-  grid-template-rows: 1fr min-content;
-  overflow-y: auto;
-  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `
 
+export const FooterStyled = styled(Footer)``
 
 export const HeaderStyled = styled(Header)``

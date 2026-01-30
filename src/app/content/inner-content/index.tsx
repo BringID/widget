@@ -2,6 +2,7 @@
 import { FC, useEffect, useState } from 'react'
 import {
   Container,
+  FooterStyled,
   Content,
   HeaderStyled
 } from './styled-components'
