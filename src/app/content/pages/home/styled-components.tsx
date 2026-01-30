@@ -10,6 +10,7 @@ export const Container = styled.div`
   height: 100%;
   overflow-y: auto;
   min-height: 0;
+  box-shadow: inset 0 3px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor}, inset 0 -3px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor};
 `;
 
 export const AuthorizeContent = styled.div`
