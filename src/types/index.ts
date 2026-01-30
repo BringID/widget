@@ -1,3 +1,4 @@
+import TVerificationType from './verification-type'
 import TSemaphoreProof from "./semaphore-proof"
 import TExtensionStatus from './extension-status'
 import TErrorType from "./error-type"
@@ -35,6 +36,7 @@ export type { TTaskServer } from './task-server';
 export type { TVerifyResult } from './verify-result';
 
 export type {
+  TVerificationType,
   TSemaphoreProof,
   TExtensionStatus,
   TErrorType,

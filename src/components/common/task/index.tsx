@@ -7,8 +7,8 @@ import configs from '@/app/configs'
 import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
-  defineGroupForOAuth,
-  getOAuthSemaphoreData,
+  defineGroupForAuth,
+  getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult
 } from '@/utils'
@@ -48,19 +48,20 @@ const defineTaskContent = (
               setLoading(true)
               setIsActive(true)
 
-              if (task.oauthUrl) {
+              if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
 
                 plausibleEvent('oauth_verification_started')
 
                 const {
                   message,
                   signature
-                } = await getOAuthSemaphoreData(
-                  task,
+                } = await getAuthSemaphoreData(
+                  task.verificationType,
+                  task.verificationUrl,
                   plausibleEvent
                 )
 
-                const group = defineGroupForOAuth(
+                const group = defineGroupForAuth(
                   task,
                   message.score
                 )

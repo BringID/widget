@@ -1,4 +1,4 @@
-const isValidOAuthMessage = (message: any): boolean => {
+const isValidAuthMessage = (message: any): boolean => {
   return (
     message &&
     typeof message === 'object' &&
@@ -9,4 +9,4 @@ const isValidOAuthMessage = (message: any): boolean => {
 }
 
 
- export default isValidOAuthMessage
+ export default isValidAuthMessage

@@ -26,7 +26,7 @@ const compare = (
   }
 }
 
-const defineGroupForOAuth = (
+const defineGroupForAuth = (
   taskConfig: TTask,
   score: number
 ): Omit<TTaskGroup, "checks"> | null => {
@@ -55,4 +55,4 @@ const defineGroupForOAuth = (
   return groupWithoutChecks
 }
 
-export default defineGroupForOAuth
+export default defineGroupForAuth
