@@ -10,11 +10,12 @@ export const Container = styled.div`
   height: 100%;
   overflow-y: auto;
   min-height: 0;
+  position: relative;
 
-  :before {
+  :after {
     content: "";
     position: sticky;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     height: 4px;
