@@ -15,17 +15,20 @@ export const Container = styled.div`
   &::after {
     content: "";
     position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    height: 20px;
     pointer-events: none;
-    z-index: 1;
+    display: block;
+
+    // needs to compensate padding
+    transform: translateY(16px);
 
     background: linear-gradient(
       to bottom,
-      ${props => props.theme.scrollContainerInnerShadowColor},
-      transparent
+      transparent,
+      ${props => props.theme.primaryBackgroundColor},
     );
   }
 `;
