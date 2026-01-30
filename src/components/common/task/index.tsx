@@ -7,8 +7,8 @@ import configs from '@/app/configs'
 import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
-  defineGroupForOAuth,
-  getOAuthSemaphoreData,
+  defineGroupForAuth,
+  getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult
 } from '@/utils'
@@ -48,19 +48,20 @@ const defineTaskContent = (
               setLoading(true)
               setIsActive(true)
 
-              if (task.oauthUrl) {
+              if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
 
                 plausibleEvent('oauth_verification_started')
 
                 const {
                   message,
                   signature
-                } = await getOAuthSemaphoreData(
-                  task,
+                } = await getAuthSemaphoreData(
+                  task.verificationType,
+                  task.verificationUrl,
                   plausibleEvent
                 )
 
-                const group = defineGroupForOAuth(
+                const group = defineGroupForAuth(
                   task,
                   message.score
                 )
@@ -73,55 +74,55 @@ const defineTaskContent = (
                 
 
 
-                // if (group) {
+                if (group) {
 
-                //   const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
 
-                //   const verify = await verifierApi.verifyOAuth(
-                //     configs.ZUPLO_API_URL,
-                //     message,
-                //     signature,
-                //     modeConfigs.REGISTRY,
-                //     group.credentialGroupId,
-                //     String(semaphoreIdentity.commitment),
-                //     mode
-                //   )
+                  const verify = await verifierApi.verifyOAuth(
+                    configs.ZUPLO_API_URL,
+                    message,
+                    signature,
+                    modeConfigs.REGISTRY,
+                    group.credentialGroupId,
+                    String(semaphoreIdentity.commitment),
+                    mode
+                  )
 
-                //   const {
-                //     signature: verifierSignature,
-                //     verifier_message: {
-                //       id_hash
-                //     }
-                //   } = verify
+                  const {
+                    signature: verifierSignature,
+                    verifier_message: {
+                      id_hash
+                    }
+                  } = verify
 
-                //   const { task: taskCreated, success } = await taskManagerApi.addVerification(
-                //     configs.ZUPLO_API_URL,
-                //     group.credentialGroupId,
-                //     id_hash,
-                //     String(semaphoreIdentity.commitment),
-                //     verifierSignature,
-                //     modeConfigs
-                //   )
+                  const { task: taskCreated, success } = await taskManagerApi.addVerification(
+                    configs.ZUPLO_API_URL,
+                    group.credentialGroupId,
+                    id_hash,
+                    String(semaphoreIdentity.commitment),
+                    verifierSignature,
+                    modeConfigs
+                  )
 
-                //   console.log({ task: taskCreated, success  })
+                  console.log({ task: taskCreated, success  })
 
-                //   if (success) {
-                //     setLoading(false)
-                //     setIsActive(false)
-                //     plausibleEvent('oauth_verification_finished')
-                //     resultCallback({
-                //       status: 'scheduled',
-                //       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
-                //       taskId: taskCreated.id,
-                //       credentialGroupId: group?.credentialGroupId,
-                //       fetched: false
-                //     })
-                //   }
+                  if (success) {
+                    setLoading(false)
+                    setIsActive(false)
+                    plausibleEvent('oauth_verification_finished')
+                    resultCallback({
+                      status: 'scheduled',
+                      scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
+                      taskId: taskCreated.id,
+                      credentialGroupId: group?.credentialGroupId,
+                      fetched: false
+                    })
+                  }
 
-                //   console.log({ taskCreated })
-                // } else {
-                //   throw new Error(`Group not defined for score ${message.score}`)
-                // }
+                  console.log({ taskCreated })
+                } else {
+                  throw new Error(`Group not defined for score ${message.score}`)
+                }
 
 
               } else {

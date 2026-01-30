@@ -164,8 +164,6 @@ const InnerContent: FC<TProps> = ({
         return;
       }
 
-      console.log('EVENT::', { event })
-
       if (event.source === window && event.origin === window.location.origin) {
         if (type === 'GENERATE_USER_KEY') {
           plausible('generate_user_key_started');
