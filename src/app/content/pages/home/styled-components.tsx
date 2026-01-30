@@ -3,34 +3,16 @@ import { VerificationsList, Footer } from '../../components'
 import { Button } from '@/components/common'
 
 
-export const FooterStyled = styled(Footer)``
+export const FooterStyled = styled(Footer)`
+  box-shadow:
+    0 -12px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor};
+`
 
 export const Container = styled.div`
   padding: 16px;
   height: 100%;
   overflow-y: auto;
   min-height: 0;
-  position: relative;
-
-  &::after {
-    content: "";
-    position: sticky;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    height: 20px;
-    pointer-events: none;
-    display: block;
-
-    // needs to compensate padding
-    transform: translateY(16px);
-
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      ${props => props.theme.primaryBackgroundColor},
-    );
-  }
 `;
 
 export const AuthorizeContent = styled.div`
