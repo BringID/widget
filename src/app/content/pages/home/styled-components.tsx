@@ -8,6 +8,8 @@ export const FooterStyled = styled(Footer)``
 export const Container = styled.div`
   padding: 16px;
   height: 100%;
+  overflow-y: auto;
+  min-height: 0;
 `;
 
 export const AuthorizeContent = styled.div`
