@@ -1,7 +1,6 @@
 import styled, { css } from "styled-components"
 
 import {
-  Footer,
   Header
 } from '../components' 
 
@@ -18,9 +17,10 @@ export const Container = styled.div`
 `
 
 export const Content = styled.div`
-  flex: 1;
   display: grid;
   grid-template-rows: 1fr min-content;
+  overflow-y: auto;
+  min-height: 0;
 `
 
 
