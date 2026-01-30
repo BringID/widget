@@ -12,7 +12,7 @@ export const Container = styled.div`
   min-height: 0;
   position: relative;
 
-  :after {
+  &::after {
     content: "";
     position: sticky;
     bottom: 0;
