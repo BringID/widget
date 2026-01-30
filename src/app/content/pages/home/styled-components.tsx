@@ -4,8 +4,7 @@ import { Button } from '@/components/common'
 
 
 export const FooterStyled = styled(Footer)`
-  box-shadow:
-    0 -12px 3px -3px ${props => props.theme.scrollContainerInnerShadowColor};
+  box-shadow: 15px -40px 60px -10px ${props => props.theme.primaryBackgroundColor}, -15px -40px 60px -20px ${props => props.theme.primaryBackgroundColor};
 `
 
 export const Container = styled.div`
