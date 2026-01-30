@@ -40,9 +40,10 @@ const FooterComponent: FC<TProps> = ({
   points,
   address,
   userKey,
-  children
+  children,
+  className
 }) => {
-  return <Footer>
+  return <Footer className={className}>
     {defineContent(
       address,
       points,
