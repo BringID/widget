@@ -9,4 +9,5 @@ export type TProps = {
     active: boolean
   ) => void
   onError: (errorText: string) => void
+  onMessage: (message: string) => void
 };
