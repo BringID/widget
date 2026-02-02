@@ -32,6 +32,8 @@ const theme = {
 
   // relates to configured color
   buttonDisabledBackgroundColor: 'rgb(100, 100, 100)',
+
+  scrollContainerInnerShadowColor: 'rgba(255, 255, 255, 0.15)'
 }
 
 export default theme

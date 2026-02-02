@@ -21,14 +21,14 @@ import defineRelatedVerification from './define-related-verification';
 import calculateAvailablePoints from './calculate-available-points';
 import msToTime from './ms-to-time';
 import defineInitialSelectedVerifications from './define-initial-selected-verifications';
-import getOAuthSemaphoreData from './get-oauth-semaphore-data'
+import getAuthSemaphoreData from './get-auth-semaphore-data'
 import defineGroupByZKTLSResult from './define-group-by-zktls-result'
 import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
-import defineGroupForOAuth from './define-group-for-oauth'
+import defineGroupForAuth from './define-group-for-auth'
 import lightenHex from './lighten-hex'
-import isValidOAuthMessage from './is-valid-oauth-message'
-import isValidAuthErrorPayload from './is-valid-oauth-error-payload'
-import isValidAuthSuccessPayload from './is-valid-oauth-success-payload'
+import isValidOAuthMessage from './is-valid-auth-message'
+import isValidAuthErrorPayload from './is-valid-auth-error-payload'
+import isValidAuthSuccessPayload from './is-valid-auth-success-payload'
 import defineTaskIcon from './define-task-icon'
 import generateRequestId from './generate-request-id'
 
@@ -53,7 +53,7 @@ export {
   defineRelatedVerification,
   calculateAvailablePoints,
   defineInitialSelectedVerifications,
-  getOAuthSemaphoreData,
+  getAuthSemaphoreData,
   defineGroupByZKTLSResult,
   getZKTLSSemaphoreData,
   alertError,
@@ -66,6 +66,6 @@ export {
   defineExplorerURL,
   formatExpiration,
   api,
-  defineGroupForOAuth,
+  defineGroupForAuth,
 
 }

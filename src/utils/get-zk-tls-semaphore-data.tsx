@@ -19,13 +19,6 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
 ) => {
   return new Promise((resolve, reject) => {
 
-    // send the request to extension
-    const bringIdInstalled = (window as any).bringID
-    if (!bringIdInstalled) {
-      reject('No extension installed')
-      return
-    }
-
     const cleanup = () => {
       clearTimeout(timeoutId)
       window.removeEventListener("message", handler)

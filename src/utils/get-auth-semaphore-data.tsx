@@ -1,29 +1,35 @@
 import {
   TOAuthResponse,
   TOAuthResponsePayload,
-  TTask
+  TVerificationType
 } from '../types'
 import {
   isValidAuthErrorPayload,
   isValidAuthSuccessPayload
-} from '../utils'
+} from '.'
 import configs from '@/app/configs'
 
-type TGetOAuthSemaphoreData = (
-  task: TTask,
+type TGetAuthSemaphoreData = (
+  verificationType: TVerificationType,
+  verificationUrl: string,
   plausibleEvent: (eventName: string) => void
 ) => Promise<
   TOAuthResponsePayload
 >
 
-const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
-  task,
+const getAuthSemaphoreData: TGetAuthSemaphoreData = (
+  verificationType,
+  verificationUrl,
   plausibleEvent
 ) => {
 
+  const popupURL = verificationType === 'oauth' ? `${configs.AUTH_DOMAIN}/${verificationUrl}` : verificationUrl
+  const awaitingEventSource = verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(verificationUrl).origin
+
   return new Promise((resolve, reject) => {
     const popup = window.open(
-      `${configs.AUTH_DOMAIN}/${task.oauthUrl}`,
+      // ,
+      popupURL,
       "oauth",
       "width=400,height=600,popup=yes"
     )
@@ -47,7 +53,8 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
     }, 500);
 
     const handler = async (event: MessageEvent) => {
-      if (event.origin !== configs.AUTH_DOMAIN) return
+
+      if (event.origin !== awaitingEventSource) return
       if (event.source !== popup) return
       if (!event.data || typeof event.data !== 'object' || !event.data.type) {
         console.warn('Invalid message structure received')
@@ -66,6 +73,8 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
           }
 
           const { message, signature } = data.payload
+
+          console.log({ message, signature })
           plausibleEvent('oauth_verification_response_received')
           cleanup()
           resolve({ message, signature })
@@ -94,4 +103,4 @@ const getOAuthSemaphoreData: TGetOAuthSemaphoreData = (
   
 };
 
-export default getOAuthSemaphoreData
+export default getAuthSemaphoreData

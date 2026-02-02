@@ -56,4 +56,8 @@ export const TextStyled = styled(Text)`
   font-size: 15px;
   width: 100%;
   color: ${props => props.theme.secondaryTextColor};
+
+  @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+    font-size: 12px;
+  }
 `;

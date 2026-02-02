@@ -11,6 +11,7 @@ import TProps from './types';
 import { defineRelatedVerification, defineTaskByCredentialGroupId } from '@/utils';
 import { useUser } from '../../store/reducers/user';
 import { useConfigs } from '../../store/reducers/configs';
+import MessageOverlay from '../message-overlay';
 
 const VerificationsList: FC<TProps> = ({
   verifications,
@@ -26,6 +27,7 @@ const VerificationsList: FC<TProps> = ({
   );
 
   const [ error, setError ] = useState<string | null>(null)
+  const [ message, setMessage ] = useState<string | null>(null)
   const [ isActive, setIsActive ] = useState<boolean>(false)
 
   return (
@@ -35,6 +37,13 @@ const VerificationsList: FC<TProps> = ({
         errorText={error}
         onClose={() => {
           setError(null)
+        }}
+      />}
+
+      {message && <MessageOverlay
+        message={message}
+        onClose={() => {
+          setMessage(null)
         }}
       />}
 
@@ -83,6 +92,9 @@ const VerificationsList: FC<TProps> = ({
             // here render task, not verification
             return (
               <Task
+                onMessage={message => {
+                  setMessage(message)
+                }}
                 task={task}
                 status='default'
                 userKey={user.key}

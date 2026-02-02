@@ -6,6 +6,7 @@ import LoadingOverlay from './loading-overlay';
 import Authorize from './authorize';
 import Footer from './footer'
 import ErrorOverlay from './error-overlay'
+import MessageOverlay from './message-overlay'
 
 export {
   Header,
@@ -15,5 +16,6 @@ export {
   LoadingOverlay,
   Authorize,
   Footer,
-  ErrorOverlay
+  ErrorOverlay,
+  MessageOverlay
 }

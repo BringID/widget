@@ -7,8 +7,8 @@ import configs from '@/app/configs'
 import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
   createSemaphoreIdentity,
-  defineGroupForOAuth,
-  getOAuthSemaphoreData,
+  defineGroupForAuth,
+  getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult
 } from '@/utils'
@@ -33,7 +33,8 @@ const defineTaskContent = (
     active: boolean
   ) => void,
   resultCallback: (verification: TVerification) => void,
-  errorCallback: (errorText: string) => void
+  errorCallback: (errorText: string) => void,
+  messageCallback: (message: string) => void
 ) => {
   switch (status) {
     case 'default':
@@ -48,22 +49,30 @@ const defineTaskContent = (
               setLoading(true)
               setIsActive(true)
 
-              if (task.oauthUrl) {
+              if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
 
                 plausibleEvent('oauth_verification_started')
+
                 const {
                   message,
                   signature
-                } = await getOAuthSemaphoreData(
-                  task,
+                } = await getAuthSemaphoreData(
+                  task.verificationType,
+                  task.verificationUrl,
                   plausibleEvent
                 )
 
-                const group = defineGroupForOAuth(
+                const group = defineGroupForAuth(
                   task,
                   message.score
                 )
 
+                console.log({
+                  message,
+                  signature,
+                  group
+                })
+                
 
                 if (group) {
 
@@ -112,12 +121,20 @@ const defineTaskContent = (
 
                   console.log({ taskCreated })
                 } else {
-                  throw new Error(`Group not defined for score ${message.score}`)
+                  messageCallback('NOT_ENOUGH_SCORE')
+                  return 
                 }
 
 
               } else {
                 plausibleEvent('zktls_verification_started')
+
+
+                const bringIdInstalled = (window as any).bringID
+                if (!bringIdInstalled) {
+                  messageCallback('EXTENSION_IS_NOT_INSTALLED')
+                  return
+                }
 
                 const {
                   presentationData,
@@ -177,7 +194,8 @@ const defineTaskContent = (
                   console.log({ taskCreated })
                 
                 } else {
-                  throw new Error(`Group is not defined`)
+                  messageCallback('NOT_ENOUGH_SCORE')
+                  return
                 }
 
               }
@@ -210,6 +228,7 @@ const Task: FC<TProps> = ({
   userKey,
   task,
   onError,
+  onMessage,
   setIsActive,
   isActive
 }) => {
@@ -235,7 +254,8 @@ const Task: FC<TProps> = ({
       console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))
     },
-    onError
+    onError,
+    onMessage
   );
 
   return (

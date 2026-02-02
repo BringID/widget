@@ -6,8 +6,13 @@ const defineTaskIcon = (
   switch (taskIcon) {
     case 'github':
       return Icons.GithubIcon
+
     case 'x':
       return Icons.XIcon
+
+    case 'farcaster':
+      return Icons.FarcasterIcon
+  
     default:
       return undefined
   }

@@ -2,7 +2,6 @@
 import { FC, useEffect, useState } from 'react'
 import {
   Container,
-  FooterStyled,
   Content,
   HeaderStyled
 } from './styled-components'
@@ -164,8 +163,6 @@ const InnerContent: FC<TProps> = ({
         console.warn('Unknown message type from parent:', type);
         return;
       }
-
-      console.log('EVENT::', { event })
 
       if (event.source === window && event.origin === window.location.origin) {
         if (type === 'GENERATE_USER_KEY') {

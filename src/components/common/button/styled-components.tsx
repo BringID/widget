@@ -24,6 +24,9 @@ export const Button = styled.button<TProps>`
   color: ${(props) => props.theme && props.theme.primaryTextColor};
   background-color: ${(props) => props.theme.primaryBackgroundColor};
 
+
+  
+
   ${(props) =>
     props.appearance === 'action' &&
     css`
@@ -45,7 +48,6 @@ export const Button = styled.button<TProps>`
     props.disabled &&
     css`
       cursor: not-allowed;
-      color: ${(props) => props.theme.secondaryTextColor};
       background-color: ${(props) => props.theme.buttonDisabledBackgroundColor};
     `}
 
@@ -67,6 +69,14 @@ export const Button = styled.button<TProps>`
         }
       `}
     `}
+
+
+    @media (max-width: ${props => props.theme.mobileBreakpoint}) {
+      height: 32px;
+      font-size: 12px;
+      padding: 4px 8px;
+      line-height: 12px;
+    }
 `;
 
 export const SpinnerStyled = styled(Spinner)`
