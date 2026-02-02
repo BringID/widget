@@ -18,6 +18,7 @@ import KeyIcon from './key'
 import ProfileIcon from './profile-icon'
 import GithubIcon from './github-icon'
 import XIcon from './x-icon'
+import FarcasterIcon from './farcaster-icon'
 
 const Icons = {
   VehicleIcon,
@@ -39,7 +40,8 @@ const Icons = {
   Lock,
   CloseIcon,
   KeyIcon,
-  ProfileIcon
+  ProfileIcon,
+  FarcasterIcon
 };
 
 export default Icons;

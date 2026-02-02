@@ -47,6 +47,7 @@ export const ButtonStyled = styled(Button)`
 
 export const ButtonsContainer = styled.div`
   display: flex;
+  width: 100%;
   gap: 10px;
   flex-direction: column;
 `
