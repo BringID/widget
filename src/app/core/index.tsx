@@ -13,7 +13,6 @@ async function loadConfigs(
     const tasks = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${tasksFileName}.json`)
     const tasksResponse = await tasks.json()
     const configsResponse = await configs.json()
-
     return {
       tasks: tasksResponse,
       configs: configsResponse
