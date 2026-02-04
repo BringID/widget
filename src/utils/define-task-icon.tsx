@@ -1,4 +1,4 @@
-import { Icons } from '@/components/common';
+import { Icons } from '@/components/common'
 
 const defineTaskIcon = (
   taskIcon?: string
@@ -12,6 +12,21 @@ const defineTaskIcon = (
 
     case 'farcaster':
       return Icons.FarcasterIcon
+
+    case 'okx':
+      return Icons.OKXIcon
+
+    case 'binance':
+      return Icons.BinanceIcon
+
+    case 'zkpassport':
+      return Icons.ZKPassportIcon
+
+    case 'uber':
+      return Icons.UberIcon
+
+    case 'apple':
+      return Icons.AppleIcon
   
     default:
       return undefined

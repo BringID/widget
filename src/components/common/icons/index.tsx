@@ -19,10 +19,18 @@ import ProfileIcon from './profile-icon'
 import GithubIcon from './github-icon'
 import XIcon from './x-icon'
 import FarcasterIcon from './farcaster-icon'
+import ZKPassportIcon from './zkpassport-icon'
+import BinanceIcon from './binance-icon'
+import OKXIcon from './okx-icon'
+import AppleIcon from './apple-icon'
+import UberIcon from './uber-icon'
 
 const Icons = {
   VehicleIcon,
+  AppleIcon,
   GithubIcon,
+  UberIcon,
+  ZKPassportIcon,
   XIcon,
   CardIcon,
   HouseIcon,
@@ -41,7 +49,9 @@ const Icons = {
   CloseIcon,
   KeyIcon,
   ProfileIcon,
-  FarcasterIcon
+  FarcasterIcon,
+  BinanceIcon,
+  OKXIcon
 };
 
 export default Icons;
