@@ -112,6 +112,7 @@ const renderButton = (
   modeConfigs: TModeConfigs,
   verifications: TVerification[],
   scope: string | null,
+  message: string | null,
   pointsSelected: number,
   onConfirm: TOnConfirm,
   onCancel: TOnCancel,
@@ -150,6 +151,7 @@ const renderButton = (
           userKey,
           verifications,
           scope,
+          message,
           pointsSelected,
           selected,
           modeConfigs
@@ -273,6 +275,7 @@ const Proofs: FC<TProps> = ({
           userConfigs.modeConfigs,
           verifications,
           user.scope,
+          user.message,
           pointsSelected,
           onConfirm,
           onCancel,

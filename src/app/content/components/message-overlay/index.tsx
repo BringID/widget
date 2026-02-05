@@ -7,16 +7,18 @@ import {
   ButtonStyled,
   ButtonsContainer
 } from './styled-components'
-import { Link } from '@/components/common';
+import { Link } from '@/components/common'
 import TProps from './types'
-import configs from '@/app/configs';
+import configs from '@/app/configs'
+import { InstallExtensionButton } from './components'
+
 
 const defineMessageTitle = (
   errorText: string
 ) => {
   switch (errorText) {
     case 'EXTENSION_IS_NOT_INSTALLED':
-      return 'Extension is not installed'
+      return 'Install BringID Extension'
 
     case 'NOT_ENOUGH_SCORE':
       return 'Not enough score'
@@ -46,12 +48,7 @@ const defineMessageAction = (
 ) => {
   switch (errorText) {
     case 'EXTENSION_IS_NOT_INSTALLED':
-      return <ButtonStyled
-        appearance='action'
-        onClick={() => window.location.reload()}
-      >
-        Reload
-      </ButtonStyled>
+      return <InstallExtensionButton />
       
     case 'NOT_ENOUGH_SCORE':
       return null
