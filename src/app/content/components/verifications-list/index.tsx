@@ -47,14 +47,14 @@ const VerificationsList: FC<TProps> = ({
         }}
       />}
 
-      {hasAnyPendingVerification && (
+      {/* {hasAnyPendingVerification && (
         <NoteStyled>
           We batch verifications for better privacy.{' '}
           <LinkStyled href="https://bringid.org/privacy-policy" target="_blank">
             Learn more
           </LinkStyled>
         </NoteStyled>
-      )}
+      )} */}
       {/* {verifications.length === 0 && (
         <NoVerificationsFound title="No verifications yet" />
       )} */}

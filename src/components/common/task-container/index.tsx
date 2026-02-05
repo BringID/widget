@@ -62,7 +62,7 @@ const TaskContainer: FC<TProps> = ({
         </Content>
         {children}
       </Body>
-      {description && <Footer>
+      {status !== 'completed' && description && <Footer>
         {description}
       </Footer>}
 
