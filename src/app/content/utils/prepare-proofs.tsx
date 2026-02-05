@@ -8,6 +8,7 @@ type TGetProofs = (
   userKey: string,
   verifications: TVerification[],
   scope: string | null,
+  message: string | null,
   pointsRequired: number,
   selectedVerifications: string[],
   modeConfigs: TModeConfigs
@@ -18,6 +19,7 @@ const prepareProofs: TGetProofs = async (
   userKey,
   verifications,
   scope,
+  message,
   pointsRequired,
   selectedVerifications,
   modeConfigs
@@ -72,8 +74,14 @@ const prepareProofs: TGetProofs = async (
       }
 
       const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
-      const { merkleTreeDepth, merkleTreeRoot, message, points, nullifier } =
-        await generateProof(identity, data as any, 'verification', scopeToUse);
+      const messageToUse = message || 'verification';
+      console.log({
+        scopeToUse,
+        messageToUse
+      })
+
+      const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
+        await generateProof(identity, data as any, messageToUse, scopeToUse);
 
       semaphoreProofs.push({
         credential_group_id: credentialGroupId,
@@ -81,7 +89,7 @@ const prepareProofs: TGetProofs = async (
           merkle_tree_depth: merkleTreeDepth,
           merkle_tree_root: merkleTreeRoot,
           nullifier: nullifier,
-          message: message,
+          message: proofMessage,
           scope: scopeToUse,
           points,
         },

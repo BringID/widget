@@ -9,7 +9,7 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
-import { setAddress, setApiKey, setKey, setMode, setScope, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
@@ -155,6 +155,7 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
           dispatch(setScope(payload?.scope || null));
+          dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
           dispatch(setRequestId(requestId || null));
           return;

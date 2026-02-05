@@ -12,6 +12,7 @@ enum ActionType {
   '/user/setApiKey' = '/user/setApiKey',
   '/user/destroy' = '/user/destroy',
   '/user/setScope' = '/user/setScope',
+  '/user/setMessage' = '/user/setMessage',
   '/user/setMode' = '/user/setMode'
 }
 
@@ -30,6 +31,7 @@ const initState: State = {
   loading: false,
   apiKey: null,
   scope: null,
+  message: null,
   mode: ''
 };
 
@@ -56,6 +58,11 @@ export const setLoading = (loading: boolean): Action<boolean> => ({
 export const setScope = (scope: string | null): Action<string | null> => ({
   type: ActionType['/user/setScope'],
   payload: scope,
+})
+
+export const setMessage = (message: string | null): Action<string | null> => ({
+  type: ActionType['/user/setMessage'],
+  payload: message,
 })
 
 export const setId = (id: string): Action<string> => ({
@@ -88,7 +95,10 @@ export default function user(state = initState, action: Action<any>): State {
 
     case ActionType['/user/setScope']:
       return  { ...state, scope: action.payload };
-    
+
+    case ActionType['/user/setMessage']:
+      return  { ...state, message: action.payload };
+
     case ActionType['/user/setMode']:
       return  { ...state, mode: action.payload };
 
