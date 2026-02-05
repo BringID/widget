@@ -59,6 +59,7 @@ export const Value = styled.div`
   gap: 4px;
   align-items: center;
   font-size: 12px;
+  color: ${props => props.theme.primaryTextColor};
 `;
 
 export const Icon = styled.img`
