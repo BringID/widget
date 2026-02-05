@@ -8,7 +8,7 @@ async function loadConfigs(
   }> {
   try {
     const configsFileName = devMode ? 'dev-configs' : 'configs'
-    const tasksFileName = devMode ? 'tasks-sepolia' : 'tasks'
+    const tasksFileName = devMode ? 'tasks-sepolia-staging' : 'tasks'
     const configs = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${configsFileName}.json`)
     const tasks = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${tasksFileName}.json`)
     const tasksResponse = await tasks.json()
