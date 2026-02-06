@@ -50,6 +50,11 @@ export const ImageWrapper = styled.div`
   background-color: ${(props) => props.theme.additionalBackgroundColor};
   border: 1px solid ${(props) => props.theme.primaryBorderColor};
   border-radius: 6px;
+
+  svg {
+    max-width: 22px;
+    height: auto;
+  }
 `;
 
 export const Content = styled.div``;
