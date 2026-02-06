@@ -57,7 +57,7 @@ const getProofs: TGetProofs = async (
           semaphore_group_id: proof.semaphoreGroupId,
         }
       }),
-      fetchProofs
+      fetch_proofs: fetchProofs
     }
   );
 };
