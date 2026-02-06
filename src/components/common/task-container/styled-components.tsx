@@ -53,7 +53,8 @@ export const ImageWrapper = styled.div`
 
   svg {
     max-width: 22px;
-    height: auto;
+    height: 22px;
+    object-fit: cover;
   }
 `;
 
