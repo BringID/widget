@@ -28,73 +28,99 @@ const prepareProofs: TGetProofs = async (
   if (!userKey) {
     throw new Error('userKey is not available');
   }
-  const semaphoreProofs: TSemaphoreProof[] = [];
-  let totalScore = 0;
-
 
   if (!verifications || verifications.length === 0) {
     throw new Error('no verifications found');
   }
 
-  if (verifications) {
-    for (let x = 0; x < verifications.length; x++) {
-      if (
-        !selectedVerifications.includes(verifications[x].credentialGroupId)
-      ) {
-        continue;
-      }
-      const { credentialGroupId, status } = verifications[x];
-      if (totalScore >= pointsRequired) {
-        break;
-      }
-      if (status !== 'completed') {
-        continue;
-      }
-      const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, tasks);
+  // First pass: collect all needed identity data and calculate which verifications to include
+  const verificationsToProcess: {
+    credentialGroupId: string,
+    identity: ReturnType<typeof semaphore.createIdentity>,
+    group: ReturnType<typeof defineTaskByCredentialGroupId>['group']
+  }[] = [];
+  let totalScore = 0;
 
-      if (!relatedTask) {
-        continue;
-      }
-
-      const { group } = relatedTask;
-
-      totalScore = totalScore + group.points;
-      const identity = semaphore.createIdentity(userKey, credentialGroupId);
-      const { commitment } = identity;
-
-      const data = await semaphore.getProof(
-        String(commitment),
-        group.semaphoreGroupId,
-        modeConfigs,
-        true
-      );
-
-      if (!data) {
-        throw new Error('no proof found');
-      }
-
-      const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
-      const messageToUse = message || 'verification';
-      console.log({
-        scopeToUse,
-        messageToUse
-      })
-
-      const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
-        await generateProof(identity, data as any, messageToUse, scopeToUse);
-
-      semaphoreProofs.push({
-        credential_group_id: credentialGroupId,
-        semaphore_proof: {
-          merkle_tree_depth: merkleTreeDepth,
-          merkle_tree_root: merkleTreeRoot,
-          nullifier: nullifier,
-          message: proofMessage,
-          scope: scopeToUse,
-          points,
-        },
-      });
+  for (let x = 0; x < verifications.length; x++) {
+    if (!selectedVerifications.includes(verifications[x].credentialGroupId)) {
+      continue;
     }
+    const { credentialGroupId, status } = verifications[x];
+    if (totalScore >= pointsRequired) {
+      break;
+    }
+    if (status !== 'completed') {
+      continue;
+    }
+    const relatedTask = defineTaskByCredentialGroupId(credentialGroupId, tasks);
+
+    if (!relatedTask) {
+      continue;
+    }
+
+    const { group } = relatedTask;
+    totalScore = totalScore + group.points;
+    const identity = semaphore.createIdentity(userKey, credentialGroupId);
+
+    verificationsToProcess.push({
+      credentialGroupId,
+      identity,
+      group
+    });
+  }
+
+  if (verificationsToProcess.length === 0) {
+    return [];
+  }
+
+  // Batch fetch all proofs
+  const proofsData = await semaphore.getProofs(
+    verificationsToProcess.map(({ identity, group }) => ({
+      identityCommitment: String(identity.commitment),
+      semaphoreGroupId: group.semaphoreGroupId
+    })),
+    modeConfigs,
+    true
+  );
+
+  if (!proofsData) {
+    throw new Error('no proofs found');
+  }
+
+  // Process results and generate semaphore proofs
+  const semaphoreProofs: TSemaphoreProof[] = [];
+  const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
+  const messageToUse = message || 'verification';
+
+  console.log({
+    scopeToUse,
+    messageToUse
+  })
+
+  for (const item of verificationsToProcess) {
+    const proofResult = proofsData.find(
+      p => p.identity_commitment === String(item.identity.commitment) &&
+           p.semaphore_group_id === item.group.semaphoreGroupId
+    );
+
+    if (!proofResult || !proofResult.success) {
+      throw new Error('no proof found');
+    }
+
+    const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
+      await generateProof(item.identity, (proofResult as any).proof as any, messageToUse, scopeToUse);
+
+    semaphoreProofs.push({
+      credential_group_id: item.credentialGroupId,
+      semaphore_proof: {
+        merkle_tree_depth: merkleTreeDepth,
+        merkle_tree_root: merkleTreeRoot,
+        nullifier: nullifier,
+        message: proofMessage,
+        scope: scopeToUse,
+        points,
+      },
+    });
   }
 
   return semaphoreProofs;

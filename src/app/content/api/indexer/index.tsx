@@ -5,7 +5,12 @@ import {
   defineZuploNetworkName,
   createQueryString,
 } from '@/utils';
-import { TGetProof, TGetProofResponse } from './types';
+import {
+  TGetProof,
+  TGetProofResponse,
+  TGetProofsResponse,
+  TGetProofs
+} from './types';
 
 const getProof: TGetProof = async (
   apiUrl,
@@ -30,8 +35,31 @@ const getProof: TGetProof = async (
   );
 };
 
+
+const getProofs: TGetProofs = async (
+  apiUrl,
+  data,
+  modeConfigs,
+  fetchProofs,
+) => {
+  const networkName = defineZuploNetworkName(modeConfigs.CHAIN_ID);
+
+  return api<TGetProofsResponse>(
+    `${apiUrl}/v1/indexer/${networkName}/proofs`,
+    'POST',
+    {
+      Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
+    },
+    {
+      data,
+      fetchProofs
+    }
+  );
+};
+
 const indexer = {
   getProof,
+  getProofs
 };
 
 export default indexer;
