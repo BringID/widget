@@ -51,7 +51,12 @@ const getProofs: TGetProofs = async (
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
     {
-      data,
+      data: data.map(proof => {
+        return {
+          identity_commitment: proof.identityCommitment,
+          semaphore_group_id: proof.semaphoreGroupId,
+        }
+      }),
       fetchProofs
     }
   );
