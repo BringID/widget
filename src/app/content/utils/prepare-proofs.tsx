@@ -37,7 +37,7 @@ const prepareProofs: TGetProofs = async (
   const verificationsToProcess: {
     credentialGroupId: string,
     identity: ReturnType<typeof semaphore.createIdentity>,
-    group: ReturnType<typeof defineTaskByCredentialGroupId>['group']
+    group: NonNullable<ReturnType<typeof defineTaskByCredentialGroupId>>['group']
   }[] = [];
   let totalScore = 0;
 
