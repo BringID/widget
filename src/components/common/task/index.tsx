@@ -203,6 +203,7 @@ const defineTaskContent = (
             } catch (err) {
               setLoading(false)
               setIsActive(false)
+              console.log({ err })
               if (typeof err === 'string') {
                 errorCallback(err)
               } else{
