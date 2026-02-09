@@ -1,1 +1,1 @@
-# connect-app
+# Widget application
