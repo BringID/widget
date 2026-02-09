@@ -53,7 +53,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     }, 500);
 
     const handler = async (event: MessageEvent) => {
-      console.log({ event })
+
       if (event.origin !== awaitingEventSource) return
       if (event.source !== popup) return
       if (!event.data || typeof event.data !== 'object' || !event.data.type) {
