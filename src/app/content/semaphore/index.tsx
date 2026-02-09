@@ -1,4 +1,8 @@
-import ISemaphore, { TGetProof, TCreateIdentity } from './types';
+import ISemaphore, {
+  TGetProof,
+  TCreateIdentity,
+  TGetProofs
+} from './types';
 import { indexerApi } from '../api';
 import { createSemaphoreIdentity, defineApiUrl } from '@/utils';
 import { TModeConfigs } from '@/types';
@@ -27,6 +31,24 @@ class Semaphore implements ISemaphore {
 
     if (success) {
       return proof;
+    }
+  }
+
+  getProofs: TGetProofs = async (
+    data,
+    modeConfigs,
+    fetchProofs,
+  ) => {
+    const response = await indexerApi.getProofs(
+      this.#apiUrl,
+      data,
+      modeConfigs,
+      fetchProofs,
+    );
+    const { success, proofs } = response;
+
+    if (success) {
+      return proofs
     }
   }
 

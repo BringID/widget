@@ -65,40 +65,65 @@ const uploadPrevVerifications = async (
 ) => {
   setLoading(true)
 
-  const verifications: TVerification[] = []
+  // Collect all identity data for batch request
+  const identityDataList: {
+    identityCommitment: string,
+    semaphoreGroupId: string,
+    credentialGroupId: string,
+    taskId: string
+  }[] = []
+
   for (const task of tasks) {
     for (const group of task.groups) {
       const identity = semaphore.createIdentity(
         String(userKey),
         group.credentialGroupId,
       )
-
       const { commitment } = identity;
-
-      try {
-        const proof = await semaphore.getProof(
-          String(commitment),
-          group.semaphoreGroupId,
-          modeConfigs
-        );
-        if (proof) {
-          const newTask = {
-            credentialGroupId: group.credentialGroupId,
-            status: 'completed' as TVerificationStatus,
-            scheduledTime: +new Date(),
-            fetched: true,
-            taskId: task.id,
-          }
-          verifications.push(newTask)
-        }
-      } catch (err) {
-        console.log(`proof for ${commitment} was not added before`);
-      }
+      identityDataList.push({
+        identityCommitment: String(commitment),
+        semaphoreGroupId: group.semaphoreGroupId,
+        credentialGroupId: group.credentialGroupId,
+        taskId: task.id
+      })
     }
   }
 
-  addVerifications(verifications)
+  const verifications: TVerification[] = []
 
+  try {
+    const proofs = await semaphore.getProofs(
+      identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
+        identityCommitment,
+        semaphoreGroupId
+      })),
+      modeConfigs
+    )
+
+    if (proofs) {
+      for (const proofResult of proofs) {
+        if (proofResult.success) {
+          const matchingData = identityDataList.find(
+            item => item.identityCommitment === proofResult.identity_commitment &&
+                    item.semaphoreGroupId === proofResult.semaphore_group_id
+          )
+          if (matchingData) {
+            verifications.push({
+              credentialGroupId: matchingData.credentialGroupId,
+              status: 'completed' as TVerificationStatus,
+              scheduledTime: +new Date(),
+              fetched: true,
+              taskId: matchingData.taskId,
+            })
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.log('Failed to fetch proofs:', err);
+  }
+
+  addVerifications(verifications)
 
   setLoading(false)
 }

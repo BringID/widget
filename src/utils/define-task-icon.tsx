@@ -19,6 +19,9 @@ const defineTaskIcon = (
     case 'binance':
       return Icons.BinanceIcon
 
+    case 'self':
+      return Icons.SelfIcon
+
     case 'zkpassport':
       return Icons.ZKPassportIcon
 

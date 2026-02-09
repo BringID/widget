@@ -24,12 +24,14 @@ import BinanceIcon from './binance-icon'
 import OKXIcon from './okx-icon'
 import AppleIcon from './apple-icon'
 import UberIcon from './uber-icon'
+import SelfIcon from './self-icon'
 
 const Icons = {
   VehicleIcon,
   AppleIcon,
   GithubIcon,
   UberIcon,
+  SelfIcon,
   ZKPassportIcon,
   XIcon,
   CardIcon,
