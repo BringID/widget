@@ -94,7 +94,8 @@ const defineTaskContent = (
                   const {
                     signature: verifierSignature,
                     attestation: {
-                      credential_id
+                      credential_id,
+                      issued_at
                     }
                   } = verify
 
@@ -102,6 +103,7 @@ const defineTaskContent = (
                     configs.ZUPLO_API_URL,
                     group.credentialGroupId,
                     credential_id,
+                    issued_at,
                     appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
@@ -172,7 +174,8 @@ const defineTaskContent = (
                   const {
                     signature: verifierSignature,
                     attestation: {
-                      credential_id
+                      credential_id,
+                      issued_at
                     }
                   } = verify
 
@@ -180,6 +183,7 @@ const defineTaskContent = (
                     configs.ZUPLO_API_URL,
                     credentialGroupId,
                     credential_id,
+                    issued_at,
                     appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
