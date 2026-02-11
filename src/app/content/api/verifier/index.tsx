@@ -7,6 +7,7 @@ const verify: TVerify = async (
   presentationData,
   registry,
   credentialGroupId,
+  appId,
   semaphoreIdentityCommitment,
   mode
 ) => {
@@ -25,6 +26,7 @@ const verify: TVerify = async (
       tlsn_presentation: presentationData,
       registry,
       credential_group_id: credentialGroupId,
+      app_id: appId,
       semaphore_identity_commitment: semaphoreIdentityCommitment,
     },
   );
@@ -36,6 +38,7 @@ const verifyOAuth: TVerifyOAuth = async (
   signature,
   registry,
   credentialGroupId,
+  appId,
   semaphoreIdentityCommitment,
   mode
 ) => {
@@ -45,7 +48,7 @@ const verifyOAuth: TVerifyOAuth = async (
   });
 
   return api<TVerifyResponse>(
-    `${apiUrl}/v1/verifier/verify/oauth?${queryParams}`, // https://verifier-staging.up.railway.app
+    `${apiUrl}/v1/verifier/verify/oauth?${queryParams}`,
     'POST',
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
@@ -61,6 +64,7 @@ const verifyOAuth: TVerifyOAuth = async (
       signature,
       registry,
       credential_group_id: credentialGroupId,
+      app_id: appId,
       semaphore_identity_commitment: semaphoreIdentityCommitment,
     },
   );

@@ -23,6 +23,7 @@ const Widget: FC = () => {
   const defaultTheme = themeParam === 'dark' ? dark : light
 
   const mode = searchParams.get('mode') || 'production'
+  const appId = searchParams.get('appId') || ''
 
   const highlightColor = searchParams.get('highlightColor') ? decodeURIComponent(searchParams.get('highlightColor') as string) : undefined
 
@@ -43,6 +44,7 @@ const Widget: FC = () => {
           address={address}
           parentUrl={decodedRedirectUrl}
           mode={mode}
+          appId={appId}
         />
       </ReduxProvider>
     </ThemeProvider>

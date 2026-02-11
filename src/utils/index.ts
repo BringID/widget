@@ -10,10 +10,8 @@ import formatDate from './format-date'
 import formatTime from './format-time'
 import formatExpiration from './format-expiration'
 import api from './api'
-import defineGroup from './define-group';
 import createSemaphoreIdentity from './create-semaphore-identity';
 import defineApiUrl from './define-api-url';
-import defineTaskPointsRange from './define-task-points-range';
 import defineTaskByCredentialGroupId from './define-task-by-credential-group-id';
 import calculateScope from './calculate-scope';
 import defineZuploNetworkName from './define-zuplo-network-name';
@@ -31,6 +29,7 @@ import isValidAuthErrorPayload from './is-valid-auth-error-payload'
 import isValidAuthSuccessPayload from './is-valid-auth-success-payload'
 import defineTaskIcon from './define-task-icon'
 import generateRequestId from './generate-request-id'
+import { getAppSemaphoreGroupId, getScore } from './registry-contract'
 
 
 export {
@@ -41,12 +40,10 @@ export {
   isValidAuthErrorPayload,
   defineTaskIcon,
   isValidAuthSuccessPayload,
-  defineGroup,
   lightenHex,
   createSemaphoreIdentity,
   msToTime,
   defineApiUrl,
-  defineTaskPointsRange,
   defineTaskByCredentialGroupId,
   calculateScope,
   defineZuploNetworkName,
@@ -67,5 +64,6 @@ export {
   formatExpiration,
   api,
   defineGroupForAuth,
-
+  getAppSemaphoreGroupId,
+  getScore,
 }

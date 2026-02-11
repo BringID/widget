@@ -19,7 +19,6 @@ import {
 import { useVerifications } from '../../store/reducers/verifications'
 import {
   calculateAvailablePoints,
-  defineTaskByCredentialGroupId,
   defineInitialSelectedVerifications
 } from '@/utils'
 import { useUser } from '../../store/reducers/user'
@@ -103,6 +102,7 @@ const renderTitles = (
 const renderButton = (
   plausibleEvent: (eventName: string) => void,
   userKey: string,
+  appId: string,
   loading: boolean,
   setLoading: (loading: boolean) => void,
   selected: string[],
@@ -149,6 +149,7 @@ const renderButton = (
         const proofs = await prepareProofs(
           tasks,
           userKey,
+          appId,
           verifications,
           scope,
           message,
@@ -196,7 +197,7 @@ const Proofs: FC<TProps> = ({
 
   const userConfigs = useConfigs()
   const [loading, setLoading] = useState<boolean>(false);
-  const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
+  const availablePoints = calculateAvailablePoints(verifications);
   const plausible = usePlausible()
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -204,25 +205,15 @@ const Proofs: FC<TProps> = ({
     let result = 0;
 
     verifications.forEach((verification) => {
-      const relatedTask = defineTaskByCredentialGroupId(
-        verification.credentialGroupId,
-        userConfigs.tasks
-      );
-
-      if (!relatedTask) {
-        return;
-      }
       if (verification.status !== 'completed') {
         return;
       }
 
-      if (!selected.includes(relatedTask.group.credentialGroupId)) {
+      if (!selected.includes(verification.credentialGroupId)) {
         return;
       }
 
-      if (relatedTask) {
-        result = result + relatedTask.group.points;
-      }
+      result = result + (verification.score || 0);
     });
 
     return result;
@@ -266,6 +257,7 @@ const Proofs: FC<TProps> = ({
         {renderButton(
           (eventName) => plausible(eventName),
           user.key as string,
+          user.appId as string,
           loading,
           setLoading,
           selected,

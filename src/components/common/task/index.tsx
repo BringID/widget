@@ -10,7 +10,8 @@ import {
   defineGroupForAuth,
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
-  defineGroupByZKTLSResult
+  defineGroupByZKTLSResult,
+  getScore
 } from '@/utils'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
@@ -24,6 +25,7 @@ const defineTaskContent = (
   status: TVerificationStatus,
   task: TTask,
   userKey: string | null,
+  appId: string | null,
   loading: boolean,
   setLoading: (loading: boolean) => void,
   modeConfigs: TModeConfigs,
@@ -76,7 +78,7 @@ const defineTaskContent = (
 
                 if (group) {
 
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, group.credentialGroupId)
 
                   const verify = await verifierApi.verifyOAuth(
                     configs.ZUPLO_API_URL,
@@ -84,21 +86,23 @@ const defineTaskContent = (
                     signature,
                     modeConfigs.REGISTRY,
                     group.credentialGroupId,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     mode
                   )
 
                   const {
                     signature: verifierSignature,
-                    verifier_message: {
-                      id_hash
+                    attestation: {
+                      credential_id
                     }
                   } = verify
 
                   const { task: taskCreated, success } = await taskManagerApi.addVerification(
                     configs.ZUPLO_API_URL,
                     group.credentialGroupId,
-                    id_hash,
+                    credential_id,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
                     modeConfigs
@@ -107,6 +111,7 @@ const defineTaskContent = (
                   console.log({ task: taskCreated, success  })
 
                   if (success) {
+                    const score = await getScore(modeConfigs.REGISTRY, appId as string, group.credentialGroupId, modeConfigs.CHAIN_ID.toString())
                     setLoading(false)
                     setIsActive(false)
                     plausibleEvent('oauth_verification_finished')
@@ -115,14 +120,15 @@ const defineTaskContent = (
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId: group?.credentialGroupId,
-                      fetched: false
+                      fetched: false,
+                      score,
                     })
                   }
 
                   console.log({ taskCreated })
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
-                  return 
+                  return
                 }
 
 
@@ -152,33 +158,36 @@ const defineTaskContent = (
 
                 if (groupData) {
                   const { credentialGroupId } = groupData
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, groupData?.credentialGroupId)
                   const verify = await verifierApi.verify(
                     configs.ZUPLO_API_URL,
                     presentationData,
                     modeConfigs.REGISTRY,
                     credentialGroupId,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     mode
                   )
 
                   const {
-                    signature,
-                    verifier_message: {
-                      id_hash
+                    signature: verifierSignature,
+                    attestation: {
+                      credential_id
                     }
                   } = verify
 
                   const { task: taskCreated, success } = await taskManagerApi.addVerification(
                     configs.ZUPLO_API_URL,
                     credentialGroupId,
-                    id_hash,
+                    credential_id,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
-                    signature,
+                    verifierSignature,
                     modeConfigs
                   )
 
                   if (success) {
+                    const score = await getScore(modeConfigs.REGISTRY, appId as string, credentialGroupId, modeConfigs.CHAIN_ID.toString())
                     setLoading(false)
                     setIsActive(false)
                     plausibleEvent('zktls_verification_finished')
@@ -187,12 +196,13 @@ const defineTaskContent = (
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId,
-                      fetched: false
+                      fetched: false,
+                      score,
                     })
                   }
 
                   console.log({ taskCreated })
-                
+
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
                   return
@@ -225,7 +235,6 @@ const defineTaskContent = (
 
 const Task: FC<TProps> = ({
   status,
-  userKey,
   task,
   onError,
   onMessage,
@@ -243,7 +252,8 @@ const Task: FC<TProps> = ({
     (eventName) => plausible(eventName),
     status,
     task,
-    userKey,
+    user.key,
+    user.appId,
     loading,
     setLoading,
     userConfigs.modeConfigs,
@@ -265,7 +275,6 @@ const Task: FC<TProps> = ({
       title={task.title}
       description={task.description}
       id={task.id}
-      groups={task.groups}
       icon={task.icon}
     >
       <Value>{content}</Value>

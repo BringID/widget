@@ -1,5 +1,5 @@
 import React from 'react'
-import { TTask, TTaskGroup, TVerificationStatus } from '@/types'
+import { TVerificationStatus } from '@/types'
 
 type TProps = {
   status: TVerificationStatus;
@@ -10,7 +10,6 @@ type TProps = {
   selectable: boolean;
   selected?: boolean;
   onSelect?: (selected: boolean) => void;
-  groups?: TTaskGroup[],
   id: string
 };
 

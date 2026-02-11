@@ -26,7 +26,7 @@ const VerificationsSelectList: FC<TProps> = ({
         );
 
         if (relatedTaskData) {
-          const { credentialGroupId, points } = relatedTaskData.group;
+          const { credentialGroupId } = relatedTaskData.group;
           const isSelected = selected.includes(credentialGroupId);
 
           return (
@@ -34,7 +34,7 @@ const VerificationsSelectList: FC<TProps> = ({
               key={credentialGroupId}
               title={relatedTaskData.title}
               taskId={verification.taskId}
-              points={points}
+              points={verification.score}
               scheduledTime={verification.scheduledTime}
               status="default"
               fetched={verification.fetched}

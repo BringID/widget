@@ -79,7 +79,7 @@ const VerificationsList: FC<TProps> = ({
                   title={task.title}
                   description={task.description}
                   taskId={relatedVerification.taskId}
-                  points={relatedTaskData.group.points}
+                  points={relatedVerification.score}
                   scheduledTime={relatedVerification.scheduledTime}
                   status={relatedVerification.status}
                   selectable={false}
@@ -97,7 +97,6 @@ const VerificationsList: FC<TProps> = ({
                 }}
                 task={task}
                 status='default'
-                userKey={user.key}
                 setIsActive={setIsActive}
                 isActive={isActive}
                 onError={(errorText => {

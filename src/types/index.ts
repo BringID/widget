@@ -7,7 +7,6 @@ import TRequest from './request'
 import TResponse from './response'
 import TGenerateSignature from './generate-signature'
 import TTask from "./task"
-import TVerificationData from './verification-data'
 import TModeConfigs from "./mode-configs"
 import TOAuthMessage from './oauth-message'
 import TOAuthResponse, { TOAuthResponsePayload, TOAuthErrorPayload } from './oauth-response'
@@ -47,7 +46,6 @@ export type {
   TModeConfigs,
   TOAuthMessage,
   TTask,
-  TVerificationData,
   TOAuthResponse,
   TOAuthResponsePayload,
   TOAuthErrorPayload,

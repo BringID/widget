@@ -10,7 +10,8 @@ import { defineZuploNetworkName, api } from '@/utils';
 const addVerification: TAddVerification = async (
   apiUrl,
   credentialGroupId,
-  idHash,
+  credentialId,
+  appId,
   identityCommitment,
   verifierSignature,
   modeConfigs
@@ -27,7 +28,8 @@ const addVerification: TAddVerification = async (
     {
       registry: modeConfigs.REGISTRY,
       credential_group_id: credentialGroupId,
-      id_hash: idHash,
+      credential_id: credentialId,
+      app_id: appId,
       identity_commitment: identityCommitment,
       verifier_signature: verifierSignature,
     },

@@ -13,18 +13,14 @@ import {
   PontsCount,
   CheckIcon
 } from './styled-components';
-import { TTaskGroup, TVerificationStatus } from '@/types';
-import { defineTaskIcon, defineTaskPointsRange } from '@/utils';
+import { TVerificationStatus } from '@/types';
+import { defineTaskIcon } from '@/utils';
 
 const defineDescription = (
   status: TVerificationStatus,
-  groups?: TTaskGroup[]
 ) => {
   if (status === 'completed') {
     return <VerifiedIndicator><CheckIcon />Verified</VerifiedIndicator>
-  }
-  if (groups) {
-    return <PontsCount>{defineTaskPointsRange(groups)}</PontsCount>
   }
 }
 
@@ -36,12 +32,11 @@ const TaskContainer: FC<TProps> = ({
   id,
   selectable,
   description,
-  groups,
   selected,
   onSelect,
 }) => {
   // const tiers = groups ? defineTiers(groups) : undefined
-  const descriptionContent = defineDescription(status, groups)
+  const descriptionContent = defineDescription(status)
   const TaskIcon = defineTaskIcon(icon)
   return (
     <Container status={status}>

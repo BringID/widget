@@ -8,4 +8,5 @@ export type TVerification = {
   txHash?: string;
   fetched: boolean;
   taskId: string; // id of task saved in DB
+  score: number;
 };

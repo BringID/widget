@@ -7,4 +7,5 @@ export type TUser = {
   scope: null | string
   message: null | string
   mode: string
+  appId: string | null
 };

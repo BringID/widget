@@ -54,9 +54,10 @@ class Semaphore implements ISemaphore {
 
   createIdentity: TCreateIdentity = (
     masterKey: string,
+    appId: string,
     credentialGroupId: string,
   ) => {
-    return createSemaphoreIdentity(masterKey, credentialGroupId);
+    return createSemaphoreIdentity(masterKey, appId, credentialGroupId);
   };
 }
 

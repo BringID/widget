@@ -9,7 +9,7 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
-import { setAddress, setApiKey, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
@@ -20,6 +20,7 @@ import {
 import { LoadingOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
+import { getAppSemaphoreGroupId, getScore } from '@/utils'
 
 const defineContent = (
   page: string,
@@ -57,6 +58,7 @@ const defineContent = (
 const uploadPrevVerifications = async (
   tasks: TTask[],
   userKey: string,
+  appId: string,
   setLoading: (
     loading: boolean
   ) => void,
@@ -77,12 +79,19 @@ const uploadPrevVerifications = async (
     for (const group of task.groups) {
       const identity = semaphore.createIdentity(
         String(userKey),
+        appId,
         group.credentialGroupId,
       )
       const { commitment } = identity;
+      const semaphoreGroupId = await getAppSemaphoreGroupId(
+        modeConfigs.REGISTRY,
+        group.credentialGroupId,
+        appId,
+        modeConfigs.CHAIN_ID
+      )
       identityDataList.push({
         identityCommitment: String(commitment),
-        semaphoreGroupId: group.semaphoreGroupId,
+        semaphoreGroupId,
         credentialGroupId: group.credentialGroupId,
         taskId: task.id
       })
@@ -108,12 +117,19 @@ const uploadPrevVerifications = async (
                     item.semaphoreGroupId === proofResult.semaphore_group_id
           )
           if (matchingData) {
+            const score = await getScore(
+              modeConfigs.REGISTRY,
+              appId,
+              matchingData.credentialGroupId,
+              modeConfigs.CHAIN_ID
+            )
             verifications.push({
               credentialGroupId: matchingData.credentialGroupId,
               status: 'completed' as TVerificationStatus,
               scheduledTime: +new Date(),
               fetched: true,
               taskId: matchingData.taskId,
+              score,
             })
           }
         }
@@ -132,7 +148,8 @@ const InnerContent: FC<TProps> = ({
   apiKey,
   address,
   parentUrl,
-  mode
+  mode,
+  appId
 }) => {
 
   const dispatch = useDispatch()
@@ -308,11 +325,16 @@ const InnerContent: FC<TProps> = ({
       dispatch(setMode(mode));
     }
 
+    if (appId) {
+      dispatch(setAppId(appId));
+    }
+
   }, [
     user.address,
     apiKey,
     address,
-    mode
+    mode,
+    appId
   ]);
 
   useEffect(() => {
@@ -332,6 +354,7 @@ const InnerContent: FC<TProps> = ({
 
   useEffect(() => {
     if (!user.key) return
+    if (!user.appId) return
     if (
       userConfigs.tasks.length === 0
     ) return
@@ -342,6 +365,7 @@ const InnerContent: FC<TProps> = ({
     uploadPrevVerifications(
       userConfigs.tasks,
       user.key,
+      user.appId,
       (loading: boolean) => dispatch(setLoading(loading)),
       userConfigs.modeConfigs,
       (verifications) => {
@@ -351,7 +375,8 @@ const InnerContent: FC<TProps> = ({
     )
   }, [
     userConfigs,
-    user.key
+    user.key,
+    user.appId
   ]);
 
 

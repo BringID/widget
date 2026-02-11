@@ -3,4 +3,5 @@ export type TProps = {
   address?: string
   parentUrl?: string
   mode: string
+  appId?: string
 }

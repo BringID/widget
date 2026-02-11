@@ -8,7 +8,8 @@ type TAddVerificationResponse = {
 type TAddVerification = (
   apiUrl: string,
   credentialGroupId: string,
-  idHash: string,
+  credentialId: string,
+  appId: string,
   identityCommitment: string,
   verifierSignature: string,
   modeConfigs: TModeConfigs

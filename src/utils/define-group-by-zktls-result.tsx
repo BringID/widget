@@ -1,9 +1,7 @@
 import { TTaskGroup } from '../types';
 
 type GroupMatchResult = {
-  semaphoreGroupId: string;
   credentialGroupId: string;
-  points: number;
 } | null;
 
 function defineGroupByZKTLSResult (
@@ -13,9 +11,7 @@ function defineGroupByZKTLSResult (
   if (groups.length === 1) {
     const group = groups[0];
     return {
-      semaphoreGroupId: group.semaphoreGroupId,
       credentialGroupId: group.credentialGroupId,
-      points: group.points,
     };
   }
 
@@ -35,16 +31,12 @@ function defineGroupByZKTLSResult (
     }
   }
 
-  const sortedGroups = [...groups].sort((a, b) => b.points - a.points);
-
-  for (const group of sortedGroups) {
+  for (const group of groups) {
     const checks = group.checks;
 
     if (!checks || checks.length === 0) {
       return {
-        semaphoreGroupId: group.semaphoreGroupId,
         credentialGroupId: group.credentialGroupId,
-        points: group.points,
       };
     }
 
@@ -84,9 +76,7 @@ function defineGroupByZKTLSResult (
 
     if (allChecksPass) {
       return {
-        semaphoreGroupId: group.semaphoreGroupId,
         credentialGroupId: group.credentialGroupId,
-        points: group.points,
       }
     }
   }

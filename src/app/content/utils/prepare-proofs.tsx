@@ -1,11 +1,12 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
-import { defineTaskByCredentialGroupId, calculateScope } from "@/utils";
+import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId, getScore } from "@/utils";
 import semaphore from "../semaphore";
 import { generateProof } from '@semaphore-protocol/core';
 
 type TGetProofs = (
   tasks: TTask[],
   userKey: string,
+  appId: string,
   verifications: TVerification[],
   scope: string | null,
   message: string | null,
@@ -17,6 +18,7 @@ type TGetProofs = (
 const prepareProofs: TGetProofs = async (
   tasks,
   userKey,
+  appId,
   verifications,
   scope,
   message,
@@ -37,7 +39,8 @@ const prepareProofs: TGetProofs = async (
   const verificationsToProcess: {
     credentialGroupId: string,
     identity: ReturnType<typeof semaphore.createIdentity>,
-    group: NonNullable<ReturnType<typeof defineTaskByCredentialGroupId>>['group']
+    semaphoreGroupId: string,
+    score: number
   }[] = [];
   let totalScore = 0;
 
@@ -58,14 +61,16 @@ const prepareProofs: TGetProofs = async (
       continue;
     }
 
-    const { group } = relatedTask;
-    totalScore = totalScore + group.points;
-    const identity = semaphore.createIdentity(userKey, credentialGroupId);
+    const score = await getScore(modeConfigs.REGISTRY, appId, credentialGroupId, modeConfigs.CHAIN_ID);
+    totalScore = totalScore + score;
+    const identity = semaphore.createIdentity(userKey, appId, credentialGroupId);
+    const semaphoreGroupId = await getAppSemaphoreGroupId(modeConfigs.REGISTRY, credentialGroupId, appId, modeConfigs.CHAIN_ID);
 
     verificationsToProcess.push({
       credentialGroupId,
       identity,
-      group
+      semaphoreGroupId,
+      score
     });
   }
 
@@ -75,9 +80,9 @@ const prepareProofs: TGetProofs = async (
 
   // Batch fetch all proofs
   const proofsData = await semaphore.getProofs(
-    verificationsToProcess.map(({ identity, group }) => ({
+    verificationsToProcess.map(({ identity, semaphoreGroupId }) => ({
       identityCommitment: String(identity.commitment),
-      semaphoreGroupId: group.semaphoreGroupId
+      semaphoreGroupId
     })),
     modeConfigs,
     true
@@ -100,7 +105,7 @@ const prepareProofs: TGetProofs = async (
   for (const item of verificationsToProcess) {
     const proofResult = proofsData.find(
       p => p.identity_commitment === String(item.identity.commitment) &&
-           p.semaphore_group_id === item.group.semaphoreGroupId
+           p.semaphore_group_id === item.semaphoreGroupId
     );
 
     if (!proofResult || !proofResult.success) {
@@ -112,6 +117,7 @@ const prepareProofs: TGetProofs = async (
 
     semaphoreProofs.push({
       credential_group_id: item.credentialGroupId,
+      app_id: appId,
       semaphore_proof: {
         merkle_tree_depth: merkleTreeDepth,
         merkle_tree_root: merkleTreeRoot,
