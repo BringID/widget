@@ -118,12 +118,17 @@ const prepareProofs: TGetProofs = async (
       throw new Error('incomplete merkle proof data');
     }
 
+    console.log('HERE')
+
     const merkleProof = {
       root: BigInt(serverProof.root),
       leaf: BigInt(serverProof.leaf),
       index: serverProof.index,
       siblings: serverProof.siblings.map((s: string) => BigInt(s)),
     };
+
+    console.log('HERE: ', merkleProof)
+
 
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
       await generateProof(item.identity, merkleProof, messageToUse, scopeToUse);
