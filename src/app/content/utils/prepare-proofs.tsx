@@ -112,8 +112,21 @@ const prepareProofs: TGetProofs = async (
       throw new Error('no proof found');
     }
 
+    const serverProof = (proofResult as any).proof as { root: string; leaf: string; index: number; siblings: string[] };
+
+    if (!serverProof || !serverProof.root || !serverProof.leaf || !serverProof.siblings) {
+      throw new Error('incomplete merkle proof data');
+    }
+
+    const merkleProof = {
+      root: BigInt(serverProof.root),
+      leaf: BigInt(serverProof.leaf),
+      index: serverProof.index,
+      siblings: serverProof.siblings.map((s: string) => BigInt(s)),
+    };
+
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
-      await generateProof(item.identity, (proofResult as any).proof as any, messageToUse, scopeToUse);
+      await generateProof(item.identity, merkleProof, messageToUse, scopeToUse);
 
     semaphoreProofs.push({
       credential_group_id: item.credentialGroupId,
