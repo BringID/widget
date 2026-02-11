@@ -86,7 +86,7 @@ const prepareProofs: TGetProofs = async (
     throw new Error(`Chain ${modeConfigs.CHAIN_ID} not supported`);
   }
   const semaphoreEthers = new SemaphoreEthers(chain.rpcUrls[0], {
-    address: '0x697c80d1F2654e88d52B16154929EB976568DB04'
+    address: modeConfigs.REGISTRY
   });
 
   // Process results and generate semaphore proofs
