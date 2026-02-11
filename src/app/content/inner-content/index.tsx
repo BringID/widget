@@ -385,6 +385,9 @@ const InnerContent: FC<TProps> = ({
   useEffect(() => {
     if (!user.key) return
     if (!user.appId) return
+    console.log({
+      userConfigs
+    })
     if (
       userConfigs.tasks.length === 0
     ) return
