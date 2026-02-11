@@ -344,8 +344,10 @@ const InnerContent: FC<TProps> = ({
     mode,
     appId
   ]);
+  console.log({ user })
 
   useEffect(() => {
+
     if (!user.address) return
     if (!user.mode) return
     if (!user.appId) return
