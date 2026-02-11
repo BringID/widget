@@ -101,6 +101,8 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
 
   try {
+    console.log('REQUEST')
+
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
         identityCommitment,
@@ -108,15 +110,21 @@ const uploadPrevVerifications = async (
       })),
       modeConfigs
     )
+    console.log('REQUEST FINISHED: ', proofs)
 
     if (proofs) {
       for (const proofResult of proofs) {
         if (proofResult.success) {
+
+          console.log({ identityDataList })
           const matchingData = identityDataList.find(
             item => item.identityCommitment === proofResult.identity_commitment &&
                     item.semaphoreGroupId === proofResult.semaphore_group_id
           )
+
+
           if (matchingData) {
+            console.log('CALLING SCORE', matchingData.credentialGroupId)
             const score = await getScore(
               modeConfigs.REGISTRY,
               appId,
