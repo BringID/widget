@@ -112,6 +112,13 @@ const prepareProofs: TGetProofs = async (
       throw new Error('no proof found');
     }
 
+    console.log('generateProof inputs:', {
+      identity: item.identity,
+      proof: (proofResult as any).proof,
+      messageToUse,
+      scopeToUse
+    });
+
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
       await generateProof(item.identity, (proofResult as any).proof as any, messageToUse, scopeToUse);
 
