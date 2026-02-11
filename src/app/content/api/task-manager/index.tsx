@@ -31,7 +31,7 @@ const addVerification: TAddVerification = async (
       credential_group_id: credentialGroupId,
       credential_id: credentialId,
       app_id: appId,
-      issued_id: issuedAt,
+      issued_at: issuedAt,
       identity_commitment: identityCommitment,
       verifier_signature: verifierSignature,
     },
