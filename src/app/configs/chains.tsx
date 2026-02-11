@@ -24,7 +24,7 @@ const chains: TChains = {
       decimals: 18
     },
     rpcUrls: [
-      'https://developer-access-mainnet.base.org'
+      'https://base-mainnet.g.alchemy.com/v2/90pmIGkw0z_nJyKH3t10f'
     ],
     blockExplorerUrls: [
       'https://basescan.org'
@@ -40,7 +40,7 @@ const chains: TChains = {
       decimals: 18
     },
     rpcUrls: [
-      'https://base-sepolia.drpc.org'
+      'https://base-sepolia.g.alchemy.com/v2/90pmIGkw0z_nJyKH3t10f'
     ],
     blockExplorerUrls: [
       'https://sepolia.basescan.org'
