@@ -1,9 +1,9 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
 import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId } from "@/utils";
 import semaphore from "../semaphore";
-import { generateProof, Group } from '@semaphore-protocol/core';
-import { SemaphoreEthers } from '@semaphore-protocol/data';
-import chains from '../../configs/chains';
+import { generateProof } from '@semaphore-protocol/core';
+import indexer from "../api/indexer";
+import configs from '../../configs';
 
 type TGetProofs = (
   tasks: TTask[],
@@ -80,32 +80,44 @@ const prepareProofs: TGetProofs = async (
     return [];
   }
 
-  // Initialize SemaphoreEthers to fetch group members from chain
-  const chain = chains[Number(modeConfigs.CHAIN_ID)];
-  if (!chain) {
-    throw new Error(`Chain ${modeConfigs.CHAIN_ID} not supported`);
+  // Fetch merkle proofs from the indexer in a single batch request
+  const proofsResponse = await indexer.getProofs(
+    configs.ZUPLO_API_URL,
+    verificationsToProcess.map(item => ({
+      identityCommitment: item.identity.commitment.toString(),
+      semaphoreGroupId: item.semaphoreGroupId,
+    })),
+    modeConfigs,
+    true
+  );
+
+  if (!proofsResponse.success || !proofsResponse.proofs) {
+    throw new Error('Failed to fetch merkle proofs from indexer');
   }
-  const semaphoreEthers = new SemaphoreEthers(chain.rpcUrls[0], {
-    address: modeConfigs.REGISTRY
-  });
 
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
   const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
   const messageToUse = message || 'verification';
 
-  for (const item of verificationsToProcess) {
-    // Fetch group members from chain and build a Group
-    const members = await semaphoreEthers.getGroupMembers(item.semaphoreGroupId);
-    const group = new Group();
-    for (const member of members) {
-      if (member !== '0') {
-        group.addMember(member);
-      }
+  for (let i = 0; i < verificationsToProcess.length; i++) {
+    const item = verificationsToProcess[i];
+    const proofData = proofsResponse.proofs[i];
+
+    if (!('proof' in proofData) || !proofData.success) {
+      throw new Error(`Failed to fetch merkle proof for credential group ${item.credentialGroupId}`);
     }
 
+    // Convert indexer proof data to MerkleProof format (bigint values)
+    const merkleProof = {
+      root: BigInt(proofData.proof.root),
+      leaf: BigInt(proofData.proof.leaf),
+      index: proofData.proof.index,
+      siblings: proofData.proof.siblings.map((s: string) => BigInt(s)),
+    };
+
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
-      await generateProof(item.identity, group, messageToUse, scopeToUse);
+      await generateProof(item.identity, merkleProof, messageToUse, scopeToUse);
 
     semaphoreProofs.push({
       credential_group_id: item.credentialGroupId,
