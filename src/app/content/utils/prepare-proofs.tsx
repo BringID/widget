@@ -109,10 +109,11 @@ const prepareProofs: TGetProofs = async (
     }
 
     // Convert indexer proof data to MerkleProof format (bigint values)
+    // When a group has a single member, the indexer returns index as null and empty siblings
     const merkleProof = {
       root: BigInt(proofData.proof.root),
       leaf: BigInt(proofData.proof.leaf),
-      index: proofData.proof.index,
+      index: proofData.proof.index ?? 0,
       siblings: proofData.proof.siblings.map((s: string) => BigInt(s)),
     };
 
