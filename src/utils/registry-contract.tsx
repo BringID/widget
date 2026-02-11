@@ -63,6 +63,10 @@ export async function getAllScores(
   const app = await registry.apps(appId)
   const scorerAddress = app.scorer
 
+  if (!scorerAddress || scorerAddress === ethers.ZeroAddress) {
+    return new Map<string, number>()
+  }
+
   const scorer = new ethers.Contract(
     scorerAddress,
     ['function getAllScores() view returns (uint256[], uint256[])'],

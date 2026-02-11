@@ -77,24 +77,28 @@ const uploadPrevVerifications = async (
 
   for (const task of tasks) {
     for (const group of task.groups) {
-      const identity = semaphore.createIdentity(
-        String(userKey),
-        appId,
-        group.credentialGroupId,
-      )
-      const { commitment } = identity;
-      const semaphoreGroupId = await getAppSemaphoreGroupId(
-        modeConfigs.REGISTRY,
-        group.credentialGroupId,
-        appId,
-        modeConfigs.CHAIN_ID
-      )
-      identityDataList.push({
-        identityCommitment: String(commitment),
-        semaphoreGroupId,
-        credentialGroupId: group.credentialGroupId,
-        taskId: task.id
-      })
+      try {
+        const identity = semaphore.createIdentity(
+          String(userKey),
+          appId,
+          group.credentialGroupId,
+        )
+        const { commitment } = identity;
+        const semaphoreGroupId = await getAppSemaphoreGroupId(
+          modeConfigs.REGISTRY,
+          group.credentialGroupId,
+          appId,
+          modeConfigs.CHAIN_ID
+        )
+        identityDataList.push({
+          identityCommitment: String(commitment),
+          semaphoreGroupId,
+          credentialGroupId: group.credentialGroupId,
+          taskId: task.id
+        })
+      } catch (err) {
+        console.error(`Failed to get semaphore group for ${group.credentialGroupId}:`, err)
+      }
     }
   }
 
@@ -396,7 +400,10 @@ const InnerContent: FC<TProps> = ({
         console.log('HERE uploading verifications')
         dispatch(addVerifications(verifications))
       }
-    )
+    ).catch(err => {
+      console.error('Failed to upload previous verifications:', err)
+      dispatch(setLoading(false))
+    })
   }, [
     userConfigs,
     user.key,
