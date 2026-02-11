@@ -34,7 +34,7 @@ export async function getScore(
   const provider = getProvider(chainId)
   const registry = new ethers.Contract(
     registryAddress,
-    ['function apps(uint256) view returns (bool isRegistered, uint256 field1, address scorer, address admin)'],
+    ['function apps(uint256) view returns (bool isRegistered, uint256 field1, address admin, address scorer)'],
     provider
   )
   const app = await registry.apps(appId)
