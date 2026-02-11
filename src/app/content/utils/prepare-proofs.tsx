@@ -1,7 +1,9 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
 import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId } from "@/utils";
 import semaphore from "../semaphore";
-import { generateProof } from '@semaphore-protocol/core';
+import { generateProof, Group } from '@semaphore-protocol/core';
+import { SemaphoreEthers } from '@semaphore-protocol/data';
+import chains from '../../configs/chains';
 
 type TGetProofs = (
   tasks: TTask[],
@@ -78,60 +80,32 @@ const prepareProofs: TGetProofs = async (
     return [];
   }
 
-  // Batch fetch all proofs
-  const proofsData = await semaphore.getProofs(
-    verificationsToProcess.map(({ identity, semaphoreGroupId }) => ({
-      identityCommitment: String(identity.commitment),
-      semaphoreGroupId
-    })),
-    modeConfigs,
-    true
-  );
-
-  if (!proofsData) {
-    throw new Error('no proofs found');
+  // Initialize SemaphoreEthers to fetch group members from chain
+  const chain = chains[Number(modeConfigs.CHAIN_ID)];
+  if (!chain) {
+    throw new Error(`Chain ${modeConfigs.CHAIN_ID} not supported`);
   }
+  const semaphoreEthers = new SemaphoreEthers(chain.rpcUrls[0], {
+    address: '0x697c80d1F2654e88d52B16154929EB976568DB04'
+  });
 
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
   const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
   const messageToUse = message || 'verification';
 
-  console.log({
-    scopeToUse,
-    messageToUse
-  })
-
   for (const item of verificationsToProcess) {
-    const proofResult = proofsData.find(
-      p => p.identity_commitment === String(item.identity.commitment) &&
-           p.semaphore_group_id === item.semaphoreGroupId
-    );
-
-    if (!proofResult || !proofResult.success) {
-      throw new Error('no proof found');
+    // Fetch group members from chain and build a Group
+    const members = await semaphoreEthers.getGroupMembers(item.semaphoreGroupId);
+    const group = new Group();
+    for (const member of members) {
+      if (member !== '0') {
+        group.addMember(member);
+      }
     }
-
-    const serverProof = (proofResult as any).proof as { root: string; leaf: string; index: number; siblings: string[] };
-
-    if (!serverProof || !serverProof.root || !serverProof.leaf || !serverProof.siblings) {
-      throw new Error('incomplete merkle proof data');
-    }
-
-    console.log('HERE')
-
-    const merkleProof = {
-      root: BigInt(serverProof.root),
-      leaf: BigInt(serverProof.leaf),
-      index: serverProof.index,
-      siblings: serverProof.siblings.map((s: string) => BigInt(s)),
-    };
-
-    console.log('HERE: ', merkleProof)
-
 
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
-      await generateProof(item.identity, merkleProof, messageToUse, scopeToUse);
+      await generateProof(item.identity, group, messageToUse, scopeToUse);
 
     semaphoreProofs.push({
       credential_group_id: item.credentialGroupId,
