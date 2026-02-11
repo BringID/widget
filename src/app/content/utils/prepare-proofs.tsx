@@ -1,5 +1,5 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
-import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId, getScore } from "@/utils";
+import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId } from "@/utils";
 import semaphore from "../semaphore";
 import { generateProof } from '@semaphore-protocol/core';
 
@@ -61,7 +61,7 @@ const prepareProofs: TGetProofs = async (
       continue;
     }
 
-    const score = await getScore(modeConfigs.REGISTRY, appId, credentialGroupId, modeConfigs.CHAIN_ID);
+    const score = relatedTask.group.score ?? 0;
     totalScore = totalScore + score;
     const identity = semaphore.createIdentity(userKey, appId, credentialGroupId);
     const semaphoreGroupId = await getAppSemaphoreGroupId(modeConfigs.REGISTRY, credentialGroupId, appId, modeConfigs.CHAIN_ID);
@@ -111,13 +111,6 @@ const prepareProofs: TGetProofs = async (
     if (!proofResult || !proofResult.success) {
       throw new Error('no proof found');
     }
-
-    console.log('generateProof inputs:', {
-      identity: item.identity,
-      proof: (proofResult as any).proof,
-      messageToUse,
-      scopeToUse
-    });
 
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
       await generateProof(item.identity, (proofResult as any).proof as any, messageToUse, scopeToUse);

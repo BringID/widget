@@ -20,7 +20,7 @@ import {
 import { LoadingOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { getAppSemaphoreGroupId, getScore } from '@/utils'
+import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
 
 const defineContent = (
   page: string,
@@ -124,12 +124,8 @@ const uploadPrevVerifications = async (
 
 
           if (matchingData) {
-            console.log('CALLING SCORE', matchingData.credentialGroupId)
-            const score = await getScore(
-              modeConfigs.REGISTRY,
-              appId,
-              matchingData.credentialGroupId,
-              modeConfigs.CHAIN_ID
+            const relatedGroup = tasks.flatMap(t => t.groups).find(
+              g => g.credentialGroupId === matchingData.credentialGroupId
             )
             verifications.push({
               credentialGroupId: matchingData.credentialGroupId,
@@ -137,7 +133,7 @@ const uploadPrevVerifications = async (
               scheduledTime: +new Date(),
               fetched: true,
               taskId: matchingData.taskId,
-              score,
+              score: relatedGroup?.score ?? 0,
             })
           }
         }
@@ -346,18 +342,38 @@ const InnerContent: FC<TProps> = ({
   ]);
 
   useEffect(() => {
-    if (!user.address) { return }
-    if (!user.mode) { return }
-  
+    if (!user.address) return
+    if (!user.mode) return
+    if (!user.appId) return
+
     const init = async () => {
       const userConfigs = await configs(user.mode === 'dev')
       dispatch(addModeConfigs(userConfigs.configs))
-      dispatch(addTasks(userConfigs.tasks))
+
+      try {
+        const scoresMap = await getAllScores(
+          userConfigs.configs.REGISTRY,
+          user.appId as string,
+          userConfigs.configs.CHAIN_ID
+        )
+        const enrichedTasks = userConfigs.tasks.map(task => ({
+          ...task,
+          groups: task.groups.map(group => ({
+            ...group,
+            score: scoresMap.get(group.credentialGroupId) ?? 0
+          }))
+        }))
+        dispatch(addTasks(enrichedTasks))
+      } catch (err) {
+        console.error('Failed to fetch scores:', err)
+        dispatch(addTasks(userConfigs.tasks))
+      }
     }
     init()
   }, [
     user.address,
-    user.mode
+    user.mode,
+    user.appId
   ])
 
   useEffect(() => {

@@ -11,7 +11,6 @@ import {
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult,
-  getScore
 } from '@/utils'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
@@ -113,7 +112,6 @@ const defineTaskContent = (
                   console.log({ task: taskCreated, success  })
 
                   if (success) {
-                    const score = await getScore(modeConfigs.REGISTRY, appId as string, group.credentialGroupId, modeConfigs.CHAIN_ID.toString())
                     setLoading(false)
                     setIsActive(false)
                     plausibleEvent('oauth_verification_finished')
@@ -123,7 +121,7 @@ const defineTaskContent = (
                       taskId: taskCreated.id,
                       credentialGroupId: group?.credentialGroupId,
                       fetched: false,
-                      score,
+                      score: group.score ?? 0,
                     })
                   }
 
@@ -191,7 +189,6 @@ const defineTaskContent = (
                   )
 
                   if (success) {
-                    const score = await getScore(modeConfigs.REGISTRY, appId as string, credentialGroupId, modeConfigs.CHAIN_ID.toString())
                     setLoading(false)
                     setIsActive(false)
                     plausibleEvent('zktls_verification_finished')
@@ -201,7 +198,7 @@ const defineTaskContent = (
                       taskId: taskCreated.id,
                       credentialGroupId,
                       fetched: false,
-                      score,
+                      score: task.groups.find(g => g.credentialGroupId === credentialGroupId)?.score ?? 0,
                     })
                   }
 
@@ -280,6 +277,7 @@ const Task: FC<TProps> = ({
       description={task.description}
       id={task.id}
       icon={task.icon}
+      groups={task.groups}
     >
       <Value>{content}</Value>
     </TaskContainer>

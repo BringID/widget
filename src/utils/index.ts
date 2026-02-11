@@ -29,7 +29,7 @@ import isValidAuthErrorPayload from './is-valid-auth-error-payload'
 import isValidAuthSuccessPayload from './is-valid-auth-success-payload'
 import defineTaskIcon from './define-task-icon'
 import generateRequestId from './generate-request-id'
-import { getAppSemaphoreGroupId, getScore } from './registry-contract'
+import { getAppSemaphoreGroupId, getAllScores } from './registry-contract'
 
 
 export {
@@ -65,5 +65,5 @@ export {
   api,
   defineGroupForAuth,
   getAppSemaphoreGroupId,
-  getScore,
+  getAllScores,
 }
