@@ -194,6 +194,7 @@ const InnerContent: FC<TProps> = ({
             return;
           }
           plausible('generate_user_key_finished');
+          dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
           return;
         }
@@ -371,7 +372,10 @@ const InnerContent: FC<TProps> = ({
         dispatch(addTasks(userConfigs.tasks))
       }
     }
-    init()
+    init().catch(err => {
+      console.error('Failed to load configs:', err)
+      dispatch(setLoading(false))
+    })
   }, [
     user.address,
     user.mode,
