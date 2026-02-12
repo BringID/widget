@@ -47,11 +47,11 @@ const defineTaskContent = (
           disabled={loading || isActive}
           onClick={async () => {
             try {
-              setLoading(true)
-              setIsActive(true)
+
 
               if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
-
+                setLoading(true)
+                setIsActive(true)
                 plausibleEvent('oauth_verification_started')
 
                 const {
@@ -141,6 +141,9 @@ const defineTaskContent = (
                   messageCallback('EXTENSION_IS_NOT_INSTALLED')
                   return
                 }
+
+                setLoading(true)
+                setIsActive(true)
 
                 const {
                   presentationData,
