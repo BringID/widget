@@ -10,11 +10,13 @@ import {
 } from './styled-components'
 import configs from '@/app/configs';
 import TProps from './types'
+import { useModal } from '@/app/content/store/reducers/modal'
 
 const defineContent = (
   address: string | null,
   points: number,
   userKey: string | null,
+  scoreTitle: string,
   children?: React.ReactNode | React.ReactNode[]
 ) => {
 
@@ -29,7 +31,7 @@ const defineContent = (
   return (
     <Content>
       <Texts>
-        <TextStyled>Total Bring Score: {points}</TextStyled>
+        <TextStyled>Total {scoreTitle}: {points}</TextStyled>
       </Texts>
       {children}
     </Content>
@@ -43,11 +45,13 @@ const FooterComponent: FC<TProps> = ({
   children,
   className
 }) => {
+  const { customTitles } = useModal()
   return <Footer className={className}>
     {defineContent(
       address,
       points,
       userKey,
+      customTitles.scoreTitle,
       children
     )}
   </Footer>

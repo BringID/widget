@@ -45,14 +45,16 @@ const renderContent = (
   verifications: TVerification[],
   selected: string[],
   setSelected: (selected: string[]) => void,
+  scoreTitle: string,
+  pointsShortTitle: string,
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
 
   if (!isEnoughPoints) {
     return <MessageStyled status='error'>
-      Required Bring Score: <TagStyled status='info'>
-        {minPoints} pts.
+      Required {scoreTitle}: <TagStyled status='info'>
+        {minPoints} {pointsShortTitle}.
       </TagStyled>
     </MessageStyled>
   }
@@ -77,7 +79,8 @@ const renderContent = (
 
 const renderTitles = (
   minPoints: number,
-  availablePoints: number
+  availablePoints: number,
+  pointsTitle: string
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
@@ -86,7 +89,7 @@ const renderTitles = (
     return <>
       <TitleStyled>Cannot verify humanity</TitleStyled>
       <TextStyled>
-        Not enough points available to verify. Please add new verifications on the previous screen
+        Not enough {pointsTitle} available to verify. Please add new verifications on the previous screen
       </TextStyled>
     </>
   }
@@ -117,7 +120,8 @@ const renderButton = (
   onConfirm: TOnConfirm,
   onCancel: TOnCancel,
   onError: (errorText: string) => void,
-  setPage: TSetPage
+  setPage: TSetPage,
+  pointsShortTitle: string
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
@@ -180,7 +184,7 @@ const renderButton = (
       setLoading(false)
     }}
   >
-    Confirm ({pointsSelected} pts selected)
+    Confirm ({pointsSelected} {pointsShortTitle} selected)
   </ButtonStyled>
 }
 
@@ -239,14 +243,16 @@ const Proofs: FC<TProps> = ({
       />}
 
       <Container>
-        {renderTitles(modal.minPoints, availablePoints)}
+        {renderTitles(modal.minPoints, availablePoints, modal.customTitles.pointsTitle)}
 
         {renderContent(
           modal.minPoints,
           availablePoints,
           verifications,
           selected,
-          setSelected
+          setSelected,
+          modal.customTitles.scoreTitle,
+          modal.customTitles.pointsShortTitle
         )}
       </Container>
       <FooterStyled
@@ -272,7 +278,8 @@ const Proofs: FC<TProps> = ({
           onConfirm,
           onCancel,
           (errorMessage) => setError(errorMessage),
-          setPage
+          setPage,
+          modal.customTitles.pointsShortTitle
         )}
       </FooterStyled>
     </>

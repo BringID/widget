@@ -6,6 +6,7 @@ import { TaskContainer, Icons } from '..'
 
 import { msToTime } from '@/utils'
 import { useConfigs } from '@/app/content/store/reducers/configs'
+import { useModal } from '@/app/content/store/reducers/modal'
 import { TXScannerButton } from './components'
 
 const definePluginContent = (
@@ -13,11 +14,12 @@ const definePluginContent = (
   points: number,
   expiration: null | number,
   fetched: boolean,
-  taskId: string
+  taskId: string,
+  pointsShortTitle: string
 ) => {
   switch (status) {
     case 'default':
-      return <PointsCount>{points} pts</PointsCount>
+      return <PointsCount>{points} {pointsShortTitle}</PointsCount>
     case 'pending':
       return <Icons.Clock />;
     case 'scheduled':
@@ -54,6 +56,7 @@ const Verification: FC<TProps> = ({
 }) => {
   const [expiration, setExpiration] = useState<number | null>(null);
   const userConfigs = useConfigs()
+  const { customTitles } = useModal()
 
   useEffect(() => {
     const interval = window.setInterval(async () => {
@@ -77,7 +80,8 @@ const Verification: FC<TProps> = ({
     points,
     expiration,
     fetched,
-    taskId as string
+    taskId as string,
+    customTitles.pointsShortTitle
   );
 
   return (

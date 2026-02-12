@@ -8,7 +8,7 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { setLoading, useModal, setMinPoints } from '../store/reducers/modal';
+import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
 import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
@@ -153,6 +153,7 @@ const InnerContent: FC<TProps> = ({
   apiKey,
   address,
   parentUrl,
+  customTitles,
 }) => {
 
   const dispatch = useDispatch()
@@ -341,6 +342,13 @@ const InnerContent: FC<TProps> = ({
     apiKey,
     address,
   ]);
+
+  useEffect(() => {
+    if (customTitles) {
+      dispatch(setCustomTitles(customTitles))
+    }
+  }, [customTitles])
+
   console.log({ user })
 
   useEffect(() => {
