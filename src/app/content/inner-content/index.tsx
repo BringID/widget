@@ -1,5 +1,5 @@
 'use client'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import {
   Container,
   Content,
@@ -8,7 +8,7 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
+import { setLoading, useModal, setMinPoints } from '../store/reducers/modal';
 import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
@@ -25,7 +25,6 @@ import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
-  requestId: null | string
 ) => {
   switch (page) {
     case 'home': return <Home
@@ -35,13 +34,11 @@ const defineContent = (
       onCancel={() => {
         window.postMessage({
           type: 'CLOSE_MODAL',
-          requestId,
         }, window.location.origin)
       }}
       onConfirm={(proofs, pointsSelected) => {
         window.postMessage({
           type: 'PROOFS_RESPONSE',
-          requestId,
           payload: {
             proofs,
             points: pointsSelected
@@ -156,19 +153,18 @@ const InnerContent: FC<TProps> = ({
   apiKey,
   address,
   parentUrl,
-  mode,
-  appId
 }) => {
 
   const dispatch = useDispatch()
 
   const { loading } = useModal()
   const user = useUser()
-  const modal = useModal()
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const userConfigs = useConfigs()
   const plausible = usePlausible()
+  const userRef = useRef(user)
+  userRef.current = user
 
   useEffect(() => {
     if (!parentUrl) {
@@ -183,7 +179,7 @@ const InnerContent: FC<TProps> = ({
         return;
       }
 
-      const { type, requestId, payload } = event.data;
+      const { type, payload } = event.data;
 
 
       if (typeof type !== 'string') {
@@ -204,10 +200,20 @@ const InnerContent: FC<TProps> = ({
         
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
+
+          const newMode = payload?.mode || 'production'
+          const newAppId = payload?.appId || null
+
+          if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
+            dispatch(setKey(null))
+            dispatch(addVerifications([]))
+          }
+
+          dispatch(setMode(newMode));
+          dispatch(setAppId(newAppId));
           dispatch(setScope(payload?.scope || null));
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
-          dispatch(setRequestId(requestId || null));
           return;
         }
 
@@ -228,9 +234,9 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          console.log({ type: "PROOFS_RESPONSE", requestId, payload })
+          console.log({ type: "PROOFS_RESPONSE", payload })
           window.parent.postMessage(
-            { type: "PROOFS_RESPONSE", requestId, payload },
+            { type: "PROOFS_RESPONSE", payload },
             parentOrigin
           );
           return;
@@ -240,7 +246,7 @@ const InnerContent: FC<TProps> = ({
           setPage('home');
           plausible('close_modal');
           window.parent.postMessage(
-            { type: "CLOSE_MODAL", requestId },
+            { type: "CLOSE_MODAL" },
             parentOrigin
           );
           return;
@@ -329,20 +335,10 @@ const InnerContent: FC<TProps> = ({
       dispatch(setApiKey(apiKey));
     }
 
-    if (mode) {
-      dispatch(setMode(mode));
-    }
-
-    if (appId) {
-      dispatch(setAppId(appId));
-    }
-
   }, [
     user.address,
     apiKey,
     address,
-    mode,
-    appId
   ]);
   console.log({ user })
 
@@ -426,7 +422,6 @@ const InnerContent: FC<TProps> = ({
       {defineContent(
         page,
         setPage,
-        modal.requestId
       )}
     </Content>
   </Container>
