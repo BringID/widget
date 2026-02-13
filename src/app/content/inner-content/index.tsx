@@ -1,5 +1,5 @@
 'use client'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import {
   Container,
   Content,
@@ -8,8 +8,8 @@ import {
 import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
-import { setRequestId, setLoading, useModal, setMinPoints } from '../store/reducers/modal';
-import { setAddress, setApiKey, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
+import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
@@ -20,11 +20,11 @@ import {
 import { LoadingOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
+import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
 
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
-  requestId: null | string
 ) => {
   switch (page) {
     case 'home': return <Home
@@ -34,13 +34,11 @@ const defineContent = (
       onCancel={() => {
         window.postMessage({
           type: 'CLOSE_MODAL',
-          requestId,
         }, window.location.origin)
       }}
       onConfirm={(proofs, pointsSelected) => {
         window.postMessage({
           type: 'PROOFS_RESPONSE',
-          requestId,
           payload: {
             proofs,
             points: pointsSelected
@@ -57,6 +55,7 @@ const defineContent = (
 const uploadPrevVerifications = async (
   tasks: TTask[],
   userKey: string,
+  appId: string,
   setLoading: (
     loading: boolean
   ) => void,
@@ -75,23 +74,36 @@ const uploadPrevVerifications = async (
 
   for (const task of tasks) {
     for (const group of task.groups) {
-      const identity = semaphore.createIdentity(
-        String(userKey),
-        group.credentialGroupId,
-      )
-      const { commitment } = identity;
-      identityDataList.push({
-        identityCommitment: String(commitment),
-        semaphoreGroupId: group.semaphoreGroupId,
-        credentialGroupId: group.credentialGroupId,
-        taskId: task.id
-      })
+      try {
+        const identity = semaphore.createIdentity(
+          String(userKey),
+          appId,
+          group.credentialGroupId,
+        )
+        const { commitment } = identity;
+        const semaphoreGroupId = await getAppSemaphoreGroupId(
+          modeConfigs.REGISTRY,
+          group.credentialGroupId,
+          appId,
+          modeConfigs.CHAIN_ID
+        )
+        identityDataList.push({
+          identityCommitment: String(commitment),
+          semaphoreGroupId,
+          credentialGroupId: group.credentialGroupId,
+          taskId: task.id
+        })
+      } catch (err) {
+        console.error(`Failed to get semaphore group for ${group.credentialGroupId}:`, err)
+      }
     }
   }
 
   const verifications: TVerification[] = []
 
   try {
+    console.log('REQUEST')
+
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
         identityCommitment,
@@ -99,21 +111,30 @@ const uploadPrevVerifications = async (
       })),
       modeConfigs
     )
+    console.log('REQUEST FINISHED: ', proofs)
 
     if (proofs) {
       for (const proofResult of proofs) {
         if (proofResult.success) {
+
+          console.log({ identityDataList })
           const matchingData = identityDataList.find(
             item => item.identityCommitment === proofResult.identity_commitment &&
                     item.semaphoreGroupId === proofResult.semaphore_group_id
           )
+
+
           if (matchingData) {
+            const relatedGroup = tasks.flatMap(t => t.groups).find(
+              g => g.credentialGroupId === matchingData.credentialGroupId
+            )
             verifications.push({
               credentialGroupId: matchingData.credentialGroupId,
               status: 'completed' as TVerificationStatus,
               scheduledTime: +new Date(),
               fetched: true,
               taskId: matchingData.taskId,
+              score: relatedGroup?.score ?? 0,
             })
           }
         }
@@ -132,18 +153,19 @@ const InnerContent: FC<TProps> = ({
   apiKey,
   address,
   parentUrl,
-  mode
+  customTitles,
 }) => {
 
   const dispatch = useDispatch()
 
   const { loading } = useModal()
   const user = useUser()
-  const modal = useModal()
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const userConfigs = useConfigs()
   const plausible = usePlausible()
+  const userRef = useRef(user)
+  userRef.current = user
 
   useEffect(() => {
     if (!parentUrl) {
@@ -158,7 +180,7 @@ const InnerContent: FC<TProps> = ({
         return;
       }
 
-      const { type, requestId, payload } = event.data;
+      const { type, payload } = event.data;
 
 
       if (typeof type !== 'string') {
@@ -173,16 +195,39 @@ const InnerContent: FC<TProps> = ({
             return;
           }
           plausible('generate_user_key_finished');
+          dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
           return;
         }
         
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
-          dispatch(setScope(payload?.scope || null));
+
+          console.log('[PROOFS_REQUEST] received payload:', payload);
+
+          const newMode = payload?.mode || 'production'
+          const newAppId = payload?.appId || null
+
+          if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
+            dispatch(setKey(null))
+            dispatch(addVerifications([]))
+          }
+
+          dispatch(setMode(newMode));
+          dispatch(setAppId(newAppId));
+          dispatch(setContract(payload?.contract || null));
+          dispatch(setContext(payload?.context ?? 0));
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
-          dispatch(setRequestId(requestId || null));
+
+          console.log('[PROOFS_REQUEST] dispatched:', {
+            mode: newMode,
+            appId: newAppId,
+            contract: payload?.contract || null,
+            context: payload?.context ?? 0,
+            message: payload?.message || null,
+            minPoints: payload?.minPoints || 0,
+          });
           return;
         }
 
@@ -203,9 +248,9 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          console.log({ type: "PROOFS_RESPONSE", requestId, payload })
+          console.log({ type: "PROOFS_RESPONSE", payload })
           window.parent.postMessage(
-            { type: "PROOFS_RESPONSE", requestId, payload },
+            { type: "PROOFS_RESPONSE", payload },
             parentOrigin
           );
           return;
@@ -215,7 +260,7 @@ const InnerContent: FC<TProps> = ({
           setPage('home');
           plausible('close_modal');
           window.parent.postMessage(
-            { type: "CLOSE_MODAL", requestId },
+            { type: "CLOSE_MODAL" },
             parentOrigin
           );
           return;
@@ -304,34 +349,65 @@ const InnerContent: FC<TProps> = ({
       dispatch(setApiKey(apiKey));
     }
 
-    if (mode) {
-      dispatch(setMode(mode));
-    }
-
   }, [
     user.address,
     apiKey,
     address,
-    mode
   ]);
 
   useEffect(() => {
-    if (!user.address) { return }
-    if (!user.mode) { return }
-  
+    if (customTitles) {
+      dispatch(setCustomTitles(customTitles))
+    }
+  }, [customTitles])
+
+  console.log({ user })
+
+  useEffect(() => {
+
+    if (!user.address) return
+    if (!user.mode) return
+    if (!user.appId) return
+
     const init = async () => {
       const userConfigs = await configs(user.mode === 'dev')
       dispatch(addModeConfigs(userConfigs.configs))
-      dispatch(addTasks(userConfigs.tasks))
+
+      try {
+        const scoresMap = await getAllScores(
+          userConfigs.configs.REGISTRY,
+          user.appId as string,
+          userConfigs.configs.CHAIN_ID
+        )
+        const enrichedTasks = userConfigs.tasks.map(task => ({
+          ...task,
+          groups: task.groups.map(group => ({
+            ...group,
+            score: scoresMap.get(group.credentialGroupId) ?? 0
+          }))
+        }))
+        dispatch(addTasks(enrichedTasks))
+      } catch (err) {
+        console.error('Failed to fetch scores:', err)
+        dispatch(addTasks(userConfigs.tasks))
+      }
     }
-    init()
+    init().catch(err => {
+      console.error('Failed to load configs:', err)
+      dispatch(setLoading(false))
+    })
   }, [
     user.address,
-    user.mode
+    user.mode,
+    user.appId
   ])
 
   useEffect(() => {
     if (!user.key) return
+    if (!user.appId) return
+    console.log({
+      userConfigs
+    })
     if (
       userConfigs.tasks.length === 0
     ) return
@@ -342,16 +418,21 @@ const InnerContent: FC<TProps> = ({
     uploadPrevVerifications(
       userConfigs.tasks,
       user.key,
+      user.appId,
       (loading: boolean) => dispatch(setLoading(loading)),
       userConfigs.modeConfigs,
       (verifications) => {
         console.log('HERE uploading verifications')
         dispatch(addVerifications(verifications))
       }
-    )
+    ).catch(err => {
+      console.error('Failed to upload previous verifications:', err)
+      dispatch(setLoading(false))
+    })
   }, [
     userConfigs,
-    user.key
+    user.key,
+    user.appId
   ]);
 
 
@@ -365,7 +446,6 @@ const InnerContent: FC<TProps> = ({
       {defineContent(
         page,
         setPage,
-        modal.requestId
       )}
     </Content>
   </Container>

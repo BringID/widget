@@ -11,9 +11,11 @@ enum ActionType {
   '/user/setAddress' = '/user/setAddress',
   '/user/setApiKey' = '/user/setApiKey',
   '/user/destroy' = '/user/destroy',
-  '/user/setScope' = '/user/setScope',
+  '/user/setContract' = '/user/setContract',
+  '/user/setContext' = '/user/setContext',
   '/user/setMessage' = '/user/setMessage',
-  '/user/setMode' = '/user/setMode'
+  '/user/setMode' = '/user/setMode',
+  '/user/setAppId' = '/user/setAppId'
 }
 
 type Action<payload> = {
@@ -30,9 +32,11 @@ const initState: State = {
   address: null,
   loading: false,
   apiKey: null,
-  scope: null,
+  contract: null,
+  context: 0,
   message: null,
-  mode: ''
+  mode: '',
+  appId: null
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({
@@ -55,9 +59,14 @@ export const setLoading = (loading: boolean): Action<boolean> => ({
   payload: loading,
 })
 
-export const setScope = (scope: string | null): Action<string | null> => ({
-  type: ActionType['/user/setScope'],
-  payload: scope,
+export const setContract = (contract: string | null): Action<string | null> => ({
+  type: ActionType['/user/setContract'],
+  payload: contract,
+})
+
+export const setContext = (context: number): Action<number> => ({
+  type: ActionType['/user/setContext'],
+  payload: context,
 })
 
 export const setMessage = (message: string | null): Action<string | null> => ({
@@ -85,6 +94,11 @@ export const setApiKey = (apiKey: string): Action<string> => ({
   payload: apiKey,
 })
 
+export const setAppId = (appId: string | null): Action<string | null> => ({
+  type: ActionType['/user/setAppId'],
+  payload: appId,
+})
+
 export default function user(state = initState, action: Action<any>): State {
   switch (action.type) {
     case ActionType['/user/setKey']:
@@ -93,8 +107,11 @@ export default function user(state = initState, action: Action<any>): State {
     case ActionType['/user/setUser']:
       return action.payload;
 
-    case ActionType['/user/setScope']:
-      return  { ...state, scope: action.payload };
+    case ActionType['/user/setContract']:
+      return  { ...state, contract: action.payload };
+
+    case ActionType['/user/setContext']:
+      return  { ...state, context: action.payload };
 
     case ActionType['/user/setMessage']:
       return  { ...state, message: action.payload };
@@ -116,6 +133,9 @@ export default function user(state = initState, action: Action<any>): State {
 
     case ActionType['/user/setAddress']:
       return { ...state, address: action.payload };
+
+    case ActionType['/user/setAppId']:
+      return { ...state, appId: action.payload };
 
     default:
       return state;

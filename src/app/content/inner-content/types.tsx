@@ -1,6 +1,8 @@
+import { TCustomTitles } from '../store/reducers/modal'
+
 export type TProps = {
   apiKey?: string
   address?: string
   parentUrl?: string
-  mode: string
+  customTitles?: TCustomTitles
 }

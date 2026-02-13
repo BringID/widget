@@ -10,7 +10,7 @@ import {
   defineGroupForAuth,
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
-  defineGroupByZKTLSResult
+  defineGroupByZKTLSResult,
 } from '@/utils'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
@@ -24,6 +24,7 @@ const defineTaskContent = (
   status: TVerificationStatus,
   task: TTask,
   userKey: string | null,
+  appId: string | null,
   loading: boolean,
   setLoading: (loading: boolean) => void,
   modeConfigs: TModeConfigs,
@@ -46,11 +47,11 @@ const defineTaskContent = (
           disabled={loading || isActive}
           onClick={async () => {
             try {
-              setLoading(true)
-              setIsActive(true)
+
 
               if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
-
+                setLoading(true)
+                setIsActive(true)
                 plausibleEvent('oauth_verification_started')
 
                 const {
@@ -76,7 +77,7 @@ const defineTaskContent = (
 
                 if (group) {
 
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, group.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, group.credentialGroupId)
 
                   const verify = await verifierApi.verifyOAuth(
                     configs.ZUPLO_API_URL,
@@ -84,21 +85,25 @@ const defineTaskContent = (
                     signature,
                     modeConfigs.REGISTRY,
                     group.credentialGroupId,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     mode
                   )
 
                   const {
                     signature: verifierSignature,
-                    verifier_message: {
-                      id_hash
+                    attestation: {
+                      credential_id,
+                      issued_at
                     }
                   } = verify
 
                   const { task: taskCreated, success } = await taskManagerApi.addVerification(
                     configs.ZUPLO_API_URL,
                     group.credentialGroupId,
-                    id_hash,
+                    credential_id,
+                    issued_at,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
                     modeConfigs
@@ -115,14 +120,15 @@ const defineTaskContent = (
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId: group?.credentialGroupId,
-                      fetched: false
+                      fetched: false,
+                      score: group.score ?? 0,
                     })
                   }
 
                   console.log({ taskCreated })
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
-                  return 
+                  return
                 }
 
 
@@ -135,6 +141,9 @@ const defineTaskContent = (
                   messageCallback('EXTENSION_IS_NOT_INSTALLED')
                   return
                 }
+
+                setLoading(true)
+                setIsActive(true)
 
                 const {
                   presentationData,
@@ -152,29 +161,33 @@ const defineTaskContent = (
 
                 if (groupData) {
                   const { credentialGroupId } = groupData
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, groupData?.credentialGroupId)
+                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, groupData?.credentialGroupId)
                   const verify = await verifierApi.verify(
                     configs.ZUPLO_API_URL,
                     presentationData,
                     modeConfigs.REGISTRY,
                     credentialGroupId,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
                     mode
                   )
 
                   const {
-                    signature,
-                    verifier_message: {
-                      id_hash
+                    signature: verifierSignature,
+                    attestation: {
+                      credential_id,
+                      issued_at
                     }
                   } = verify
 
                   const { task: taskCreated, success } = await taskManagerApi.addVerification(
                     configs.ZUPLO_API_URL,
                     credentialGroupId,
-                    id_hash,
+                    credential_id,
+                    issued_at,
+                    appId as string,
                     String(semaphoreIdentity.commitment),
-                    signature,
+                    verifierSignature,
                     modeConfigs
                   )
 
@@ -187,12 +200,13 @@ const defineTaskContent = (
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
                       taskId: taskCreated.id,
                       credentialGroupId,
-                      fetched: false
+                      fetched: false,
+                      score: task.groups.find(g => g.credentialGroupId === credentialGroupId)?.score ?? 0,
                     })
                   }
 
                   console.log({ taskCreated })
-                
+
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
                   return
@@ -225,7 +239,6 @@ const defineTaskContent = (
 
 const Task: FC<TProps> = ({
   status,
-  userKey,
   task,
   onError,
   onMessage,
@@ -243,7 +256,8 @@ const Task: FC<TProps> = ({
     (eventName) => plausible(eventName),
     status,
     task,
-    userKey,
+    user.key,
+    user.appId,
     loading,
     setLoading,
     userConfigs.modeConfigs,
@@ -265,8 +279,8 @@ const Task: FC<TProps> = ({
       title={task.title}
       description={task.description}
       id={task.id}
-      groups={task.groups}
       icon={task.icon}
+      groups={task.groups}
     >
       <Value>{content}</Value>
     </TaskContainer>

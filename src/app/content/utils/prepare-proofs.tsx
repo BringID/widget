@@ -1,13 +1,17 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
-import { defineTaskByCredentialGroupId, calculateScope } from "@/utils";
+import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId } from "@/utils";
 import semaphore from "../semaphore";
 import { generateProof } from '@semaphore-protocol/core';
+import indexer from "../api/indexer";
+import configs from '../../configs';
 
 type TGetProofs = (
   tasks: TTask[],
   userKey: string,
+  appId: string,
   verifications: TVerification[],
-  scope: string | null,
+  contract: string | null,
+  context: number,
   message: string | null,
   pointsRequired: number,
   selectedVerifications: string[],
@@ -17,8 +21,10 @@ type TGetProofs = (
 const prepareProofs: TGetProofs = async (
   tasks,
   userKey,
+  appId,
   verifications,
-  scope,
+  contract,
+  context,
   message,
   pointsRequired,
   selectedVerifications,
@@ -37,7 +43,8 @@ const prepareProofs: TGetProofs = async (
   const verificationsToProcess: {
     credentialGroupId: string,
     identity: ReturnType<typeof semaphore.createIdentity>,
-    group: NonNullable<ReturnType<typeof defineTaskByCredentialGroupId>>['group']
+    semaphoreGroupId: string,
+    score: number
   }[] = [];
   let totalScore = 0;
 
@@ -58,14 +65,16 @@ const prepareProofs: TGetProofs = async (
       continue;
     }
 
-    const { group } = relatedTask;
-    totalScore = totalScore + group.points;
-    const identity = semaphore.createIdentity(userKey, credentialGroupId);
+    const score = relatedTask.group.score ?? 0;
+    totalScore = totalScore + score;
+    const identity = semaphore.createIdentity(userKey, appId, credentialGroupId);
+    const semaphoreGroupId = await getAppSemaphoreGroupId(modeConfigs.REGISTRY, credentialGroupId, appId, modeConfigs.CHAIN_ID);
 
     verificationsToProcess.push({
       credentialGroupId,
       identity,
-      group
+      semaphoreGroupId,
+      score
     });
   }
 
@@ -73,45 +82,57 @@ const prepareProofs: TGetProofs = async (
     return [];
   }
 
-  // Batch fetch all proofs
-  const proofsData = await semaphore.getProofs(
-    verificationsToProcess.map(({ identity, group }) => ({
-      identityCommitment: String(identity.commitment),
-      semaphoreGroupId: group.semaphoreGroupId
+  // Fetch merkle proofs from the indexer in a single batch request
+  const proofsResponse = await indexer.getProofs(
+    configs.ZUPLO_API_URL,
+    verificationsToProcess.map(item => ({
+      identityCommitment: item.identity.commitment.toString(),
+      semaphoreGroupId: item.semaphoreGroupId,
     })),
     modeConfigs,
     true
   );
 
-  if (!proofsData) {
-    throw new Error('no proofs found');
+  if (!proofsResponse.success || !proofsResponse.proofs) {
+    throw new Error('Failed to fetch merkle proofs from indexer');
   }
 
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
-  const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
+  const contractToUse = contract || modeConfigs.REGISTRY;
+  const scopeToUse = calculateScope(contractToUse, context);
   const messageToUse = message || 'verification';
 
-  console.log({
-    scopeToUse,
-    messageToUse
-  })
+  console.log('[prepareProofs] scope calculation:', {
+    contract: contractToUse,
+    context,
+    scope: scopeToUse,
+    message: messageToUse,
+  });
 
-  for (const item of verificationsToProcess) {
-    const proofResult = proofsData.find(
-      p => p.identity_commitment === String(item.identity.commitment) &&
-           p.semaphore_group_id === item.group.semaphoreGroupId
-    );
+  for (let i = 0; i < verificationsToProcess.length; i++) {
+    const item = verificationsToProcess[i];
+    const proofData = proofsResponse.proofs[i];
 
-    if (!proofResult || !proofResult.success) {
-      throw new Error('no proof found');
+    if (!('proof' in proofData) || !proofData.success) {
+      throw new Error(`Failed to fetch merkle proof for credential group ${item.credentialGroupId}`);
     }
 
+    // Convert indexer proof data to MerkleProof format (bigint values)
+    // When a group has a single member, the indexer returns index as null and empty siblings
+    const merkleProof = {
+      root: BigInt(proofData.proof.root),
+      leaf: BigInt(proofData.proof.leaf),
+      index: proofData.proof.index ?? 0,
+      siblings: proofData.proof.siblings.map((s: string) => BigInt(s)),
+    };
+
     const { merkleTreeDepth, merkleTreeRoot, message: proofMessage, points, nullifier } =
-      await generateProof(item.identity, (proofResult as any).proof as any, messageToUse, scopeToUse);
+      await generateProof(item.identity, merkleProof, messageToUse, scopeToUse);
 
     semaphoreProofs.push({
       credential_group_id: item.credentialGroupId,
+      app_id: appId,
       semaphore_proof: {
         merkle_tree_depth: merkleTreeDepth,
         merkle_tree_root: merkleTreeRoot,

@@ -12,7 +12,12 @@ const InstallExtensionButton: FC = () => {
   if (installationStarted) {
     return <ButtonStyled
       appearance='action'
-      onClick={() => window.location.reload()}
+      onClick={() => {
+        window.postMessage({
+          type: 'CLOSE_MODAL',
+        }, window.location.origin)
+        window.location.reload()
+      }}
     >
       Reload
     </ButtonStyled>

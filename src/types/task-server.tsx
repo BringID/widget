@@ -5,7 +5,7 @@ export type TTaskServer = {
   id: string;
   type: TTaskType;
   status: TTaskStatus;
-  id_hash: string | null;
+  credential_id: string | null;
   registry: string;
   credential_group_id: string;
   verifier_signature: string;

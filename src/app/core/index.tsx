@@ -7,8 +7,8 @@ async function loadConfigs(
     configs: TModeConfigs
   }> {
   try {
-    const configsFileName = devMode ? 'dev-configs' : 'configs'
     const isStaging = process.env.NEXT_PUBLIC_IS_STAGING === 'true'
+    const configsFileName = devMode ? (isStaging ? 'dev-configs-staging' : 'dev-configs') : 'configs'
     const tasksFileName = devMode ? (isStaging ? 'tasks-sepolia-staging' : 'tasks-sepolia') : 'tasks'
     const configs = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${configsFileName}.json`)
     const tasks = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${tasksFileName}.json`)

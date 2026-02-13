@@ -42,7 +42,7 @@ const Home: FC<TProps> = ({
   const user = useUser();
   const userConfigs = useConfigs()
 
-  const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
+  const availablePoints = calculateAvailablePoints(verifications);
   const finishedVerifications = verifications.filter(verification => {
     return verification.status === 'completed'
   })

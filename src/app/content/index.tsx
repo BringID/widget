@@ -22,9 +22,15 @@ const Widget: FC = () => {
   const themeParam = searchParams.get('theme') || 'light'
   const defaultTheme = themeParam === 'dark' ? dark : light
 
-  const mode = searchParams.get('mode') || 'production'
-
   const highlightColor = searchParams.get('highlightColor') ? decodeURIComponent(searchParams.get('highlightColor') as string) : undefined
+  const customTitlesParam = searchParams.get('customTitles')
+  const customTitles = customTitlesParam ? (() => {
+    try {
+      return JSON.parse(decodeURIComponent(customTitlesParam))
+    } catch {
+      return undefined
+    }
+  })() : undefined
 
   console.log({ ...dark, highlightColor, searchParams })
 
@@ -42,7 +48,7 @@ const Widget: FC = () => {
           apiKey={apiKey}
           address={address}
           parentUrl={decodedRedirectUrl}
-          mode={mode}
+          customTitles={customTitles}
         />
       </ReduxProvider>
     </ThemeProvider>

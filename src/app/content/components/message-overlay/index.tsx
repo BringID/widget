@@ -11,6 +11,7 @@ import { Link } from '@/components/common'
 import TProps from './types'
 import configs from '@/app/configs'
 import { InstallExtensionButton } from './components'
+import { useModal } from '@/app/content/store/reducers/modal'
 
 
 const defineMessageTitle = (
@@ -29,18 +30,19 @@ const defineMessageTitle = (
 }
 
 const defineMessageText = (
-  errorText: string
+  errorText: string,
+  pointsTitle: string
 ) => {
   switch (errorText) {
     case 'EXTENSION_IS_NOT_INSTALLED':
-      return <>You need to install the <Link href={configs.EXTENSION_URL} target='_blank'>extension</Link> to verify with zkTLS. After the installation please reload the widget, and sign in again. Reload is necessary to make sure that widget can communicate with the extension</> 
-    
+      return <>You need to install the <Link href={configs.EXTENSION_URL} target='_blank'>extension</Link> to verify with zkTLS. After the installation please reload the widget, and sign in again. Reload is necessary to make sure that widget can communicate with the extension</>
+
     case 'NOT_ENOUGH_SCORE':
-      return <>Unfortunately the score of your verified account is too low. Please make sure that there is enough activity to get points</>
+      return <>Unfortunately the score of your verified account is too low. Please make sure that there is enough activity to get {pointsTitle}</>
 
     default:
       return null
-  }  
+  }
 }
 
 const defineMessageAction = (
@@ -62,11 +64,12 @@ const MessageOverlay: FC<TProps> = ({
   message,
   onClose
 }) => {
+  const { customTitles } = useModal()
   return (
     <Container>
       <Content>
         <TitleStyled>{defineMessageTitle(message)}</TitleStyled>
-        <TextStyled>{defineMessageText(message)}</TextStyled>
+        <TextStyled>{defineMessageText(message, customTitles.pointsTitle)}</TextStyled>
 
         <ButtonsContainer>
           {defineMessageAction(message)}

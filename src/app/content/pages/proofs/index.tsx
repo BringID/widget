@@ -19,7 +19,6 @@ import {
 import { useVerifications } from '../../store/reducers/verifications'
 import {
   calculateAvailablePoints,
-  defineTaskByCredentialGroupId,
   defineInitialSelectedVerifications
 } from '@/utils'
 import { useUser } from '../../store/reducers/user'
@@ -46,14 +45,16 @@ const renderContent = (
   verifications: TVerification[],
   selected: string[],
   setSelected: (selected: string[]) => void,
+  scoreTitle: string,
+  pointsShortTitle: string,
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
 
   if (!isEnoughPoints) {
     return <MessageStyled status='error'>
-      Required Bring Score: <TagStyled status='info'>
-        {minPoints} pts.
+      Required {scoreTitle}: <TagStyled status='info'>
+        {minPoints} {pointsShortTitle}.
       </TagStyled>
     </MessageStyled>
   }
@@ -78,7 +79,8 @@ const renderContent = (
 
 const renderTitles = (
   minPoints: number,
-  availablePoints: number
+  availablePoints: number,
+  pointsTitle: string
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
@@ -87,7 +89,7 @@ const renderTitles = (
     return <>
       <TitleStyled>Cannot verify humanity</TitleStyled>
       <TextStyled>
-        Not enough points available to verify. Please add new verifications on the previous screen
+        Not enough {pointsTitle} available to verify. Please add new verifications on the previous screen
       </TextStyled>
     </>
   }
@@ -103,6 +105,7 @@ const renderTitles = (
 const renderButton = (
   plausibleEvent: (eventName: string) => void,
   userKey: string,
+  appId: string,
   loading: boolean,
   setLoading: (loading: boolean) => void,
   selected: string[],
@@ -111,13 +114,15 @@ const renderButton = (
   tasks: TTask[],
   modeConfigs: TModeConfigs,
   verifications: TVerification[],
-  scope: string | null,
+  contract: string | null,
+  context: number,
   message: string | null,
   pointsSelected: number,
   onConfirm: TOnConfirm,
   onCancel: TOnCancel,
   onError: (errorText: string) => void,
-  setPage: TSetPage
+  setPage: TSetPage,
+  pointsShortTitle: string
 ) => {
 
   const isEnoughPoints = availablePoints >= minPoints
@@ -149,8 +154,10 @@ const renderButton = (
         const proofs = await prepareProofs(
           tasks,
           userKey,
+          appId,
           verifications,
-          scope,
+          contract,
+          context,
           message,
           pointsSelected,
           selected,
@@ -179,7 +186,7 @@ const renderButton = (
       setLoading(false)
     }}
   >
-    Confirm ({pointsSelected} pts selected)
+    Confirm ({pointsSelected} {pointsShortTitle} selected)
   </ButtonStyled>
 }
 
@@ -196,7 +203,7 @@ const Proofs: FC<TProps> = ({
 
   const userConfigs = useConfigs()
   const [loading, setLoading] = useState<boolean>(false);
-  const availablePoints = calculateAvailablePoints(verifications, userConfigs.tasks); //devMode
+  const availablePoints = calculateAvailablePoints(verifications);
   const plausible = usePlausible()
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -204,25 +211,15 @@ const Proofs: FC<TProps> = ({
     let result = 0;
 
     verifications.forEach((verification) => {
-      const relatedTask = defineTaskByCredentialGroupId(
-        verification.credentialGroupId,
-        userConfigs.tasks
-      );
-
-      if (!relatedTask) {
-        return;
-      }
       if (verification.status !== 'completed') {
         return;
       }
 
-      if (!selected.includes(relatedTask.group.credentialGroupId)) {
+      if (!selected.includes(verification.credentialGroupId)) {
         return;
       }
 
-      if (relatedTask) {
-        result = result + relatedTask.group.points;
-      }
+      result = result + (verification.score || 0);
     });
 
     return result;
@@ -248,14 +245,16 @@ const Proofs: FC<TProps> = ({
       />}
 
       <Container>
-        {renderTitles(modal.minPoints, availablePoints)}
+        {renderTitles(modal.minPoints, availablePoints, modal.customTitles.pointsTitle)}
 
         {renderContent(
           modal.minPoints,
           availablePoints,
           verifications,
           selected,
-          setSelected
+          setSelected,
+          modal.customTitles.scoreTitle,
+          modal.customTitles.pointsShortTitle
         )}
       </Container>
       <FooterStyled
@@ -266,6 +265,7 @@ const Proofs: FC<TProps> = ({
         {renderButton(
           (eventName) => plausible(eventName),
           user.key as string,
+          user.appId as string,
           loading,
           setLoading,
           selected,
@@ -274,13 +274,15 @@ const Proofs: FC<TProps> = ({
           userConfigs.tasks,
           userConfigs.modeConfigs,
           verifications,
-          user.scope,
+          user.contract,
+          user.context,
           user.message,
           pointsSelected,
           onConfirm,
           onCancel,
           (errorMessage) => setError(errorMessage),
-          setPage
+          setPage,
+          modal.customTitles.pointsShortTitle
         )}
       </FooterStyled>
     </>
