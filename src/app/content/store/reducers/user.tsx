@@ -11,7 +11,8 @@ enum ActionType {
   '/user/setAddress' = '/user/setAddress',
   '/user/setApiKey' = '/user/setApiKey',
   '/user/destroy' = '/user/destroy',
-  '/user/setScope' = '/user/setScope',
+  '/user/setContract' = '/user/setContract',
+  '/user/setContext' = '/user/setContext',
   '/user/setMessage' = '/user/setMessage',
   '/user/setMode' = '/user/setMode',
   '/user/setAppId' = '/user/setAppId'
@@ -31,7 +32,8 @@ const initState: State = {
   address: null,
   loading: false,
   apiKey: null,
-  scope: null,
+  contract: null,
+  context: 0,
   message: null,
   mode: '',
   appId: null
@@ -57,9 +59,14 @@ export const setLoading = (loading: boolean): Action<boolean> => ({
   payload: loading,
 })
 
-export const setScope = (scope: string | null): Action<string | null> => ({
-  type: ActionType['/user/setScope'],
-  payload: scope,
+export const setContract = (contract: string | null): Action<string | null> => ({
+  type: ActionType['/user/setContract'],
+  payload: contract,
+})
+
+export const setContext = (context: number): Action<number> => ({
+  type: ActionType['/user/setContext'],
+  payload: context,
 })
 
 export const setMessage = (message: string | null): Action<string | null> => ({
@@ -100,8 +107,11 @@ export default function user(state = initState, action: Action<any>): State {
     case ActionType['/user/setUser']:
       return action.payload;
 
-    case ActionType['/user/setScope']:
-      return  { ...state, scope: action.payload };
+    case ActionType['/user/setContract']:
+      return  { ...state, contract: action.payload };
+
+    case ActionType['/user/setContext']:
+      return  { ...state, context: action.payload };
 
     case ActionType['/user/setMessage']:
       return  { ...state, message: action.payload };

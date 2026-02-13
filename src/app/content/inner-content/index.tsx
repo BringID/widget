@@ -9,7 +9,7 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
-import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setScope, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
@@ -203,6 +203,8 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
 
+          console.log('[PROOFS_REQUEST] received payload:', payload);
+
           const newMode = payload?.mode || 'production'
           const newAppId = payload?.appId || null
 
@@ -213,9 +215,19 @@ const InnerContent: FC<TProps> = ({
 
           dispatch(setMode(newMode));
           dispatch(setAppId(newAppId));
-          dispatch(setScope(payload?.scope || null));
+          dispatch(setContract(payload?.contract || null));
+          dispatch(setContext(payload?.context ?? 0));
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
+
+          console.log('[PROOFS_REQUEST] dispatched:', {
+            mode: newMode,
+            appId: newAppId,
+            contract: payload?.contract || null,
+            context: payload?.context ?? 0,
+            message: payload?.message || null,
+            minPoints: payload?.minPoints || 0,
+          });
           return;
         }
 

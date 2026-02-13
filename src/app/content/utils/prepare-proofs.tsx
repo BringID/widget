@@ -10,7 +10,8 @@ type TGetProofs = (
   userKey: string,
   appId: string,
   verifications: TVerification[],
-  scope: string | null,
+  contract: string | null,
+  context: number,
   message: string | null,
   pointsRequired: number,
   selectedVerifications: string[],
@@ -22,7 +23,8 @@ const prepareProofs: TGetProofs = async (
   userKey,
   appId,
   verifications,
-  scope,
+  contract,
+  context,
   message,
   pointsRequired,
   selectedVerifications,
@@ -97,8 +99,16 @@ const prepareProofs: TGetProofs = async (
 
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
-  const scopeToUse = scope || calculateScope(modeConfigs.REGISTRY);
+  const contractToUse = contract || modeConfigs.REGISTRY;
+  const scopeToUse = calculateScope(contractToUse, context);
   const messageToUse = message || 'verification';
+
+  console.log('[prepareProofs] scope calculation:', {
+    contract: contractToUse,
+    context,
+    scope: scopeToUse,
+    message: messageToUse,
+  });
 
   for (let i = 0; i < verificationsToProcess.length; i++) {
     const item = verificationsToProcess[i];

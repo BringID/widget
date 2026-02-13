@@ -4,7 +4,8 @@ export type TUser = {
   address: string | null
   loading: boolean
   apiKey: string | null
-  scope: null | string
+  contract: null | string
+  context: number
   message: null | string
   mode: string
   appId: string | null
