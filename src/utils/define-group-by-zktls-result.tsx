@@ -8,8 +8,12 @@ function defineGroupByZKTLSResult (
   rawData: string,
   groups: TTaskGroup[],
 ): GroupMatchResult {
-  if (groups.length === 1) {
-    const group = groups[0];
+  const activeGroups = groups.filter(group => (group.score ?? 0) > 0)
+
+  if (activeGroups.length === 0) return null
+
+  if (activeGroups.length === 1) {
+    const group = activeGroups[0];
     return {
       credentialGroupId: group.credentialGroupId,
     };
@@ -19,7 +23,7 @@ function defineGroupByZKTLSResult (
 
   const keysToExtract = Array.from(
     new Set(
-      groups.flatMap((group) => group.checks?.map((check) => check.key) ?? []),
+      activeGroups.flatMap((group) => group.checks?.map((check) => check.key) ?? []),
     ),
   );
 
@@ -31,7 +35,7 @@ function defineGroupByZKTLSResult (
     }
   }
 
-  for (const group of groups) {
+  for (const group of activeGroups) {
     const checks = group.checks;
 
     if (!checks || checks.length === 0) {
