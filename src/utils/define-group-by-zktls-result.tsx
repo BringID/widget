@@ -14,9 +14,11 @@ function defineGroupByZKTLSResult (
 
   if (activeGroups.length === 1) {
     const group = activeGroups[0];
-    return {
-      credentialGroupId: group.credentialGroupId,
-    };
+    if (!group.checks || group.checks.length === 0) {
+      return {
+        credentialGroupId: group.credentialGroupId,
+      };
+    }
   }
 
   const extractedValues: Record<string, number> = {};

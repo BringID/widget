@@ -36,8 +36,11 @@ const defineGroupForAuth = (
   if (activeGroups.length === 0) return null
 
   if (activeGroups.length === 1) {
-    const { checks, ...group } = activeGroups[0]
-    return group
+    const group = activeGroups[0]
+    if (!group.checks || group.checks.length === 0) {
+      const { checks, ...rest } = group
+      return rest
+    }
   }
 
   const matchedGroup = activeGroups.find(group =>
