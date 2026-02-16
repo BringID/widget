@@ -18,7 +18,7 @@ import { defineTaskIcon } from '@/utils';
 import { useModal } from '@/app/content/store/reducers/modal';
 
 const definePointsRange = (groups: TTaskGroup[], pointsShortTitle: string) => {
-  const scores = groups.map(g => g.score).filter((s): s is number => s !== undefined)
+  const scores = groups.map(g => g.score).filter((s): s is number => s !== undefined && s > 0)
   if (scores.length === 0) return null
   const min = Math.min(...scores)
   const max = Math.max(...scores)
