@@ -31,13 +31,16 @@ const defineGroupForAuth = (
   score: number
 ): Omit<TTaskGroup, "checks"> | null => {
   const { groups } = taskConfig
+  const activeGroups = groups.filter(group => (group.score ?? 0) > 0)
 
-  if (groups.length === 1) {
-    const { checks, ...group } = groups[0]
+  if (activeGroups.length === 0) return null
+
+  if (activeGroups.length === 1) {
+    const { checks, ...group } = activeGroups[0]
     return group
   }
 
-  const matchedGroup = groups.find(group =>
+  const matchedGroup = activeGroups.find(group =>
     group.checks.every(check => {
       if (check.key !== "score") return true
 

@@ -385,7 +385,7 @@ const InnerContent: FC<TProps> = ({
             ...group,
             score: scoresMap.get(group.credentialGroupId) ?? 0
           }))
-        }))
+        })).filter(task => task.groups.some(group => group.score > 0))
         dispatch(addTasks(enrichedTasks))
       } catch (err) {
         console.error('Failed to fetch scores:', err)
