@@ -450,6 +450,7 @@ const InnerContent: FC<TProps> = ({
     {loading && !sessionLost && <LoadingOverlay title="Thinking..."/>}
     {sessionLost && <ErrorOverlay
       errorText="SESSION_LOST"
+      buttonTitle='Close'
       onClose={() => {
         setSessionLost(false)
         window.postMessage({

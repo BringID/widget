@@ -45,7 +45,8 @@ const defineErrorText = (
 
 const ErrorOverlay: FC<TProps> = ({
   errorText,
-  onClose
+  onClose,
+  buttonTitle
 }) => {
   return (
     <Container>
@@ -56,7 +57,7 @@ const ErrorOverlay: FC<TProps> = ({
           onClick={onClose}
           appearance='action'
         >
-          Return
+          {buttonTitle || 'Return'}
         </ButtonStyled>
       </Content>
     </Container>
