@@ -17,7 +17,7 @@ import {
   addVerifications,
   useVerifications
 } from '../store/reducers/verifications';
-import { LoadingOverlay } from '../components'
+import { LoadingOverlay, ErrorOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
 import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
@@ -162,6 +162,7 @@ const InnerContent: FC<TProps> = ({
   const user = useUser()
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
+  const [ sessionLost, setSessionLost ] = useState(false)
   const userConfigs = useConfigs()
   const plausible = usePlausible()
   const userRef = useRef(user)
@@ -192,6 +193,11 @@ const InnerContent: FC<TProps> = ({
         if (type === 'USER_KEY_READY') {
           if (!payload?.signature) {
             console.warn('Invalid USER_KEY_READY payload');
+            return;
+          }
+          if (!userRef.current.mode || !userRef.current.appId) {
+            console.warn('Session lost: mode or appId missing. Please close and reopen the widget.');
+            setSessionLost(true);
             return;
           }
           plausible('generate_user_key_finished');
@@ -441,7 +447,16 @@ const InnerContent: FC<TProps> = ({
       address={user.address}
       userKey={user.key}
     />
-    {loading && <LoadingOverlay title="Thinking..."/>}
+    {loading && !sessionLost && <LoadingOverlay title="Thinking..."/>}
+    {sessionLost && <ErrorOverlay
+      errorText="SESSION_LOST"
+      onClose={() => {
+        setSessionLost(false)
+        window.postMessage({
+          type: 'CLOSE_MODAL',
+        }, window.location.origin)
+      }}
+    />}
     <Content>
       {defineContent(
         page,
