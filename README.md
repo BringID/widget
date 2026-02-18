@@ -32,29 +32,29 @@ cp .env.example .env.local
 ### Prerequisites
 
 - Node.js 18+
-- npm
+- yarn
 
 ### Getting Started
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Start development server (with Turbopack)
-npm run dev
+yarn dev
 ```
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Available Scripts
 
-| Command         | Description                     |
-| --------------- | ------------------------------- |
-| `npm run dev`   | Start dev server with Turbopack |
-| `npm run build` | Create production build         |
-| `npm run start` | Start production server         |
-| `npm run lint`  | Run ESLint                      |
-| `npm run clean` | Remove `.next` build cache      |
+| Command       | Description                     |
+| ------------- | ------------------------------- |
+| `yarn dev`    | Start dev server with Turbopack |
+| `yarn build`  | Create production build         |
+| `yarn start`  | Start production server         |
+| `yarn lint`   | Run ESLint                      |
+| `yarn clean`  | Remove `.next` build cache      |
 
 ## License
 

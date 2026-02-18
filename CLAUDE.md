@@ -68,8 +68,7 @@ After verification, the widget generates Semaphore ZK proofs and returns them to
    - `api/task-manager/`: Creates and tracks verification tasks
    - `api/verifier/`: Submits OAuth and ZK-TLS proofs for verification
 4. **Semaphore** (`src/app/content/semaphore/`): Wrapper around Semaphore protocol
-5. **Relayer** (`src/app/content/relayer/`): Relayer for blockchain transactions
-6. **Store** (`src/app/content/store/`): Redux store with user, modal, verifications, configs reducers
+5. **Store** (`src/app/content/store/`): Redux store with user, modal, verifications, configs reducers
 7. **Utils**:
    - `get-auth-semaphore-data.tsx`: OAuth popup flow
    - `get-zk-tls-semaphore-data.tsx`: Extension communication flow
@@ -84,13 +83,12 @@ After verification, the widget generates Semaphore ZK proofs and returns them to
 │   ├── /content/
 │   │   ├── /inner-content/     # Core postMessage handler component
 │   │   ├── /pages/             # Home and Proofs pages
-│   │   ├── /components/        # UI components (authorize, header, verifications list)
+│   │   ├── /components/        # UI components (authorize, header, footer, verifications-list, verifications-select-list, loading-overlay, error-overlay, message-overlay, no-verifications-found)
 │   │   ├── /api/
 │   │   │   ├── indexer/        # Proof indexing API
 │   │   │   ├── task-manager/   # Task management API
 │   │   │   └── verifier/       # Verification API
 │   │   ├── /semaphore/         # Semaphore protocol wrapper
-│   │   ├── /relayer/           # Blockchain relayer
 │   │   ├── /store/             # Redux store and reducers
 │   │   └── /utils/             # Proof preparation utilities
 │   ├── /configs/               # App configs and chain definitions
