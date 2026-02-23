@@ -440,6 +440,7 @@ Content-Type: application/json
 {
   tlsn_presentation: string,
   registry: string,
+  chain_id: number,            // Number(modeConfigs.CHAIN_ID)
   credential_group_id: string,
   app_id: string,
   semaphore_identity_commitment: string
@@ -487,6 +488,7 @@ Content-Type: application/json
   },
   signature: string,         // Ethereum signature from OAuth API
   registry: string,
+  chain_id: number,          // Number(modeConfigs.CHAIN_ID)
   credential_group_id: string,
   app_id: string,
   semaphore_identity_commitment: string
