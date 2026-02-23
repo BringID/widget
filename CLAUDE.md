@@ -441,7 +441,22 @@ Content-Type: application/json
   tlsn_presentation: string,
   registry: string,
   credential_group_id: string,
+  app_id: string,
   semaphore_identity_commitment: string
+}
+```
+
+#### Response
+
+```typescript
+{
+  signature: string,           // Verifier signature for task-manager
+  attestation: {
+    credential_id: string,
+    app_id: string,
+    issued_at: number,
+    chain_id: number           // Chain ID the credential is issued on
+  }
 }
 ```
 
@@ -473,7 +488,22 @@ Content-Type: application/json
   signature: string,         // Ethereum signature from OAuth API
   registry: string,
   credential_group_id: string,
+  app_id: string,
   semaphore_identity_commitment: string
+}
+```
+
+#### Response
+
+```typescript
+{
+  signature: string,           // Verifier signature for task-manager
+  attestation: {
+    credential_id: string,
+    app_id: string,
+    issued_at: number,
+    chain_id: number           // Chain ID the credential is issued on
+  }
 }
 ```
 
@@ -498,7 +528,10 @@ Content-Type: application/json
 {
   registry: string,
   credential_group_id: string,
-  id_hash: string,
+  credential_id: string,       // From verifier attestation
+  app_id: string,
+  issued_at: number,           // From verifier attestation
+  chain_id: number,            // From verifier attestation
   identity_commitment: string,
   verifier_signature: string
 }
@@ -565,6 +598,25 @@ const createSemaphoreIdentity = (masterKey: string, credentialGroupId: string) =
 1. ABI-encode the master key (user signature) + credentialGroupId
 2. Hash with keccak256 to derive a unique identity key
 3. Create Semaphore Identity from the hash
+
+### Scope Calculation
+
+**File:** `src/utils/calculate-scope.tsx`
+
+The Semaphore proof scope is derived from `appId`, the registry contract address, and a caller-supplied context value:
+
+```typescript
+const scope = ethers.keccak256(
+  ethers.AbiCoder.defaultAbiCoder().encode(
+    ['uint256', 'address', 'uint256'],
+    [BigInt(appId), registryAddress, context]
+  )
+)
+```
+
+- `appId` — numeric app identifier from `PROOFS_REQUEST`
+- `registryAddress` — overridden by `contract` in `PROOFS_REQUEST`, otherwise `modeConfigs.REGISTRY`
+- `context` — optional numeric context from `PROOFS_REQUEST` (defaults to `0`)
 
 ### Verification Flow
 
@@ -664,6 +716,8 @@ https://raw.githubusercontent.com/BringID/configs/main/tasks.json
   txHash?: string
   fetched: boolean
   taskId: string
+  score: number
+  chainId?: number            // Chain ID from verifier attestation
 }
 ```
 
@@ -768,3 +822,5 @@ https://raw.githubusercontent.com/BringID/configs/main/tasks.json
 7. **Mode Support**: `dev` mode uses Base Sepolia testnet; `production` mode uses Base mainnet.
 
 8. **Theme Support**: The widget supports `light` and `dark` themes, plus custom highlight colors passed via URL parameters.
+
+9. **Contract Registry v3**: The widget targets the v3 credential registry (`0xbF9b2556e6Dd64D60E08E3669CeF2a4293e006db`). Credentials from the previous v2 contract are inaccessible — users must re-verify after a contract migration. The active registry address is always loaded from remote GitHub configs, not hardcoded.

@@ -100,7 +100,7 @@ const prepareProofs: TGetProofs = async (
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
   const contractToUse = contract || modeConfigs.REGISTRY;
-  const scopeToUse = calculateScope(contractToUse, context);
+  const scopeToUse = calculateScope(appId, contractToUse, context);
   const messageToUse = message || 'verification';
 
   console.log('[prepareProofs] scope calculation:', {

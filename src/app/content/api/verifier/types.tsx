@@ -6,6 +6,7 @@ type TVerifyResponse = {
     credential_id: string;
     app_id: string;
     issued_at: number;
+    chain_id: number;
   }
 }
 

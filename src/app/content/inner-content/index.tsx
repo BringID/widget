@@ -135,6 +135,7 @@ const uploadPrevVerifications = async (
               fetched: true,
               taskId: matchingData.taskId,
               score: relatedGroup?.score ?? 0,
+              chainId: Number(modeConfigs.CHAIN_ID),
             })
           }
         }

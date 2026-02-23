@@ -9,4 +9,5 @@ export type TVerification = {
   fetched: boolean;
   taskId: string; // id of task saved in DB
   score: number;
+  chainId?: number;
 };
