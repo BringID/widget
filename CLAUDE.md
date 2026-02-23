@@ -173,7 +173,6 @@ Sent when the user confirms proof selection and proofs are generated.
 ```typescript
 window.postMessage({
   type: 'PROOFS_RESPONSE',
-  requestId: string,
   payload: {
     proofs: TSemaphoreProof[],
     points: number
@@ -205,8 +204,7 @@ Sent when the user closes the widget.
 
 ```typescript
 window.postMessage({
-  type: 'CLOSE_MODAL',
-  requestId: string
+  type: 'CLOSE_MODAL'
 }, window.location.origin)
 ```
 
@@ -242,9 +240,11 @@ Sent by the parent website to request proofs with specific requirements.
 ```typescript
 {
   type: 'PROOFS_REQUEST',
-  requestId: string,
   payload: {
-    scope?: string,       // Custom scope for proofs
+    mode?: string,        // 'dev' or 'production' (default: 'production')
+    appId?: string,       // Numeric app identifier
+    contract?: string,    // Override registry contract address
+    context?: number,     // Numeric context for scope derivation (default: 0)
     message?: string,     // Custom message for proofs
     minPoints?: number    // Minimum points required
   }
