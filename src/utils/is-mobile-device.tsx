@@ -17,6 +17,11 @@ function isMobileDevice(): boolean {
     return true
   }
 
+  // Custom DevTools device with touch disabled — fall back to viewport width
+  if (typeof window !== 'undefined' && window.innerWidth <= 400) {
+    return true
+  }
+
   return false
 }
 
