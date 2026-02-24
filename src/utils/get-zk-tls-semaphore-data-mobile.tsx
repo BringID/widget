@@ -29,7 +29,9 @@ const getZKTLSSemaphoreDataMobile: TGetZKTLSSemaphoreDataMobile = (
     }
 
     const deepLink = `bringid:///notarize?taskId=${encodeURIComponent(task.id)}&callbackUrl=${encodeURIComponent(callbackUrl)}&sessionId=${encodeURIComponent(sessionId)}`
-    window.location.href = deepLink
+    // window.open works more reliably than location.href for custom URL
+    // schemes triggered from within a cross-origin iframe on iOS Safari
+    window.open(deepLink, '_blank')
 
     pollIntervalId = setInterval(async () => {
       try {
