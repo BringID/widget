@@ -11,6 +11,8 @@ import {
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult,
+  getZKTLSSemaphoreDataMobile,
+  isMobileDevice
 } from '@/utils'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
@@ -139,12 +141,16 @@ const defineTaskContent = (
               } else {
                 plausibleEvent('zktls_verification_started')
 
-
-                const bringIdInstalled = (window as any).bringID
-                if (!bringIdInstalled) {
-                  messageCallback('EXTENSION_IS_NOT_INSTALLED')
-                  return
+                if (!isMobileDevice()) {
+                  const bringIdInstalled = (window as any).bringID
+                  if (!bringIdInstalled) {
+                    messageCallback('EXTENSION_IS_NOT_INSTALLED')
+                    return
+                  }
                 }
+
+
+                
 
                 setLoading(true)
                 setIsActive(true)
@@ -152,7 +158,10 @@ const defineTaskContent = (
                 const {
                   presentationData,
                   transcriptRecv
-                } = await getZKTLSSemaphoreData(
+                } = isMobileDevice() ? await getZKTLSSemaphoreDataMobile (
+                  task,
+                  plausibleEvent
+                ) : await getZKTLSSemaphoreData(
                   task,
                   plausibleEvent
                 )
