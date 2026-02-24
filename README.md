@@ -56,6 +56,16 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | `yarn lint`   | Run ESLint                      |
 | `yarn clean`  | Remove `.next` build cache      |
 
+## Blockchain
+
+The widget targets the **v3 credential registry** on Base (mainnet) and Base Sepolia (testnet). The active registry address and supported tasks are loaded at runtime from the [`BringID/configs`](https://github.com/BringID/configs) GitHub repository — no redeployment is needed when configs change.
+
+Semaphore group IDs are fetched on-chain from the registry's `appSemaphoreGroups` mapping. The ZK proof scope is computed as:
+
+```
+keccak256(abi.encode(uint256 appId, address registry, uint256 context))
+```
+
 ## License
 
 AGPL-3.0

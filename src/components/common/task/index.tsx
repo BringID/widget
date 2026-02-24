@@ -84,6 +84,7 @@ const defineTaskContent = (
                     message,
                     signature,
                     modeConfigs.REGISTRY,
+                    Number(modeConfigs.CHAIN_ID),
                     group.credentialGroupId,
                     appId as string,
                     String(semaphoreIdentity.commitment),
@@ -94,7 +95,8 @@ const defineTaskContent = (
                     signature: verifierSignature,
                     attestation: {
                       credential_id,
-                      issued_at
+                      issued_at,
+                      chain_id
                     }
                   } = verify
 
@@ -103,6 +105,7 @@ const defineTaskContent = (
                     group.credentialGroupId,
                     credential_id,
                     issued_at,
+                    chain_id,
                     appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
@@ -122,6 +125,7 @@ const defineTaskContent = (
                       credentialGroupId: group?.credentialGroupId,
                       fetched: false,
                       score: group.score ?? 0,
+                      chainId: chain_id,
                     })
                   }
 
@@ -166,6 +170,7 @@ const defineTaskContent = (
                     configs.ZUPLO_API_URL,
                     presentationData,
                     modeConfigs.REGISTRY,
+                    Number(modeConfigs.CHAIN_ID),
                     credentialGroupId,
                     appId as string,
                     String(semaphoreIdentity.commitment),
@@ -176,7 +181,8 @@ const defineTaskContent = (
                     signature: verifierSignature,
                     attestation: {
                       credential_id,
-                      issued_at
+                      issued_at,
+                      chain_id
                     }
                   } = verify
 
@@ -185,6 +191,7 @@ const defineTaskContent = (
                     credentialGroupId,
                     credential_id,
                     issued_at,
+                    chain_id,
                     appId as string,
                     String(semaphoreIdentity.commitment),
                     verifierSignature,
@@ -202,6 +209,7 @@ const defineTaskContent = (
                       credentialGroupId,
                       fetched: false,
                       score: task.groups.find(g => g.credentialGroupId === credentialGroupId)?.score ?? 0,
+                      chainId: chain_id,
                     })
                   }
 

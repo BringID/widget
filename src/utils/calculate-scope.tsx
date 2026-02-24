@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
-function calculateScope(contractAddress: string, context: number = 0): string {
-  console.log('[calculateScope] input:', { contractAddress, context });
+function calculateScope(appId: string, contractAddress: string, context: number = 0): string {
+  console.log('[calculateScope] input:', { appId, contractAddress, context });
 
   const cleanAddress = contractAddress.toLowerCase().replace('0x', '');
 
@@ -10,8 +10,8 @@ function calculateScope(contractAddress: string, context: number = 0): string {
   }
   const fullAddress = '0x' + cleanAddress;
 
-  const types = ['address', 'uint256'];
-  const values = [fullAddress, context];
+  const types = ['uint256', 'address', 'uint256'];
+  const values = [BigInt(appId), fullAddress, context];
 
   const encoded = ethers.AbiCoder.defaultAbiCoder().encode(types, values);
 

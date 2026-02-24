@@ -6,6 +6,7 @@ type TVerifyResponse = {
     credential_id: string;
     app_id: string;
     issued_at: number;
+    chain_id: number;
   }
 }
 
@@ -13,6 +14,7 @@ type TVerify = (
   apiUrl: string,
   presentationData: string,
   registry: string,
+  chainId: number,
   credentialGroupId: string,
   appId: string,
   semaphoreIdentityCommitment: string,
@@ -25,6 +27,7 @@ type TVerifyOAuth = (
   message: TOAuthMessage,
   signature: string,
   registry: string,
+  chainId: number,
   credentialGroupId: string,
   appId: string,
   semaphoreIdentityCommitment: string,

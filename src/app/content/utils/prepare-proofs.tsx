@@ -4,6 +4,7 @@ import semaphore from "../semaphore";
 import { generateProof } from '@semaphore-protocol/core';
 import indexer from "../api/indexer";
 import configs from '../../configs';
+import { ethers } from 'ethers';
 
 type TGetProofs = (
   tasks: TTask[],
@@ -99,8 +100,8 @@ const prepareProofs: TGetProofs = async (
 
   // Process results and generate semaphore proofs
   const semaphoreProofs: TSemaphoreProof[] = [];
-  const contractToUse = contract || modeConfigs.REGISTRY;
-  const scopeToUse = calculateScope(contractToUse, context);
+  const contractToUse = contract || ethers.ZeroAddress;
+  const scopeToUse = calculateScope(appId, contractToUse, context);
   const messageToUse = message || 'verification';
 
   console.log('[prepareProofs] scope calculation:', {

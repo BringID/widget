@@ -10,6 +10,7 @@ type TAddVerification = (
   credentialGroupId: string,
   credentialId: string,
   issuedAt: number,
+  chainId: number,
   appId: string,
   identityCommitment: string,
   verifierSignature: string,
