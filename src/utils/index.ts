@@ -22,6 +22,8 @@ import defineInitialSelectedVerifications from './define-initial-selected-verifi
 import getAuthSemaphoreData from './get-auth-semaphore-data'
 import defineGroupByZKTLSResult from './define-group-by-zktls-result'
 import getZKTLSSemaphoreData from './get-zk-tls-semaphore-data'
+import getZKTLSSemaphoreDataMobile from './get-zk-tls-semaphore-data-mobile'
+import isMobileDevice from './is-mobile-device'
 import defineGroupForAuth from './define-group-for-auth'
 import lightenHex from './lighten-hex'
 import isValidOAuthMessage from './is-valid-auth-message'
@@ -53,6 +55,8 @@ export {
   getAuthSemaphoreData,
   defineGroupByZKTLSResult,
   getZKTLSSemaphoreData,
+  getZKTLSSemaphoreDataMobile,
+  isMobileDevice,
   alertError,
   formatDate,
   formatTime,
