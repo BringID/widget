@@ -140,7 +140,7 @@ const defineTaskContent = (
 
               } else {
                 plausibleEvent('zktls_verification_started')
-
+                console.log({ isMobileDevice: isMobileDevice() })
                 if (!isMobileDevice()) {
                   const bringIdInstalled = (window as any).bringID
                   if (!bringIdInstalled) {
