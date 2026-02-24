@@ -27,6 +27,7 @@ async function loadConfigs(
         CHAIN_ID: ''
       }
     }
+    
   }
 }
 
