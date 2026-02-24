@@ -1,4 +1,11 @@
 function isMobileDevice(): boolean {
+
+
+  // Custom DevTools device with touch disabled — fall back to viewport width
+  if (typeof window !== 'undefined' && window.innerWidth <= 400) {
+    return true
+  }
+  
   if (typeof navigator === 'undefined') return false
 
   // Modern API — available in Chrome 90+, Edge (not Firefox/Safari)
@@ -17,10 +24,6 @@ function isMobileDevice(): boolean {
     return true
   }
 
-  // Custom DevTools device with touch disabled — fall back to viewport width
-  if (typeof window !== 'undefined' && window.innerWidth <= 400) {
-    return true
-  }
 
   return false
 }
