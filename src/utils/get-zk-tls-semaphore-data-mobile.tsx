@@ -35,9 +35,12 @@ const getZKTLSSemaphoreDataMobile: TGetZKTLSSemaphoreDataMobile = (
 
     pollIntervalId = setInterval(async () => {
       try {
+        console.log('[mobile-bridge] polling', callbackUrl)
         const response = await fetch(callbackUrl, { method: 'GET' })
+        console.log('[mobile-bridge] poll status', response.status)
         if (response.status === 200) {
           const data = await response.json()
+          console.log('[mobile-bridge] got data', data)
           plausibleEvent('zktls_verification_response_received')
           cleanup()
           resolve({
@@ -47,7 +50,7 @@ const getZKTLSSemaphoreDataMobile: TGetZKTLSSemaphoreDataMobile = (
         }
         // 202 = not ready yet, keep polling
       } catch (_err) {
-        // Network error — keep polling
+        console.error('[mobile-bridge] poll error', _err)
       }
     }, POLL_INTERVAL_MS)
 
