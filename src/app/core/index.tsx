@@ -7,6 +7,7 @@ async function loadConfigs(
     configs: TModeConfigs
   }> {
   try {
+  
     const isStaging = process.env.NEXT_PUBLIC_IS_STAGING === 'true'
     const configsFileName = devMode ? (isStaging ? 'dev-configs-staging' : 'dev-configs') : 'configs'
     const tasksFileName = devMode ? (isStaging ? 'tasks-sepolia-staging' : 'tasks-sepolia') : 'tasks'
@@ -27,7 +28,7 @@ async function loadConfigs(
         CHAIN_ID: ''
       }
     }
-    
+
   }
 }
 
