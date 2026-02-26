@@ -198,6 +198,7 @@ const InnerContent: FC<TProps> = ({
           }
           if (!userRef.current.mode || !userRef.current.appId) {
             console.warn('Session lost: mode or appId missing. Please close and reopen the widget.');
+            plausible('session_lost');
             setSessionLost(true);
             return;
           }

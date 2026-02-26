@@ -142,6 +142,7 @@ const defineTaskContent = (
 
                 const bringIdInstalled = (window as any).bringID
                 if (!bringIdInstalled) {
+                  plausibleEvent('zktls_extension_not_installed')
                   messageCallback('EXTENSION_IS_NOT_INSTALLED')
                   return
                 }
@@ -225,11 +226,15 @@ const defineTaskContent = (
             } catch (err) {
               setLoading(false)
               setIsActive(false)
-              if (typeof err === 'string') {
-                errorCallback(err)
-              } else{
-                errorCallback((err as Error).message)
+              const errMessage = typeof err === 'string' ? err : (err as Error).message
+              const isExpectedError = [
+                'POPUP_BLOCKED', 'POPUP_CLOSED',
+                'VERIFICATION_TIMED_OUT',
+              ].some(e => errMessage?.includes(e))
+              if (!isExpectedError) {
+                plausibleEvent('verification_error')
               }
+              errorCallback(errMessage)
             }
           }}
         >
