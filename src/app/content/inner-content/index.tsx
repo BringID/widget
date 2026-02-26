@@ -415,12 +415,14 @@ const InnerContent: FC<TProps> = ({
     console.log({
       userConfigs
     })
-    if (
-      userConfigs.tasks.length === 0
-    ) return
-    if (
-      !userConfigs.modeConfigs.REGISTRY
-    ) return
+    if (userConfigs.tasks.length === 0) {
+      dispatch(setLoading(false))
+      return
+    }
+    if (!userConfigs.modeConfigs.REGISTRY) {
+      dispatch(setLoading(false))
+      return
+    }
 
     uploadPrevVerifications(
       userConfigs.tasks,
