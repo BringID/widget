@@ -781,15 +781,25 @@ https://raw.githubusercontent.com/BringID/configs/main/tasks.json
 |-------|-------------|
 | `generate_user_key_started` | User initiated key generation |
 | `generate_user_key_finished` | Key generation completed |
-| `verify_humanity_request_started` | Verification flow started |
-| `verify_humanity_request_finished` | Verification flow completed |
+| `verify_humanity_request_started` | Verification flow started (PROOFS_REQUEST received) |
+| `verify_humanity_request_finished` | Verification flow completed (PROOFS_RESPONSE sent) |
 | `prepare_proofs_started` | ZK proof generation started |
 | `prepare_proofs_finished` | ZK proof generation completed |
 | `prepare_proofs_failed` | ZK proof generation failed |
-| `oauth_verification_response_received` | OAuth response received successfully |
-| `oauth_verification_failed` | OAuth verification failed |
-| `zktls_verification_response_received` | ZK-TLS response received successfully |
-| `zktls_verification_failed` | ZK-TLS verification failed |
+| `oauth_verification_started` | OAuth verification button clicked |
+| `oauth_verification_response_received` | OAuth popup returned AUTH_SUCCESS |
+| `oauth_verification_finished` | OAuth verification fully completed (task created) |
+| `oauth_verification_failed` | OAuth popup returned AUTH_ERROR |
+| `oauth_popup_blocked` | OAuth popup was blocked by the browser |
+| `oauth_popup_closed` | OAuth popup was closed by the user before completing |
+| `zktls_verification_started` | ZK-TLS verification button clicked |
+| `zktls_verification_response_received` | ZK-TLS extension returned VERIFICATION_DATA_READY |
+| `zktls_verification_finished` | ZK-TLS verification fully completed (task created) |
+| `zktls_verification_failed` | ZK-TLS extension returned VERIFICATION_DATA_ERROR |
+| `zktls_extension_not_installed` | ZK-TLS attempted but BringID extension not detected |
+| `extension_install_clicked` | User clicked the Install button to install the BringID extension |
+| `verification_error` | Unexpected error during verification (API/network failure) |
+| `session_lost` | Session lost due to missing mode or appId on key return |
 | `close_modal` | User closed the widget |
 | `back_to_home` | User navigated back to home |
 

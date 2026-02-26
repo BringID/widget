@@ -35,6 +35,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     )
 
     if (!popup) {
+      plausibleEvent('oauth_popup_blocked')
       reject("POPUP_BLOCKED")
       return
     }
@@ -48,6 +49,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
       if (!popup || popup.closed) {
         cleanup()
         console.log("Popup closed");
+        plausibleEvent('oauth_popup_closed')
         reject('POPUP_CLOSED')
       }
     }, 500);

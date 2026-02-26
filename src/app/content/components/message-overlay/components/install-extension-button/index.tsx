@@ -1,13 +1,14 @@
 import { FC, useState } from 'react'
 import { ButtonStyled } from './styled-components'
 import configs from '@/app/configs'
+import { usePlausible } from 'next-plausible'
 
 const InstallExtensionButton: FC = () => {
   const [
     installationStarted,
     setInstallationStarted
   ] = useState<boolean>(false)
-
+  const plausible = usePlausible()
 
   if (installationStarted) {
     return <ButtonStyled
@@ -26,6 +27,7 @@ const InstallExtensionButton: FC = () => {
   return <ButtonStyled
     appearance='action'
     onClick={() => {
+      plausible('extension_install_clicked')
       window.open(configs.EXTENSION_URL, '_blank')
       setInstallationStarted(true)
     }}
