@@ -8,9 +8,10 @@ async function loadConfigs(
   }> {
   try {
   
-    const isStaging = process.env.NEXT_PUBLIC_IS_STAGING === 'true'
-    const configsFileName = devMode ? (isStaging ? 'dev-configs-staging' : 'dev-configs') : 'configs'
-    const tasksFileName = devMode ? (isStaging ? 'tasks-sepolia-staging' : 'tasks-sepolia') : 'tasks'
+    const environment = process.env.NEXT_PUBLIC_ENVIRONMENT ?? 'production'
+    const suffix = environment === 'dev' ? '-test' : environment === 'staging' ? '-staging' : ''
+    const configsFileName = devMode ? `dev-configs${suffix}` : `configs${suffix}`
+    const tasksFileName = devMode ? `tasks-sepolia${suffix}` : `tasks${suffix}`
     const configs = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${configsFileName}.json`)
     const tasks = await fetch(`https://raw.githubusercontent.com/BringID/configs/main/${tasksFileName}.json`)
     const tasksResponse = await tasks.json()

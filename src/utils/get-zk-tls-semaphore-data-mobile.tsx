@@ -43,9 +43,14 @@ const getZKTLSSemaphoreDataMobile: TGetZKTLSSemaphoreDataMobile = (
           console.log('[mobile-bridge] got data', data)
           plausibleEvent('zktls_verification_response_received')
           cleanup()
+
+          const presentation = JSON.parse(data.presentationData)
+          presentation.transcript.sent = data.transcriptSent
+          presentation.transcript.recv = data.transcriptRecv
+
           resolve({
             transcriptRecv: data.transcriptRecv,
-            presentationData: data.presentationData,
+            presentationData: JSON.stringify(presentation),
           })
         }
         // 202 = not ready yet, keep polling
