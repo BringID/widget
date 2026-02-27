@@ -21,6 +21,8 @@ const defineErrorTitle = (
       return 'Proof data is not ready yet'
     case 'SESSION_LOST':
       return 'Session expired'
+    case 'INVALID_APP_ID':
+      return 'Invalid App ID'
     default:
       return 'Some error occured'
   }
@@ -38,6 +40,8 @@ const defineErrorText = (
       return <>Try again in a few minutes. If the error persists, please contact <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link></>
     case 'SESSION_LOST':
       return 'The connection was lost. Please close this popup and open it again.'
+    case 'INVALID_APP_ID':
+      return <>The App ID is invalid or was created for another network. Please check the App ID or if the error persists, please contact <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link></>
     default:
       return <>Please contact <Link target="_blank" href="mailto:dev@bringid.org">dev@bringid.org</Link> to define an actual reason: {errorText}</>
   }

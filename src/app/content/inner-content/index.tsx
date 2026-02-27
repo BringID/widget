@@ -164,6 +164,7 @@ const InnerContent: FC<TProps> = ({
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const [ sessionLost, setSessionLost ] = useState(false)
+  const [ invalidAppId, setInvalidAppId ] = useState(false)
   const userConfigs = useConfigs()
   const plausible = usePlausible()
   const userRef = useRef(user)
@@ -219,6 +220,7 @@ const InnerContent: FC<TProps> = ({
           if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
             dispatch(setKey(null))
             dispatch(addVerifications([]))
+            setInvalidAppId(false)
           }
 
           dispatch(setMode(newMode));
@@ -387,6 +389,11 @@ const InnerContent: FC<TProps> = ({
           user.appId as string,
           userConfigs.configs.CHAIN_ID
         )
+        if (scoresMap === null) {
+          setInvalidAppId(true)
+          dispatch(setLoading(false))
+          return
+        }
         const enrichedTasks = userConfigs.tasks.map(task => ({
           ...task,
           groups: task.groups.map(group => ({
@@ -451,12 +458,22 @@ const InnerContent: FC<TProps> = ({
       address={user.address}
       userKey={user.key}
     />
-    {loading && !sessionLost && <LoadingOverlay title="Thinking..."/>}
+    {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Thinking..."/>}
     {sessionLost && <ErrorOverlay
       errorText="SESSION_LOST"
       buttonTitle='Close'
       onClose={() => {
         setSessionLost(false)
+        window.postMessage({
+          type: 'CLOSE_MODAL',
+        }, window.location.origin)
+      }}
+    />}
+    {invalidAppId && <ErrorOverlay
+      errorText="INVALID_APP_ID"
+      buttonTitle='Close'
+      onClose={() => {
+        setInvalidAppId(false)
         window.postMessage({
           type: 'CLOSE_MODAL',
         }, window.location.origin)
