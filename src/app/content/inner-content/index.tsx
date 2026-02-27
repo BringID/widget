@@ -381,6 +381,7 @@ const InnerContent: FC<TProps> = ({
         )
         if (scoresMap === null) {
           setInvalidAppId(true)
+          dispatch(addTasks([]))
           dispatch(setLoading(false))
           return
         }
@@ -464,6 +465,8 @@ const InnerContent: FC<TProps> = ({
       buttonTitle='Close'
       onClose={() => {
         setInvalidAppId(false)
+        dispatch(setAppId(null))
+        dispatch(setMode(''))
         window.postMessage({
           type: 'CLOSE_MODAL',
         }, window.location.origin)
