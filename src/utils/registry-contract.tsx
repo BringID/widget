@@ -53,7 +53,7 @@ export async function getAllScores(
   registryAddress: string,
   appId: string,
   chainId: string
-): Promise<Map<string, number>> {
+): Promise<Map<string, number> | null> {
   const provider = getProvider(chainId)
   const registry = new ethers.Contract(
     registryAddress,
@@ -62,9 +62,8 @@ export async function getAllScores(
   )
   const app = await registry.apps(appId)
   const scorerAddress = app.scorer
-
   if (!scorerAddress || scorerAddress === ethers.ZeroAddress) {
-    return new Map<string, number>()
+    return null
   }
 
   const scorer = new ethers.Contract(
@@ -72,6 +71,7 @@ export async function getAllScores(
     ['function getAllScores() view returns (uint256[], uint256[])'],
     provider
   )
+
   const [groupIds, scores] = await scorer.getAllScores()
 
   const scoresMap = new Map<string, number>()

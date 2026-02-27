@@ -102,7 +102,6 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
 
   try {
-    console.log('REQUEST')
 
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
@@ -111,13 +110,10 @@ const uploadPrevVerifications = async (
       })),
       modeConfigs
     )
-    console.log('REQUEST FINISHED: ', proofs)
 
     if (proofs) {
       for (const proofResult of proofs) {
         if (proofResult.success) {
-
-          console.log({ identityDataList })
           const matchingData = identityDataList.find(
             item => item.identityCommitment === proofResult.identity_commitment &&
                     item.semaphoreGroupId === proofResult.semaphore_group_id
@@ -164,6 +160,7 @@ const InnerContent: FC<TProps> = ({
   const { verifications } = useVerifications()
   const [ page, setPage ] = useState('home')
   const [ sessionLost, setSessionLost ] = useState(false)
+  const [ invalidAppId, setInvalidAppId ] = useState(false)
   const userConfigs = useConfigs()
   const plausible = usePlausible()
   const userRef = useRef(user)
@@ -211,14 +208,13 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
 
-          console.log('[PROOFS_REQUEST] received payload:', payload);
-
           const newMode = payload?.mode || 'production'
           const newAppId = payload?.appId || null
 
           if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
             dispatch(setKey(null))
             dispatch(addVerifications([]))
+            setInvalidAppId(false)
           }
 
           dispatch(setMode(newMode));
@@ -256,7 +252,6 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          console.log({ type: "PROOFS_RESPONSE", payload })
           window.parent.postMessage(
             { type: "PROOFS_RESPONSE", payload },
             parentOrigin
@@ -322,12 +317,11 @@ const InnerContent: FC<TProps> = ({
           }
           return item
         })
-        console.log({ verificationsUpdated })
     
         if (updated) dispatch(addVerifications(verificationsUpdated))
 
       } catch (err) {
-        console.log({ err });
+        console.error({ err });
       }
     }, 2000);
 
@@ -369,8 +363,6 @@ const InnerContent: FC<TProps> = ({
     }
   }, [customTitles])
 
-  console.log({ user })
-
   useEffect(() => {
 
     if (!user.address) return
@@ -387,6 +379,11 @@ const InnerContent: FC<TProps> = ({
           user.appId as string,
           userConfigs.configs.CHAIN_ID
         )
+        if (scoresMap === null) {
+          setInvalidAppId(true)
+          dispatch(setLoading(false))
+          return
+        }
         const enrichedTasks = userConfigs.tasks.map(task => ({
           ...task,
           groups: task.groups.map(group => ({
@@ -451,12 +448,22 @@ const InnerContent: FC<TProps> = ({
       address={user.address}
       userKey={user.key}
     />
-    {loading && !sessionLost && <LoadingOverlay title="Thinking..."/>}
+    {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Thinking..."/>}
     {sessionLost && <ErrorOverlay
       errorText="SESSION_LOST"
       buttonTitle='Close'
       onClose={() => {
         setSessionLost(false)
+        window.postMessage({
+          type: 'CLOSE_MODAL',
+        }, window.location.origin)
+      }}
+    />}
+    {invalidAppId && <ErrorOverlay
+      errorText="INVALID_APP_ID"
+      buttonTitle='Close'
+      onClose={() => {
+        setInvalidAppId(false)
         window.postMessage({
           type: 'CLOSE_MODAL',
         }, window.location.origin)
