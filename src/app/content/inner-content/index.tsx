@@ -102,7 +102,6 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
 
   try {
-    console.log('REQUEST')
 
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
@@ -111,13 +110,10 @@ const uploadPrevVerifications = async (
       })),
       modeConfigs
     )
-    console.log('REQUEST FINISHED: ', proofs)
 
     if (proofs) {
       for (const proofResult of proofs) {
         if (proofResult.success) {
-
-          console.log({ identityDataList })
           const matchingData = identityDataList.find(
             item => item.identityCommitment === proofResult.identity_commitment &&
                     item.semaphoreGroupId === proofResult.semaphore_group_id
@@ -212,8 +208,6 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
 
-          console.log('[PROOFS_REQUEST] received payload:', payload);
-
           const newMode = payload?.mode || 'production'
           const newAppId = payload?.appId || null
 
@@ -258,7 +252,6 @@ const InnerContent: FC<TProps> = ({
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          console.log({ type: "PROOFS_RESPONSE", payload })
           window.parent.postMessage(
             { type: "PROOFS_RESPONSE", payload },
             parentOrigin
@@ -324,12 +317,11 @@ const InnerContent: FC<TProps> = ({
           }
           return item
         })
-        console.log({ verificationsUpdated })
     
         if (updated) dispatch(addVerifications(verificationsUpdated))
 
       } catch (err) {
-        console.log({ err });
+        console.error({ err });
       }
     }, 2000);
 
@@ -370,8 +362,6 @@ const InnerContent: FC<TProps> = ({
       dispatch(setCustomTitles(customTitles))
     }
   }, [customTitles])
-
-  console.log({ user })
 
   useEffect(() => {
 

@@ -68,13 +68,6 @@ const defineTaskContent = (
                   message.score
                 )
 
-                console.log({
-                  message,
-                  signature,
-                  group
-                })
-                
-
                 if (group) {
 
                   const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, group.credentialGroupId)
@@ -129,7 +122,6 @@ const defineTaskContent = (
                     })
                   }
 
-                  console.log({ taskCreated })
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
                   return
@@ -214,8 +206,6 @@ const defineTaskContent = (
                     })
                   }
 
-                  console.log({ taskCreated })
-
                 } else {
                   messageCallback('NOT_ENOUGH_SCORE')
                   return
@@ -278,7 +268,6 @@ const Task: FC<TProps> = ({
     isActive,
     setIsActive,
     (verification) => {
-      console.log('IS GOINT TO BE ADD: ', { verification })
       dispatch(addVerification(verification))
     },
     onError,

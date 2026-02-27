@@ -174,7 +174,7 @@ const renderButton = (
           pointsSelected
         )
       } catch (err) {
-        console.log({ err })
+        console.error({ err })
         plausibleEvent('prepare_proofs_failed')
         const myErr = err as Error
         if (myErr.message) {

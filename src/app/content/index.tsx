@@ -32,8 +32,6 @@ const Widget: FC = () => {
     }
   })() : undefined
 
-  console.log({ ...dark, highlightColor, searchParams })
-
   const finalTheme = { ...defaultTheme }
 
   if (highlightColor) {

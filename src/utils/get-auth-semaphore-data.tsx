@@ -48,7 +48,6 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     const timer = setInterval(() => {
       if (!popup || popup.closed) {
         cleanup()
-        console.log("Popup closed");
         plausibleEvent('oauth_popup_closed')
         reject('POPUP_CLOSED')
       }
@@ -67,7 +66,6 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
 
       switch (data.type) {
         case "AUTH_SUCCESS": {
-          console.log({ data })
           if (!isValidAuthSuccessPayload(data.payload)) {
             cleanup()
             reject('INVALID_PAYLOAD_STRUCTURE')
@@ -76,7 +74,6 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
 
           const { message, signature } = data.payload
 
-          console.log({ message, signature })
           plausibleEvent('oauth_verification_response_received')
           cleanup()
           resolve({ message, signature })

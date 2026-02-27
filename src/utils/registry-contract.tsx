@@ -62,7 +62,6 @@ export async function getAllScores(
   )
   const app = await registry.apps(appId)
   const scorerAddress = app.scorer
-  console.log({ app, scorerAddress })
   if (!scorerAddress || scorerAddress === ethers.ZeroAddress) {
     return null
   }
@@ -72,7 +71,6 @@ export async function getAllScores(
     ['function getAllScores() view returns (uint256[], uint256[])'],
     provider
   )
-  console.log({ scorer })
 
   const [groupIds, scores] = await scorer.getAllScores()
 
