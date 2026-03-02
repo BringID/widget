@@ -19,6 +19,10 @@ type TGetAuthSemaphoreData = (
   TOAuthResponsePayload
 >
 
+const isInRestrictedWebView = (): boolean => {
+  return !!(window as any).ReactNativeWebView
+}
+
 const createIframeOverlay = (
   popupURL: string,
   onCancel: () => void
@@ -61,15 +65,10 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     let overlayEl: HTMLDivElement | null = null
     let iframeEl: HTMLIFrameElement | null = null
 
-    // Test if popups are available using a safe blank window.
-    // This avoids passing the real auth URL to window.open() in environments
-    // (e.g. Farcaster, Base dapp browser) where a blocked popup causes the
-    // current frame to navigate to the target URL, destroying the widget.
-    const test = window.open('about:blank', '_blank', 'width=1,height=1,popup=yes')
-
-    if (!test) {
-      // Popups are blocked — use an inline iframe overlay instead.
-      // The real auth URL is never passed to window.open(), so no navigation occurs.
+    if (isInRestrictedWebView()) {
+      // React Native WebViews (Farcaster/Warpcast, Base dapp browser, etc.)
+      // intercept window.open() and either block it or navigate the current frame.
+      // Skip window.open() entirely and use an inline iframe overlay instead.
       plausibleEvent('oauth_popup_blocked')
 
       const overlay = createIframeOverlay(popupURL, () => {
@@ -80,9 +79,13 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
       overlayEl = overlay.overlayEl
       iframeEl = overlay.iframeEl
     } else {
-      // Popups work — close the test window and open the real auth popup.
-      test.close()
       popup = window.open(popupURL, 'oauth', 'width=400,height=600,popup=yes')
+
+      if (!popup) {
+        plausibleEvent('oauth_popup_blocked')
+        reject('POPUP_BLOCKED')
+        return
+      }
     }
 
     const cleanup = () => {
