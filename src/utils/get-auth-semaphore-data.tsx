@@ -19,6 +19,35 @@ type TGetAuthSemaphoreData = (
   TOAuthResponsePayload
 >
 
+const createIframeOverlay = (
+  popupURL: string,
+  onCancel: () => void
+): { overlayEl: HTMLDivElement; iframeEl: HTMLIFrameElement } => {
+  const overlayEl = document.createElement('div')
+  overlayEl.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;background:#fff'
+
+  const header = document.createElement('div')
+  header.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid #e5e7eb;flex-shrink:0'
+
+  const cancelBtn = document.createElement('button')
+  cancelBtn.textContent = '✕'
+  cancelBtn.style.cssText = 'background:transparent;border:1px solid #d1d5db;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:#374151'
+  cancelBtn.onclick = onCancel
+
+  header.appendChild(cancelBtn)
+
+  const iframeEl = document.createElement('iframe')
+  iframeEl.src = popupURL
+  iframeEl.style.cssText = 'width:100%;flex:1;border:none'
+  iframeEl.allow = 'popups'
+
+  overlayEl.appendChild(header)
+  overlayEl.appendChild(iframeEl)
+  document.body.appendChild(overlayEl)
+
+  return { overlayEl, iframeEl }
+}
+
 const getAuthSemaphoreData: TGetAuthSemaphoreData = (
   task,
   plausibleEvent
@@ -28,36 +57,63 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
   const awaitingEventSource = task.verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(task.verificationUrl).origin
 
   return new Promise((resolve, reject) => {
-    const popup = window.open(
-      // ,
-      popupURL,
-      "oauth",
-      "width=400,height=600,popup=yes"
-    )
+    let popup: Window | null = null
+    let overlayEl: HTMLDivElement | null = null
+    let iframeEl: HTMLIFrameElement | null = null
 
-    if (!popup) {
+    // Test if popups are available using a safe blank window.
+    // This avoids passing the real auth URL to window.open() in environments
+    // (e.g. Farcaster, Base dapp browser) where a blocked popup causes the
+    // current frame to navigate to the target URL, destroying the widget.
+    const test = window.open('about:blank', '_blank', 'width=1,height=1,popup=yes')
+
+    if (!test) {
+      // Popups are blocked — use an inline iframe overlay instead.
+      // The real auth URL is never passed to window.open(), so no navigation occurs.
       plausibleEvent('oauth_popup_blocked')
-      reject("POPUP_BLOCKED")
-      return
-    }
 
-    const cleanup = () => {
-      clearInterval(timer)
-      window.removeEventListener("message", handler)
-    }
-
-    const timer = setInterval(() => {
-      if (!popup || popup.closed) {
+      const overlay = createIframeOverlay(popupURL, () => {
         cleanup()
         plausibleEvent('oauth_popup_closed')
         reject('POPUP_CLOSED')
+      })
+      overlayEl = overlay.overlayEl
+      iframeEl = overlay.iframeEl
+    } else {
+      // Popups work — close the test window and open the real auth popup.
+      test.close()
+      popup = window.open(popupURL, 'oauth', 'width=400,height=600,popup=yes')
+    }
+
+    const cleanup = () => {
+      if (timer) clearInterval(timer)
+      window.removeEventListener('message', handler)
+      if (overlayEl) {
+        overlayEl.remove()
+        overlayEl = null
       }
-    }, 500);
+    }
+
+    let timer: ReturnType<typeof setInterval> | null = null
+
+    if (popup) {
+      timer = setInterval(() => {
+        if (!popup || popup.closed) {
+          cleanup()
+          plausibleEvent('oauth_popup_closed')
+          reject('POPUP_CLOSED')
+        }
+      }, 500)
+    }
 
     const handler = async (event: MessageEvent) => {
 
       if (event.origin !== awaitingEventSource) return
-      if (event.source !== popup) return
+
+      const isFromPopup = popup && event.source === popup
+      const isFromIframe = iframeEl && event.source === iframeEl.contentWindow
+      if (!isFromPopup && !isFromIframe) return
+
       if (!event.data || typeof event.data !== 'object' || !event.data.type) {
         console.warn('Invalid message structure received')
         return
@@ -101,10 +157,9 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
       }
     }
 
-    window.addEventListener("message", handler)
+    window.addEventListener('message', handler)
   })
 
-  
 };
 
 export default getAuthSemaphoreData
