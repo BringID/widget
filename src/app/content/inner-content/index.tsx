@@ -119,7 +119,6 @@ const uploadPrevVerifications = async (
                     item.semaphoreGroupId === proofResult.semaphore_group_id
           )
 
-
           if (matchingData) {
             const relatedGroup = tasks.flatMap(t => t.groups).find(
               g => g.credentialGroupId === matchingData.credentialGroupId
