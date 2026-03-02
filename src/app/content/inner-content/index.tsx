@@ -443,19 +443,7 @@ const InnerContent: FC<TProps> = ({
   ]);
 
 
-  const win = window as any
-  const envInfo = JSON.stringify({
-    ReactNativeWebView: !!win.ReactNativeWebView,
-    ethereum: !!win.ethereum,
-    isCoinbaseWallet: !!win.ethereum?.isCoinbaseWallet,
-    coinbaseWalletExtension: !!win.coinbaseWalletExtension,
-    FrameSDK: !!win.FrameSDK,
-    farcaster: !!win.farcaster,
-    userAgent: navigator.userAgent,
-  }, null, 2)
-
   return <Container>
-    <pre style={{position:'absolute',top:0,left:0,right:0,zIndex:99999,background:'#000',color:'#0f0',fontSize:'9px',padding:'4px',margin:0,whiteSpace:'pre-wrap',wordBreak:'break-all',maxHeight:'50%',overflow:'auto'}}>{envInfo}</pre>
     <HeaderStyled
       address={user.address}
       userKey={user.key}

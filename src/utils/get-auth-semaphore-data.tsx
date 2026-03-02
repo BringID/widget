@@ -20,7 +20,12 @@ type TGetAuthSemaphoreData = (
 >
 
 const isInRestrictedWebView = (): boolean => {
-  return !!(window as any).ReactNativeWebView
+  const ua = navigator.userAgent.toLowerCase()
+  // Farcaster / Warpcast mini app
+  if (ua.includes('warpcast')) return true
+  // Coinbase Wallet / Base dapp browser
+  if (ua.includes('coinbasebrowser') || ua.includes('coinbase')) return true
+  return false
 }
 
 const createIframeOverlay = (
