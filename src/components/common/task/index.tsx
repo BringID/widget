@@ -20,7 +20,12 @@ import { useConfigs } from '@/app/content/store/reducers/configs'
 import { usePlausible } from 'next-plausible'
 
 const defineTaskContent = (
-  plausibleEvent: (eventName: string) => void,
+  plausibleEvent: (
+    eventName: string,
+    options?: {
+      props?: Record<string, string>
+    }
+  ) => void,
   status: TVerificationStatus,
   task: TTask,
   userKey: string | null,
@@ -47,19 +52,20 @@ const defineTaskContent = (
           disabled={loading || isActive}
           onClick={async () => {
             try {
-
-
               if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
                 setLoading(true)
                 setIsActive(true)
-                plausibleEvent('oauth_verification_started')
+                plausibleEvent('oauth_verification_started', {
+                  props: {
+                    task_id: task.id
+                  }
+                })
 
                 const {
                   message,
                   signature
                 } = await getAuthSemaphoreData(
-                  task.verificationType,
-                  task.verificationUrl,
+                  task,
                   plausibleEvent
                 )
 
@@ -110,7 +116,12 @@ const defineTaskContent = (
                   if (success) {
                     setLoading(false)
                     setIsActive(false)
-                    plausibleEvent('oauth_verification_finished')
+                    plausibleEvent('oauth_verification_finished', {
+                      props: {
+                        task_id: task.id,
+                        credential_group_id: group.credentialGroupId
+                      }
+                    })
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
@@ -129,7 +140,11 @@ const defineTaskContent = (
 
 
               } else {
-                plausibleEvent('zktls_verification_started')
+                plausibleEvent('zktls_verification_started', {
+                  props: {
+                    task_id: task.id,
+                  }
+                })
 
 
                 const bringIdInstalled = (window as any).bringID
@@ -194,7 +209,12 @@ const defineTaskContent = (
                   if (success) {
                     setLoading(false)
                     setIsActive(false)
-                    plausibleEvent('zktls_verification_finished')
+                    plausibleEvent('zktls_verification_finished', {
+                      props: {
+                        task_id: task.id,
+                        credential_group_id: credentialGroupId
+                      }
+                    })
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),

@@ -4,7 +4,9 @@ import { isValidZKTLSErrorMessage, isValidZKTLSSuccessMessage } from '@/utils';
 
 type TGetZKTLSSemaphoreData = (
   task: TTask,
-  plausibleEvent: (eventName: string) => void
+  plausibleEvent: (eventName: string, options?: {
+    props?: Record<string, string>
+  }) => void
 
 ) => Promise<
   {
@@ -49,7 +51,11 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
 
       const errorPayload = isValidZKTLSErrorMessage(event.data, requestId)
       if (errorPayload) {
-        plausibleEvent('zktls_verification_failed')
+        plausibleEvent('zktls_verification_failed', {
+          props: {
+            task_id: task.id
+          }
+        })
         cleanup()
         reject(errorPayload.error)
         return
