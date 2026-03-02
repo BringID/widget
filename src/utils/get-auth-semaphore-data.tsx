@@ -7,24 +7,25 @@ import {
   isValidAuthErrorPayload,
   isValidAuthSuccessPayload
 } from '.'
+import { TTask } from '../types'
 import configs from '@/app/configs'
 
 type TGetAuthSemaphoreData = (
-  verificationType: TVerificationType,
-  verificationUrl: string,
-  plausibleEvent: (eventName: string) => void
+  task: TTask,
+  plausibleEvent: (eventName: string, options?: {
+    props?: Record<string, string>
+  }) => void
 ) => Promise<
   TOAuthResponsePayload
 >
 
 const getAuthSemaphoreData: TGetAuthSemaphoreData = (
-  verificationType,
-  verificationUrl,
+  task,
   plausibleEvent
 ) => {
 
-  const popupURL = verificationType === 'oauth' ? `${configs.AUTH_DOMAIN}/${verificationUrl}` : verificationUrl
-  const awaitingEventSource = verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(verificationUrl).origin
+  const popupURL = task.verificationType === 'oauth' ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}` : task.verificationUrl
+  const awaitingEventSource = task.verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(task.verificationUrl).origin
 
   return new Promise((resolve, reject) => {
     const popup = window.open(
@@ -88,7 +89,11 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
           }
 
           cleanup()
-          plausibleEvent('oauth_verification_failed')
+          plausibleEvent('oauth_verification_failed', {
+            props: {
+              task_id: task.id
+            }
+          })
 
           reject(event.data.payload.error)
           break
