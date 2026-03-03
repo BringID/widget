@@ -276,7 +276,7 @@ const Task: FC<TProps> = ({
   const [ loading, setLoading ] = useState<boolean>(false)
   const plausible = usePlausible()
   const content = defineTaskContent(
-    (eventName, props) => plausible(eventName, { props }),
+    (eventName, options) => plausible(eventName, options),
     status,
     task,
     user.key,

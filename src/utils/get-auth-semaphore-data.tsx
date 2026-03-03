@@ -104,7 +104,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
     window.addEventListener("message", handler)
   })
 
-  
+
 };
 
 export default getAuthSemaphoreData
