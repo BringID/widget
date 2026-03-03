@@ -13,4 +13,5 @@ export type TProps = {
   onSelect?: (selected: boolean) => void;
   credentialGroupId: string;
   fetched: boolean;
+  txHash?: string;
 };

@@ -15,7 +15,8 @@ const definePluginContent = (
   expiration: null | number,
   fetched: boolean,
   taskId: string,
-  pointsShortTitle: string
+  pointsShortTitle: string,
+  txHash?: string,
 ) => {
   switch (status) {
     case 'default':
@@ -32,7 +33,7 @@ const definePluginContent = (
 
     case 'completed':
       if (fetched) {
-        return null
+        return txHash ? <TXScannerButton taskId={taskId} txHash={txHash} /> : null
       }
       return <TXScannerButton taskId={taskId} />
     default:
@@ -53,6 +54,7 @@ const Verification: FC<TProps> = ({
   onSelect,
   credentialGroupId,
   fetched,
+  txHash,
 }) => {
   const [expiration, setExpiration] = useState<number | null>(null);
   const userConfigs = useConfigs()
@@ -81,7 +83,8 @@ const Verification: FC<TProps> = ({
     expiration,
     fetched,
     taskId as string,
-    customTitles.pointsShortTitle
+    customTitles.pointsShortTitle,
+    txHash,
   );
 
   return (
