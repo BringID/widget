@@ -28,6 +28,8 @@ const isInRestrictedWebView = (): boolean => {
   return false
 }
 
+const IFRAME_LOAD_TIMEOUT_MS = 8000
+
 const createIframeOverlay = (
   popupURL: string,
   onCancel: () => void
@@ -45,13 +47,33 @@ const createIframeOverlay = (
 
   header.appendChild(cancelBtn)
 
+  const contentArea = document.createElement('div')
+  contentArea.style.cssText = 'position:relative;flex:1;display:flex'
+
+  const statusEl = document.createElement('div')
+  statusEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:14px;color:#6b7280;padding:16px;text-align:center'
+  statusEl.textContent = 'Loading...'
+
   const iframeEl = document.createElement('iframe')
   iframeEl.src = popupURL
-  iframeEl.style.cssText = 'width:100%;flex:1;border:none'
+  iframeEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none'
   iframeEl.allow = 'popups'
 
+  const loadTimeout = setTimeout(() => {
+    statusEl.style.color = '#ef4444'
+    statusEl.textContent = 'Failed to load the authorization page. Please close and try again.'
+    iframeEl.style.display = 'none'
+  }, IFRAME_LOAD_TIMEOUT_MS)
+
+  iframeEl.onload = () => {
+    clearTimeout(loadTimeout)
+    statusEl.style.display = 'none'
+  }
+
+  contentArea.appendChild(statusEl)
+  contentArea.appendChild(iframeEl)
   overlayEl.appendChild(header)
-  overlayEl.appendChild(iframeEl)
+  overlayEl.appendChild(contentArea)
   document.body.appendChild(overlayEl)
 
   return { overlayEl, iframeEl }
