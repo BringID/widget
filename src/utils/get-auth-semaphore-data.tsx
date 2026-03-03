@@ -67,6 +67,19 @@ const createIframeOverlay = (
 
   iframeEl.onload = () => {
     clearTimeout(loadTimeout)
+    try {
+      // Successfully loaded cross-origin content: accessing location.href throws SecurityError.
+      // Blocked/empty iframe stays on about:blank which is readable — treat as a load failure.
+      const href = iframeEl.contentWindow?.location.href
+      if (!href || href === 'about:blank') {
+        statusEl.style.color = '#ef4444'
+        statusEl.textContent = 'Failed to load the authorization page. Please close and try again.'
+        iframeEl.style.display = 'none'
+        return
+      }
+    } catch {
+      // SecurityError — cross-origin page loaded successfully
+    }
     statusEl.style.display = 'none'
   }
 
