@@ -85,6 +85,7 @@ const VerificationsList: FC<TProps> = ({
                   selectable={false}
                   icon={relatedTaskData.icon}
                   credentialGroupId={relatedVerification.credentialGroupId}
+                  txHash={relatedVerification.txHash}
                 />
               );
             }

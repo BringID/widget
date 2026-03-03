@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
 import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
+import { TProofSuccess } from '../api/indexer/types';
 import semaphore from '../semaphore';
 import { configs } from '../../core'
 import {
@@ -131,6 +132,7 @@ const uploadPrevVerifications = async (
               taskId: matchingData.taskId,
               score: relatedGroup?.score ?? 0,
               chainId: Number(modeConfigs.CHAIN_ID),
+              txHash: (proofResult as TProofSuccess).tx_hash ?? undefined,
             })
           }
         }

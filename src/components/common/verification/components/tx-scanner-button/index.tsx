@@ -6,13 +6,16 @@ import { useConfigs } from '@/app/content/store/reducers/configs'
 import { defineExplorerURL } from '@/utils'
 
 const TXScannerButton: FC<TProps> = ({
-  taskId
+  taskId,
+  txHash: txHashProp
 }) => {
   const userConfigs = useConfigs()
-  const [ loading, setLoading ] = useState<boolean>(true)
-  const [ txHash, setTxHash ] = useState<string | null>(null)
+  const [ loading, setLoading ] = useState<boolean>(!txHashProp)
+  const [ txHash, setTxHash ] = useState<string | null>(txHashProp ?? null)
 
   useEffect(() => {
+    if (txHashProp) return
+
     const init = async () => {
       if (!taskId) {
         return alert('taskId not defined')
