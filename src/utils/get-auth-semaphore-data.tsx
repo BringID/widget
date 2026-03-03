@@ -35,10 +35,10 @@ const createIframeOverlay = (
   onCancel: () => void
 ): { overlayEl: HTMLDivElement; iframeEl: HTMLIFrameElement } => {
   const overlayEl = document.createElement('div')
-  overlayEl.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;background:#fff'
+  overlayEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;display:flex;flex-direction:column;background:#fff'
 
   const header = document.createElement('div')
-  header.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid #e5e7eb;flex-shrink:0'
+  header.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;padding:8px 12px;border-bottom:1px solid #e5e7eb;flex-shrink:0;height:49px;box-sizing:border-box'
 
   const cancelBtn = document.createElement('button')
   cancelBtn.textContent = '✕'
@@ -48,10 +48,10 @@ const createIframeOverlay = (
   header.appendChild(cancelBtn)
 
   const contentArea = document.createElement('div')
-  contentArea.style.cssText = 'position:relative;flex:1;display:flex;background:red'
+  contentArea.style.cssText = 'position:relative;width:100%;height:calc(100% - 49px);background:red'
 
   const statusEl = document.createElement('div')
-  statusEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:14px;color:#6b7280;padding:16px;text-align:center'
+  statusEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:14px;color:#6b7280;padding:16px;text-align:center;box-sizing:border-box'
   statusEl.textContent = 'Loading...'
 
   const iframeEl = document.createElement('iframe')
