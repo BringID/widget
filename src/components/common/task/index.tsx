@@ -57,7 +57,7 @@ const defineTaskContent = (
                 setIsActive(true)
                 plausibleEvent('oauth_verification_started', {
                   props: {
-                    task_id: task.id
+                    verification_started: task.service
                   }
                 })
 
@@ -118,8 +118,7 @@ const defineTaskContent = (
                     setIsActive(false)
                     plausibleEvent('oauth_verification_finished', {
                       props: {
-                        task_id: task.id,
-                        credential_group_id: group.credentialGroupId
+                        verification_finished: task.service
                       }
                     })
                     resultCallback({
@@ -142,7 +141,7 @@ const defineTaskContent = (
               } else {
                 plausibleEvent('zktls_verification_started', {
                   props: {
-                    task_id: task.id,
+                    verification_started: task.service,
                   }
                 })
 
@@ -211,8 +210,7 @@ const defineTaskContent = (
                     setIsActive(false)
                     plausibleEvent('zktls_verification_finished', {
                       props: {
-                        task_id: task.id,
-                        credential_group_id: credentialGroupId
+                        verification_finished: task.service
                       }
                     })
                     resultCallback({

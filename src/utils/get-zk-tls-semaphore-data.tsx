@@ -53,7 +53,7 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
       if (errorPayload) {
         plausibleEvent('zktls_verification_failed', {
           props: {
-            task_id: task.id
+            verification_failed: task.service
           }
         })
         cleanup()
