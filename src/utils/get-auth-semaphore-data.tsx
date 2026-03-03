@@ -76,6 +76,11 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
           const { message, signature } = data.payload
 
           plausibleEvent('oauth_verification_response_received')
+          plausibleEvent('verification_response_received', {
+            props: {
+              task_service: task.service
+            }
+          })
           cleanup()
           resolve({ message, signature })
           break

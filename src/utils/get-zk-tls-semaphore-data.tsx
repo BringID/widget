@@ -44,6 +44,11 @@ const getZKTLSSemaphoreData: TGetZKTLSSemaphoreData = (
       const readyPayload = isValidZKTLSSuccessMessage(event.data, requestId)
       if (readyPayload) {
         plausibleEvent('zktls_verification_response_received')
+        plausibleEvent('verification_response_received', {
+          props: {
+            task_service: task.service
+          }
+        })
         resolve(readyPayload)
         cleanup()
         return

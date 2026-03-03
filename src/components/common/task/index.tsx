@@ -60,6 +60,11 @@ const defineTaskContent = (
                     verification_started: task.service
                   }
                 })
+                plausibleEvent('verification_started', {
+                  props: {
+                    task_service: task.service
+                  }
+                })
 
                 const {
                   message,
@@ -121,6 +126,11 @@ const defineTaskContent = (
                         verification_finished: task.service
                       }
                     })
+                    plausibleEvent('verification_finished', {
+                      props: {
+                        task_service: task.service
+                      }
+                    })
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
@@ -142,6 +152,11 @@ const defineTaskContent = (
                 plausibleEvent('zktls_verification_started', {
                   props: {
                     verification_started: task.service,
+                  }
+                })
+                plausibleEvent('verification_started', {
+                  props: {
+                    task_service: task.service
                   }
                 })
 
@@ -213,6 +228,11 @@ const defineTaskContent = (
                         verification_finished: task.service
                       }
                     })
+                    plausibleEvent('verification_finished', {
+                      props: {
+                        task_service: task.service
+                      }
+                    })
                     resultCallback({
                       status: 'scheduled',
                       scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
@@ -242,6 +262,11 @@ const defineTaskContent = (
               if (!isExpectedError) {
                 plausibleEvent('verification_error')
               }
+              plausibleEvent('verification_failed', {
+                props: {
+                  task_service: task.service
+                }
+              })
               errorCallback(errMessage)
             }
           }}
