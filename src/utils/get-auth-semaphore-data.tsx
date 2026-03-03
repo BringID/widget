@@ -48,7 +48,7 @@ const createIframeOverlay = (
   header.appendChild(cancelBtn)
 
   const contentArea = document.createElement('div')
-  contentArea.style.cssText = 'position:relative;width:100%;height:calc(100% - 49px);background:red'
+  contentArea.style.cssText = 'position:relative;width:100%;height:300px;background:red'
 
   const statusEl = document.createElement('div')
   statusEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:14px;color:#6b7280;padding:16px;text-align:center;box-sizing:border-box'
