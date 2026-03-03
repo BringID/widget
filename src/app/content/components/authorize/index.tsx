@@ -22,11 +22,6 @@ const Authorize: FC<TProps> = ({ className }) => {
       </IconContainer>
       <Title>Create your private key to start verification</Title>
 
-      <iframe
-        src="https://staging-oauth-server-production.up.railway.app/auth/github/login"
-        style={{ width: '100%', height: '300px', border: '2px solid red' }}
-      />
-
       <ButtonsStyled
         appearance='action'
         onClick={async() => {
