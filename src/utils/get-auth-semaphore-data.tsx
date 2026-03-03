@@ -91,7 +91,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
           cleanup()
           plausibleEvent('oauth_verification_failed', {
             props: {
-              task_id: task.id
+              verification_failed: task.service
             }
           })
 
