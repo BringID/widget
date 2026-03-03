@@ -36,12 +36,6 @@ Recoverable by re-signing with the same wallet.`
       >
         Create BringID key
       </ButtonsStyled>
-
-      <iframe
-        src="https://staging-oauth-server-production.up.railway.app/auth/github/login"
-        style={{ width: '100%', height: '400px', border: '1px solid red', marginTop: '16px' }}
-        title="GitHub Login Test"
-      />
     </Container>
   );
 };
