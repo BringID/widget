@@ -48,7 +48,7 @@ const createIframeOverlay = (
   header.appendChild(cancelBtn)
 
   const contentArea = document.createElement('div')
-  contentArea.style.cssText = 'position:relative;flex:1;display:flex'
+  contentArea.style.cssText = 'position:relative;flex:1;display:flex;background:red'
 
   const statusEl = document.createElement('div')
   statusEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:14px;color:#6b7280;padding:16px;text-align:center'
@@ -56,7 +56,7 @@ const createIframeOverlay = (
 
   const iframeEl = document.createElement('iframe')
   iframeEl.src = popupURL
-  iframeEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:red'
+  iframeEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none'
   iframeEl.allow = 'popups'
 
   const loadTimeout = setTimeout(() => {
