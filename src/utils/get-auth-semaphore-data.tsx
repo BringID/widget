@@ -56,7 +56,7 @@ const createIframeOverlay = (
 
   const iframeEl = document.createElement('iframe')
   iframeEl.src = popupURL
-  iframeEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none'
+  iframeEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:red'
   iframeEl.allow = 'popups'
 
   const loadTimeout = setTimeout(() => {
