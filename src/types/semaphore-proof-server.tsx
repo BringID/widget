@@ -3,4 +3,5 @@ export type TSemaphoreProofServer = {
   leaf: string;
   index: number;
   siblings: string[];
+  tx_hash: string;
 };

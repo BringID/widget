@@ -1,5 +1,6 @@
-import { TModeConfigs, TSemaphoreProofServer } from '@/types';
+import { TModeConfigs } from '@/types';
 import { TProofSuccess, TProofError } from '../../api/indexer/types';
+
 type TGetProofs = (
   data: {
     identityCommitment: string,
