@@ -132,7 +132,7 @@ const uploadPrevVerifications = async (
               taskId: matchingData.taskId,
               score: relatedGroup?.score ?? 0,
               chainId: Number(modeConfigs.CHAIN_ID),
-              txHash: (proofResult as TProofSuccess).proof?.tx_hash,
+              txHash: (proofResult as TProofSuccess).tx_hash ?? undefined,
             })
           }
         }

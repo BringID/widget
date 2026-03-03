@@ -3,6 +3,7 @@ import { TModeConfigs, TSemaphoreProofServer } from '@/types';
 export type TProofSuccess = {
   success: boolean,
   proof: TSemaphoreProofServer
+  tx_hash: string | null
   identity_commitment: string
   semaphore_group_id: string
 }
@@ -13,6 +14,7 @@ export type TProofError = {
     message: string
     cause: string
   }
+  tx_hash: string | null
   identity_commitment: string
   semaphore_group_id: string
 }
