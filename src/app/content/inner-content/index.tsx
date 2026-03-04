@@ -26,6 +26,9 @@ import { usePlausible } from 'next-plausible'
 import { getAppSemaphoreGroupId, getAllScores, createSemaphoreIdentity, defineGroupForAuth } from '@/utils'
 import { taskManagerApi, verifierApi } from '../api'
 
+type ConfigsPhase = 'idle' | 'loading' | 'done'
+type FlowPhase = 'idle' | 'loading' | 'ready'
+
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
@@ -58,19 +61,12 @@ const defineContent = (
   }
 }
 
-const uploadPrevVerifications = async (
+const fetchPrevVerifications = async (
   tasks: TTask[],
   userKey: string,
   appId: string,
-  setLoading: (
-    loading: boolean
-  ) => void,
   modeConfigs: TModeConfigs,
-  addVerifications: (verifications: TVerification[]) => void
-) => {
-  setLoading(true)
-
-  // Collect all identity data for batch request
+): Promise<TVerification[]> => {
   const identityDataList: {
     identityCommitment: string,
     semaphoreGroupId: string,
@@ -108,7 +104,6 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
 
   try {
-
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
         identityCommitment,
@@ -147,9 +142,7 @@ const uploadPrevVerifications = async (
     console.log('Failed to fetch proofs:', err);
   }
 
-  addVerifications(verifications)
-
-  setLoading(false)
+  return verifications
 }
 
 const InnerContent: FC<TProps> = ({
@@ -164,24 +157,38 @@ const InnerContent: FC<TProps> = ({
   const { loading } = useModal()
   const user = useUser()
   const { verifications } = useVerifications()
+  const userConfigs = useConfigs()
+  const plausible = usePlausible()
+
   const [ page, setPage ] = useState('home')
   const [ sessionLost, setSessionLost ] = useState(false)
   const [ invalidAppId, setInvalidAppId ] = useState(false)
-  const userConfigs = useConfigs()
-  const plausible = usePlausible()
-  const userRef = useRef(user)
-  userRef.current = user
 
   const [ pendingVerification, setPendingVerification ] = useState<{
     signature: string
     message: TOAuthMessage
   } | null>(null)
+  const pendingVerificationRef = useRef(pendingVerification)
+  pendingVerificationRef.current = pendingVerification
+
   const [ autoVerifyingTaskId, setAutoVerifyingTaskId ] = useState<string | null>(null)
   const [ autoVerifyError, setAutoVerifyError ] = useState<string | null>(null)
-  const [ prevVerificationsLoaded, setPrevVerificationsLoaded ] = useState(false)
+
+  // Phase tracking for the sequential flow
+  const [ configsPhase, setConfigsPhase ] = useState<ConfigsPhase>('idle')
+  const [ flowPhase, setFlowPhase ] = useState<FlowPhase>('idle')
+
+  // Cancellation counters — incrementing invalidates any in-flight async run
+  const configsRunIdRef = useRef(0)
+  const flowRunIdRef = useRef(0)
+
+  const userRef = useRef(user)
+  userRef.current = user
+
   const [ debugLogs, setDebugLogs ] = useState<string[]>([])
   const addLog = (msg: string) => setDebugLogs(prev => [...prev, msg])
 
+  // ─── Message handler ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!parentUrl) {
       console.warn("No parent URL configured for iframe communication");
@@ -191,18 +198,10 @@ const InnerContent: FC<TProps> = ({
     const parentOrigin = new URL(parentUrl).origin;
 
     const handler = async (event: MessageEvent<TWidgetMessage>) => {
-      if (!event.data || typeof event.data !== 'object') {
-        return;
-      }
-
+      if (!event.data || typeof event.data !== 'object') return;
       const { type, payload } = event.data;
+      if (typeof type !== 'string') return;
 
-
-      if (typeof type !== 'string') {
-        return;
-      }
-
-      // Handle messages from parent website
       if (event.origin === parentOrigin && event.source === window.parent) {
         if (type === 'USER_KEY_READY') {
           if (!payload?.signature) {
@@ -225,7 +224,7 @@ const InnerContent: FC<TProps> = ({
           }
           return;
         }
-        
+
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
 
@@ -235,6 +234,8 @@ const InnerContent: FC<TProps> = ({
           if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
             dispatch(setKey(null))
             dispatch(addVerifications([]))
+            setConfigsPhase('idle')
+            setFlowPhase('idle')
             setInvalidAppId(false)
           }
 
@@ -280,109 +281,43 @@ const InnerContent: FC<TProps> = ({
       if (event.source === window && event.origin === window.location.origin) {
         if (type === 'GENERATE_USER_KEY') {
           plausible('generate_user_key_started');
-          window.parent.postMessage(
-            { type: "GENERATE_USER_KEY", payload },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "GENERATE_USER_KEY", payload }, parentOrigin);
           return;
         }
-
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          window.parent.postMessage(
-            { type: "PROOFS_RESPONSE", payload },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "PROOFS_RESPONSE", payload }, parentOrigin);
           return;
         }
-
         if (type === 'CLOSE_MODAL') {
           setPage('home');
           plausible('close_modal');
-          window.parent.postMessage(
-            { type: "CLOSE_MODAL" },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "CLOSE_MODAL" }, parentOrigin);
           return;
         }
-
         if (type === 'FARCASTER_OPEN_URL') {
-          window.parent.postMessage(
-            { type: 'FARCASTER_OPEN_URL', payload },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: 'FARCASTER_OPEN_URL', payload }, parentOrigin);
           return;
         }
-
-        return; // Ignore other self-messages
+        return;
       }
 
-
-      console.warn("Blocked message from untrusted source:", {
-        origin: event.origin,
-        expectedOrigin: parentOrigin,
-        type
-      });
+      console.warn("Blocked message from untrusted source:", { origin: event.origin, expectedOrigin: parentOrigin, type });
     }
+
     window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [parentUrl])
 
-    return () => {
-      window.removeEventListener("message", handler);
-    }
-  }, [
-    parentUrl
-  ])
-
-
-  useEffect(() => {
-    if (!verifications) { return }
-
-    const interval = setInterval(async () => {
-      try {
-        const notCompletedVerifications = verifications.filter(
-          (verification) => verification.status !== 'completed',
-        );
-        if (notCompletedVerifications.length === 0) {
-          return;
-        }
-
-        let updated = false
-
-        const verificationsUpdated = verifications.map(item => {
-          if (item.status !== 'completed') {
-            const now = +new Date();
-            const expiration = item.scheduledTime - now;
-            if (expiration <= 0) {
-              updated = true
-              return {
-                ...item,
-                status: 'completed' as TVerificationStatus
-              }
-            }
-          }
-          return item
-        })
-    
-        if (updated) dispatch(addVerifications(verificationsUpdated))
-
-      } catch (err) {
-        console.error({ err });
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [
-    verifications
-  ]);
-
+  // ─── Address sync + reset ─────────────────────────────────────────────────
   useEffect(() => {
     if (address) {
-      if (user.address) {
-        if (address !== user.address) {
-          dispatch(setKey(null))
-          dispatch(addVerifications([]))
-        }
+      if (user.address && address !== user.address) {
+        dispatch(setKey(null))
+        dispatch(addVerifications([]))
+        setConfigsPhase('idle')
+        setFlowPhase('idle')
       }
       dispatch(setAddress(address))
     } else {
@@ -390,19 +325,14 @@ const InnerContent: FC<TProps> = ({
         dispatch(setKey(null))
         dispatch(addVerifications([]))
         dispatch(setAddress(null))
+        setConfigsPhase('idle')
+        setFlowPhase('idle')
       }
     }
+    if (apiKey) dispatch(setApiKey(apiKey));
+  }, [user.address, apiKey, address]);
 
-    if (apiKey) {
-      dispatch(setApiKey(apiKey));
-    }
-
-  }, [
-    user.address,
-    apiKey,
-    address,
-  ]);
-
+  // ─── Farcaster: load key from localStorage if present ────────────────────
   useEffect(() => {
     if (!address) return
     if (!user.isFarcaster) return
@@ -424,190 +354,215 @@ const InnerContent: FC<TProps> = ({
   }, [address, user.isFarcaster]);
 
   useEffect(() => {
-    if (customTitles) {
-      dispatch(setCustomTitles(customTitles))
-    }
+    if (customTitles) dispatch(setCustomTitles(customTitles))
   }, [customTitles])
 
+  // ─── Step 1: Load configs + enrich tasks with scores ──────────────────────
   useEffect(() => {
-    addLog(`[auto-verify] pending: ${!!pendingVerification}, key: ${!!user.key}, appId: ${user.appId}, tasks: ${userConfigs.tasks.length}, registry: ${!!userConfigs.modeConfigs.REGISTRY}, prevLoaded: ${prevVerificationsLoaded}`)
-    if (!pendingVerification) return
-    if (!user.key) return
-    if (!user.appId) return
-    if (userConfigs.tasks.length === 0) return
-    if (!userConfigs.modeConfigs.REGISTRY) return
-    if (!prevVerificationsLoaded) return
-
-    const { signature, message } = pendingVerification
-
-    addLog(`[auto-verify] looking for task with domain: ${message.domain}`)
-    addLog(`[auto-verify] available domains: ${userConfigs.tasks.map(t => t.domain ?? 'none').join(', ')}`)
-    const matchingTask = userConfigs.tasks.find(task => task.domain === message.domain)
-    addLog(`[auto-verify] matchingTask: ${matchingTask?.id ?? 'not found'}`)
-    if (!matchingTask) return
-
-    const alreadyVerified = verifications.some(
-      v => v.taskId === matchingTask.id && v.status === 'completed'
-    )
-    if (alreadyVerified) {
-      setPendingVerification(null)
-      dispatch(setRedirectUrl(null))
-      dispatch(setIsFarcaster(false))
+    if (!user.address || !user.mode || !user.appId) {
+      setConfigsPhase('idle')
       return
     }
 
-    setAutoVerifyingTaskId(matchingTask.id)
+    const runId = ++configsRunIdRef.current
+    setConfigsPhase('loading')
 
-    const processVerification = async () => {
-      await new Promise(resolve => setTimeout(resolve, 0))
-      const group = defineGroupForAuth(matchingTask, message.score)
-      if (!group) return
+    const run = async () => {
+      const remoteData = await remoteConfigs(user.mode === 'dev')
+      if (configsRunIdRef.current !== runId) return
 
-      const semaphoreIdentity = createSemaphoreIdentity(user.key!, user.appId!, group.credentialGroupId)
-
-      const verify = await verifierApi.verifyOAuth(
-        configs.ZUPLO_API_URL,
-        message,
-        signature,
-        userConfigs.modeConfigs.REGISTRY,
-        Number(userConfigs.modeConfigs.CHAIN_ID),
-        group.credentialGroupId,
-        user.appId!,
-        String(semaphoreIdentity.commitment),
-        user.mode
-      )
-
-      const {
-        signature: verifierSignature,
-        attestation: { credential_id, issued_at, chain_id }
-      } = verify
-
-      const { task: taskCreated, success } = await taskManagerApi.addVerification(
-        configs.ZUPLO_API_URL,
-        group.credentialGroupId,
-        credential_id,
-        issued_at,
-        chain_id,
-        user.appId!,
-        String(semaphoreIdentity.commitment),
-        verifierSignature,
-        userConfigs.modeConfigs
-      )
-
-      if (success) {
-        dispatch(addVerification({
-          status: 'scheduled',
-          scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
-          taskId: taskCreated.id,
-          credentialGroupId: group.credentialGroupId,
-          fetched: false,
-          score: group.score ?? 0,
-          chainId: chain_id,
-        }))
-      }
-
-      setAutoVerifyingTaskId(null)
-      setPendingVerification(null)
-      dispatch(setRedirectUrl(null))
-      dispatch(setIsFarcaster(false))
-    }
-
-    processVerification().catch(err => {
-      console.error('[auto-verify] Failed:', err)
-      const msg = typeof err === 'string' ? err : (err as Error).message
-      setAutoVerifyError(msg)
-      setAutoVerifyingTaskId(null)
-      setPendingVerification(null)
-      dispatch(setRedirectUrl(null))
-      dispatch(setIsFarcaster(false))
-    })
-  }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications, prevVerificationsLoaded])
-
-  useEffect(() => {
-
-    if (!user.address) return
-    if (!user.mode) return
-    if (!user.appId) return
-
-    const init = async () => {
-      const userConfigs = await remoteConfigs(user.mode === 'dev')
-      dispatch(addModeConfigs(userConfigs.configs))
+      dispatch(addModeConfigs(remoteData.configs))
 
       try {
         const scoresMap = await getAllScores(
-          userConfigs.configs.REGISTRY,
+          remoteData.configs.REGISTRY,
           user.appId as string,
-          userConfigs.configs.CHAIN_ID
+          remoteData.configs.CHAIN_ID
         )
+        if (configsRunIdRef.current !== runId) return
+
         if (scoresMap === null) {
           setInvalidAppId(true)
           dispatch(addTasks([]))
           dispatch(setLoading(false))
+          setConfigsPhase('idle')
           return
         }
-        const enrichedTasks = userConfigs.tasks.map(task => ({
-          ...task,
-          groups: task.groups.map(group => ({
-            ...group,
-            score: scoresMap.get(group.credentialGroupId) ?? 0
+
+        const enrichedTasks = remoteData.tasks
+          .map(task => ({
+            ...task,
+            groups: task.groups.map(group => ({
+              ...group,
+              score: scoresMap.get(group.credentialGroupId) ?? 0
+            }))
           }))
-        })).filter(task => task.groups.some(group => group.score > 0))
+          .filter(task => task.groups.some(group => group.score > 0))
+
         dispatch(addTasks(enrichedTasks))
       } catch (err) {
         console.error('Failed to fetch scores:', err)
-        dispatch(addTasks(userConfigs.tasks))
+        if (configsRunIdRef.current !== runId) return
+        dispatch(addTasks(remoteData.tasks))
       }
+
+      if (configsRunIdRef.current !== runId) return
+      setConfigsPhase('done')
     }
-    init().catch(err => {
+
+    run().catch(err => {
+      if (configsRunIdRef.current !== runId) return
       console.error('Failed to load configs:', err)
       dispatch(setLoading(false))
+      setConfigsPhase('idle')
     })
-  }, [
-    user.address,
-    user.mode,
-    user.appId
-  ])
+  }, [user.address, user.mode, user.appId])
 
+  // ─── Steps 2–4: prev verifications → pending verification → ready ─────────
+  //
+  // Runs only after configs are loaded and the user key is available.
+  // The key arrives either from localStorage (Farcaster) or from USER_KEY_READY.
+  // Steps are strictly sequential so addVerifications() never overwrites a
+  // freshly scheduled verification from auto-verify.
   useEffect(() => {
-    if (!user.key) return
-    if (!user.appId) return
-    console.log({
-      userConfigs
-    })
-    setPrevVerificationsLoaded(false)
-    if (userConfigs.tasks.length === 0) {
-      dispatch(setLoading(false))
-      setPrevVerificationsLoaded(true)
-      return
-    }
-    if (!userConfigs.modeConfigs.REGISTRY) {
-      dispatch(setLoading(false))
-      setPrevVerificationsLoaded(true)
-      return
-    }
+    if (configsPhase !== 'done') return
+    if (!user.key || !user.appId) return
 
-    uploadPrevVerifications(
-      userConfigs.tasks,
-      user.key,
-      user.appId,
-      (loading: boolean) => dispatch(setLoading(loading)),
-      userConfigs.modeConfigs,
-      (verifications) => {
-        console.log('HERE uploading verifications')
-        dispatch(addVerifications(verifications))
-        setPrevVerificationsLoaded(true)
+    const runId = ++flowRunIdRef.current
+    setFlowPhase('loading')
+
+    // Capture current values — these are stable for the lifetime of this run
+    const tasks = userConfigs.tasks
+    const modeConfigs = userConfigs.modeConfigs
+    const key = user.key
+    const appId = user.appId
+    const mode = user.mode
+
+    const run = async () => {
+      dispatch(setLoading(true))
+
+      // Step 2: fetch prev on-chain verifications and replace store
+      if (tasks.length > 0 && modeConfigs.REGISTRY) {
+        const prevVerifs = await fetchPrevVerifications(tasks, key, appId, modeConfigs)
+        if (flowRunIdRef.current !== runId) return
+        dispatch(addVerifications(prevVerifs))
+      } else {
+        dispatch(addVerifications([]))
       }
-    ).catch(err => {
-      console.error('Failed to upload previous verifications:', err)
-      dispatch(setLoading(false))
-      setPrevVerificationsLoaded(true)
-    })
-  }, [
-    userConfigs,
-    user.key,
-    user.appId
-  ]);
 
+      if (flowRunIdRef.current !== runId) return
+
+      // Step 3: process pending verification (from PROOFS_REQUEST verificationSignature)
+      const pending = pendingVerificationRef.current
+      if (pending) {
+        addLog(`[auto-verify] domain=${pending.message.domain}, score=${pending.message.score}`)
+        const matchingTask = tasks.find(task => task.domain === pending.message.domain)
+        addLog(`[auto-verify] matchingTask: ${matchingTask?.id ?? 'not found'}`)
+
+        if (matchingTask) {
+          setAutoVerifyingTaskId(matchingTask.id)
+          try {
+            const group = defineGroupForAuth(matchingTask, pending.message.score)
+            if (group) {
+              const semaphoreIdentity = createSemaphoreIdentity(key, appId, group.credentialGroupId)
+
+              const verify = await verifierApi.verifyOAuth(
+                configs.ZUPLO_API_URL,
+                pending.message,
+                pending.signature,
+                modeConfigs.REGISTRY,
+                Number(modeConfigs.CHAIN_ID),
+                group.credentialGroupId,
+                appId,
+                String(semaphoreIdentity.commitment),
+                mode
+              )
+
+              if (flowRunIdRef.current !== runId) return
+
+              const { signature: verifierSignature, attestation: { credential_id, issued_at, chain_id } } = verify
+
+              const { task: taskCreated, success } = await taskManagerApi.addVerification(
+                configs.ZUPLO_API_URL,
+                group.credentialGroupId,
+                credential_id,
+                issued_at,
+                chain_id,
+                appId,
+                String(semaphoreIdentity.commitment),
+                verifierSignature,
+                modeConfigs
+              )
+
+              if (flowRunIdRef.current !== runId) return
+
+              if (success) {
+                dispatch(addVerification({
+                  status: 'scheduled',
+                  scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
+                  taskId: taskCreated.id,
+                  credentialGroupId: group.credentialGroupId,
+                  fetched: false,
+                  score: group.score ?? 0,
+                  chainId: chain_id,
+                }))
+              }
+            }
+          } catch (err) {
+            if (flowRunIdRef.current !== runId) return
+            console.error('[auto-verify] Failed:', err)
+            setAutoVerifyError(typeof err === 'string' ? err : (err as Error).message)
+          }
+
+          setAutoVerifyingTaskId(null)
+          setPendingVerification(null)
+          dispatch(setRedirectUrl(null))
+          dispatch(setIsFarcaster(false))
+        }
+      }
+
+      if (flowRunIdRef.current !== runId) return
+
+      // Step 4: mark ready — interval can now start
+      dispatch(setLoading(false))
+      setFlowPhase('ready')
+    }
+
+    run().catch(err => {
+      if (flowRunIdRef.current !== runId) return
+      console.error('Flow failed:', err)
+      dispatch(setLoading(false))
+      setFlowPhase('ready')
+    })
+  }, [configsPhase, user.key, user.appId])
+
+  // ─── Step 5: Interval — check task completion every 2s ───────────────────
+  useEffect(() => {
+    if (flowPhase !== 'ready') return
+    if (!verifications) return
+
+    const interval = setInterval(() => {
+      try {
+        const notCompleted = verifications.filter(v => v.status !== 'completed')
+        if (notCompleted.length === 0) return
+
+        let updated = false
+        const next = verifications.map(item => {
+          if (item.status !== 'completed' && item.scheduledTime - +new Date() <= 0) {
+            updated = true
+            return { ...item, status: 'completed' as TVerificationStatus }
+          }
+          return item
+        })
+
+        if (updated) dispatch(addVerifications(next))
+      } catch (err) {
+        console.error({ err });
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [flowPhase, verifications]);
 
   return <Container>
     <HeaderStyled
@@ -620,9 +575,7 @@ const InnerContent: FC<TProps> = ({
       buttonTitle='Close'
       onClose={() => {
         setSessionLost(false)
-        window.postMessage({
-          type: 'CLOSE_MODAL',
-        }, window.location.origin)
+        window.postMessage({ type: 'CLOSE_MODAL' }, window.location.origin)
       }}
     />}
     {invalidAppId && <ErrorOverlay
@@ -632,9 +585,7 @@ const InnerContent: FC<TProps> = ({
         setInvalidAppId(false)
         dispatch(setAppId(null))
         dispatch(setMode(''))
-        window.postMessage({
-          type: 'CLOSE_MODAL',
-        }, window.location.origin)
+        window.postMessage({ type: 'CLOSE_MODAL' }, window.location.origin)
       }}
     />}
     {autoVerifyError && <ErrorOverlay
@@ -656,18 +607,14 @@ const InnerContent: FC<TProps> = ({
         maxHeight: '50px',
         overflowY: 'auto',
       }}>
-        <div>isFarcaster: {String(user.isFarcaster)}</div>
+        <div>configs: {configsPhase} | flow: {flowPhase}</div>
+        <div>isFarcaster: {String(user.isFarcaster)} | hasKey: {String(!!user.key)}</div>
         <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
-        <div>hasKey: {String(!!user.key)}</div>
         {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
       </div>
     )}
     <Content>
-      {defineContent(
-        page,
-        setPage,
-        autoVerifyingTaskId,
-      )}
+      {defineContent(page, setPage, autoVerifyingTaskId)}
     </Content>
   </Container>
 }
