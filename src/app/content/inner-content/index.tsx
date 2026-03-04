@@ -178,6 +178,7 @@ const InnerContent: FC<TProps> = ({
   } | null>(null)
   const [ autoVerifyingTaskId, setAutoVerifyingTaskId ] = useState<string | null>(null)
   const [ autoVerifyError, setAutoVerifyError ] = useState<string | null>(null)
+  const [ prevVerificationsLoaded, setPrevVerificationsLoaded ] = useState(false)
   const [ debugLogs, setDebugLogs ] = useState<string[]>([])
   const addLog = (msg: string) => setDebugLogs(prev => [...prev, msg])
 
@@ -429,12 +430,13 @@ const InnerContent: FC<TProps> = ({
   }, [customTitles])
 
   useEffect(() => {
-    addLog(`[auto-verify] pending: ${!!pendingVerification}, key: ${!!user.key}, appId: ${user.appId}, tasks: ${userConfigs.tasks.length}, registry: ${!!userConfigs.modeConfigs.REGISTRY}`)
+    addLog(`[auto-verify] pending: ${!!pendingVerification}, key: ${!!user.key}, appId: ${user.appId}, tasks: ${userConfigs.tasks.length}, registry: ${!!userConfigs.modeConfigs.REGISTRY}, prevLoaded: ${prevVerificationsLoaded}`)
     if (!pendingVerification) return
     if (!user.key) return
     if (!user.appId) return
     if (userConfigs.tasks.length === 0) return
     if (!userConfigs.modeConfigs.REGISTRY) return
+    if (!prevVerificationsLoaded) return
 
     const { signature, message } = pendingVerification
 
@@ -457,6 +459,7 @@ const InnerContent: FC<TProps> = ({
     setAutoVerifyingTaskId(matchingTask.id)
 
     const processVerification = async () => {
+      await new Promise(resolve => setTimeout(resolve, 0))
       const group = defineGroupForAuth(matchingTask, message.score)
       if (!group) return
 
@@ -518,7 +521,7 @@ const InnerContent: FC<TProps> = ({
       dispatch(setRedirectUrl(null))
       dispatch(setIsFarcaster(false))
     })
-  }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications])
+  }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications, prevVerificationsLoaded])
 
   useEffect(() => {
 
@@ -571,12 +574,15 @@ const InnerContent: FC<TProps> = ({
     console.log({
       userConfigs
     })
+    setPrevVerificationsLoaded(false)
     if (userConfigs.tasks.length === 0) {
       dispatch(setLoading(false))
+      setPrevVerificationsLoaded(true)
       return
     }
     if (!userConfigs.modeConfigs.REGISTRY) {
       dispatch(setLoading(false))
+      setPrevVerificationsLoaded(true)
       return
     }
 
@@ -589,10 +595,12 @@ const InnerContent: FC<TProps> = ({
       (verifications) => {
         console.log('HERE uploading verifications')
         dispatch(addVerifications(verifications))
+        setPrevVerificationsLoaded(true)
       }
     ).catch(err => {
       console.error('Failed to upload previous verifications:', err)
       dispatch(setLoading(false))
+      setPrevVerificationsLoaded(true)
     })
   }, [
     userConfigs,
