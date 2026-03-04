@@ -242,12 +242,17 @@ const InnerContent: FC<TProps> = ({
           dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
           dispatch(setIsFarcaster(payload?.isFarcaster ?? false));
 
+          addLog(`[PROOFS_REQUEST] verificationSignature: ${payload?.verificationSignature ?? 'none'}`)
+          addLog(`[PROOFS_REQUEST] verificationMessage: ${payload?.verificationMessage ?? 'none'}`)
+
           if (payload?.verificationSignature && payload?.verificationMessage) {
             try {
               const sig = decodeURIComponent(payload.verificationSignature)
               const msg = JSON.parse(decodeURIComponent(payload.verificationMessage)) as TOAuthMessage
+              addLog(`[PROOFS_REQUEST] parsed message domain: ${msg.domain}, score: ${msg.score}`)
               setPendingVerification({ signature: sig, message: msg })
             } catch (e) {
+              addLog(`[PROOFS_REQUEST] failed to parse: ${e}`)
               console.error('[PROOFS_REQUEST] Failed to parse verification data:', e)
             }
           }
@@ -412,6 +417,7 @@ const InnerContent: FC<TProps> = ({
   }, [customTitles])
 
   useEffect(() => {
+    addLog(`[auto-verify] pending: ${!!pendingVerification}, key: ${!!user.key}, appId: ${user.appId}, tasks: ${userConfigs.tasks.length}, registry: ${!!userConfigs.modeConfigs.REGISTRY}`)
     if (!pendingVerification) return
     if (!user.key) return
     if (!user.appId) return
@@ -420,7 +426,10 @@ const InnerContent: FC<TProps> = ({
 
     const { signature, message } = pendingVerification
 
+    addLog(`[auto-verify] looking for task with domain: ${message.domain}`)
+    addLog(`[auto-verify] available domains: ${userConfigs.tasks.map(t => t.domain ?? 'none').join(', ')}`)
     const matchingTask = userConfigs.tasks.find(task => task.domain === message.domain)
+    addLog(`[auto-verify] matchingTask: ${matchingTask?.id ?? 'not found'}`)
     if (!matchingTask) return
 
     const alreadyVerified = verifications.some(
