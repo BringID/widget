@@ -15,7 +15,8 @@ enum ActionType {
   '/user/setContext' = '/user/setContext',
   '/user/setMessage' = '/user/setMessage',
   '/user/setMode' = '/user/setMode',
-  '/user/setAppId' = '/user/setAppId'
+  '/user/setAppId' = '/user/setAppId',
+  '/user/setRedirectUrl' = '/user/setRedirectUrl'
 }
 
 type Action<payload> = {
@@ -36,7 +37,8 @@ const initState: State = {
   context: 0,
   message: null,
   mode: '',
-  appId: null
+  appId: null,
+  redirectUrl: null
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({
@@ -99,6 +101,11 @@ export const setAppId = (appId: string | null): Action<string | null> => ({
   payload: appId,
 })
 
+export const setRedirectUrl = (redirectUrl: string | null): Action<string | null> => ({
+  type: ActionType['/user/setRedirectUrl'],
+  payload: redirectUrl,
+})
+
 export default function user(state = initState, action: Action<any>): State {
   switch (action.type) {
     case ActionType['/user/setKey']:
@@ -136,6 +143,9 @@ export default function user(state = initState, action: Action<any>): State {
 
     case ActionType['/user/setAppId']:
       return { ...state, appId: action.payload };
+
+    case ActionType['/user/setRedirectUrl']:
+      return { ...state, redirectUrl: action.payload };
 
     default:
       return state;

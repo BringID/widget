@@ -11,7 +11,9 @@ import {
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult,
+  isFarcasterApp,
 } from '@/utils'
+import { sdk } from '@farcaster/miniapp-sdk'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
@@ -38,6 +40,7 @@ const defineTaskContent = (
   setIsActive: (
     active: boolean
   ) => void,
+  redirectUrl: string | null,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void,
   messageCallback: (message: string) => void
@@ -53,6 +56,22 @@ const defineTaskContent = (
           onClick={async () => {
             try {
               if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
+                const authUrl = task.verificationType === 'oauth'
+                  ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
+                  : task.verificationUrl
+
+                const inFarcaster = await isFarcasterApp()
+
+                if (inFarcaster) {
+                  setLoading(true)
+                  setIsActive(true)
+                  const finalUrl = redirectUrl
+                    ? `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
+                    : authUrl
+                  await sdk.actions.openUrl(finalUrl)
+                  return
+                }
+
                 setLoading(true)
                 setIsActive(true)
                 plausibleEvent('oauth_verification_started', {
@@ -71,7 +90,8 @@ const defineTaskContent = (
                   signature
                 } = await getAuthSemaphoreData(
                   task,
-                  plausibleEvent
+                  plausibleEvent,
+                  authUrl
                 )
 
                 const group = defineGroupForAuth(
@@ -310,6 +330,7 @@ const Task: FC<TProps> = ({
     user.mode,
     isActive,
     setIsActive,
+    user.redirectUrl,
     (verification) => {
       dispatch(addVerification(verification))
     },

@@ -13,6 +13,7 @@ type TTask = {
   service: string;
   permissionUrl?: string[],
   steps: any
+  domain?: string;
 };
 
 export default TTask;

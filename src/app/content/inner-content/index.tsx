@@ -9,19 +9,22 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
-import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, useUser } from '../store/reducers/user';
-import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, useUser } from '../store/reducers/user';
+import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage, TOAuthMessage } from '@/types';
 import { TProofSuccess } from '../api/indexer/types';
 import semaphore from '../semaphore';
-import { configs } from '../../core'
+import { configs as remoteConfigs } from '../../core'
+import configs from '../../configs'
 import {
+  addVerification,
   addVerifications,
   useVerifications
 } from '../store/reducers/verifications';
 import { LoadingOverlay, ErrorOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
+import { getAppSemaphoreGroupId, getAllScores, isFarcasterApp, createSemaphoreIdentity, defineGroupForAuth } from '@/utils'
+import { taskManagerApi, verifierApi } from '../api'
 
 const defineContent = (
   page: string,
@@ -167,6 +170,11 @@ const InnerContent: FC<TProps> = ({
   const userRef = useRef(user)
   userRef.current = user
 
+  const [ pendingVerification, setPendingVerification ] = useState<{
+    signature: string
+    message: TOAuthMessage
+  } | null>(null)
+
   useEffect(() => {
     if (!parentUrl) {
       console.warn("No parent URL configured for iframe communication");
@@ -203,6 +211,11 @@ const InnerContent: FC<TProps> = ({
           plausible('generate_user_key_finished');
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
+          isFarcasterApp().then(inFarcaster => {
+            if (inFarcaster && userRef.current.address) {
+              localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
+            }
+          })
           return;
         }
         
@@ -224,6 +237,17 @@ const InnerContent: FC<TProps> = ({
           dispatch(setContext(payload?.context ?? 0));
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
+          dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
+
+          if (payload?.verificationSignature && payload?.verificationMessage) {
+            try {
+              const sig = decodeURIComponent(payload.verificationSignature)
+              const msg = JSON.parse(decodeURIComponent(payload.verificationMessage)) as TOAuthMessage
+              setPendingVerification({ signature: sig, message: msg })
+            } catch (e) {
+              console.error('[PROOFS_REQUEST] Failed to parse verification data:', e)
+            }
+          }
 
           console.log('[PROOFS_REQUEST] dispatched:', {
             mode: newMode,
@@ -341,7 +365,7 @@ const InnerContent: FC<TProps> = ({
       }
       dispatch(setAddress(address))
     } else {
-      if (user.address) {        
+      if (user.address) {
         dispatch(setKey(null))
         dispatch(addVerifications([]))
         dispatch(setAddress(null))
@@ -359,10 +383,98 @@ const InnerContent: FC<TProps> = ({
   ]);
 
   useEffect(() => {
+    if (!address) return
+    isFarcasterApp().then(inFarcaster => {
+      if (!inFarcaster) return
+      const storedKey = localStorage.getItem(`bringid_key_${address}`)
+      if (storedKey && !userRef.current.key) {
+        dispatch(setLoading(true))
+        dispatch(setKey(storedKey))
+      }
+    })
+  }, [address]);
+
+  useEffect(() => {
     if (customTitles) {
       dispatch(setCustomTitles(customTitles))
     }
   }, [customTitles])
+
+  useEffect(() => {
+    if (!pendingVerification) return
+    if (!user.key) return
+    if (!user.appId) return
+    if (userConfigs.tasks.length === 0) return
+    if (!userConfigs.modeConfigs.REGISTRY) return
+
+    const { signature, message } = pendingVerification
+
+    const matchingTask = userConfigs.tasks.find(task => task.domain === message.domain)
+    if (!matchingTask) return
+
+    const alreadyVerified = verifications.some(
+      v => v.taskId === matchingTask.id && v.status === 'completed'
+    )
+    if (alreadyVerified) {
+      setPendingVerification(null)
+      return
+    }
+
+    const processVerification = async () => {
+      const group = defineGroupForAuth(matchingTask, message.score)
+      if (!group) return
+
+      const semaphoreIdentity = createSemaphoreIdentity(user.key!, user.appId!, group.credentialGroupId)
+
+      const verify = await verifierApi.verifyOAuth(
+        configs.ZUPLO_API_URL,
+        message,
+        signature,
+        userConfigs.modeConfigs.REGISTRY,
+        Number(userConfigs.modeConfigs.CHAIN_ID),
+        group.credentialGroupId,
+        user.appId!,
+        String(semaphoreIdentity.commitment),
+        user.mode
+      )
+
+      const {
+        signature: verifierSignature,
+        attestation: { credential_id, issued_at, chain_id }
+      } = verify
+
+      const { task: taskCreated, success } = await taskManagerApi.addVerification(
+        configs.ZUPLO_API_URL,
+        group.credentialGroupId,
+        credential_id,
+        issued_at,
+        chain_id,
+        user.appId!,
+        String(semaphoreIdentity.commitment),
+        verifierSignature,
+        userConfigs.modeConfigs
+      )
+
+      if (success) {
+        dispatch(addVerification({
+          status: 'scheduled',
+          scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
+          taskId: taskCreated.id,
+          credentialGroupId: group.credentialGroupId,
+          fetched: false,
+          score: group.score ?? 0,
+          chainId: chain_id,
+        }))
+      }
+
+      setPendingVerification(null)
+    }
+
+    processVerification().catch(err => {
+      console.error('[auto-verify] Failed:', err)
+      setPendingVerification(null)
+    })
+  }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications])
 
   useEffect(() => {
 
@@ -371,7 +483,7 @@ const InnerContent: FC<TProps> = ({
     if (!user.appId) return
 
     const init = async () => {
-      const userConfigs = await configs(user.mode === 'dev')
+      const userConfigs = await remoteConfigs(user.mode === 'dev')
       dispatch(addModeConfigs(userConfigs.configs))
 
       try {

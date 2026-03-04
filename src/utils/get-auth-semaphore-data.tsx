@@ -14,17 +14,19 @@ type TGetAuthSemaphoreData = (
   task: TTask,
   plausibleEvent: (eventName: string, options?: {
     props?: Record<string, string>
-  }) => void
+  }) => void,
+  authUrl: string
 ) => Promise<
   TOAuthResponsePayload
 >
 
 const getAuthSemaphoreData: TGetAuthSemaphoreData = (
   task,
-  plausibleEvent
+  plausibleEvent,
+  authUrl
 ) => {
 
-  const popupURL = task.verificationType === 'oauth' ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}` : task.verificationUrl
+  const popupURL = authUrl
   const awaitingEventSource = task.verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(task.verificationUrl).origin
 
   return new Promise((resolve, reject) => {

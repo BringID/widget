@@ -9,4 +9,5 @@ export type TUser = {
   message: null | string
   mode: string
   appId: string | null
+  redirectUrl: string | null
 };
