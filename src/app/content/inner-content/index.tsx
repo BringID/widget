@@ -408,9 +408,17 @@ const InnerContent: FC<TProps> = ({
     addLog(`[localStorage] isFarcaster: true, checking for stored key, address: ${address}`)
     const storedKey = localStorage.getItem(`bringid_key_${address}`)
     addLog(`[localStorage] storedKey found: ${!!storedKey}`)
-    if (storedKey && !userRef.current.key) {
-      dispatch(setLoading(true))
-      dispatch(setKey(storedKey))
+    if (storedKey) {
+      if (!userRef.current.key) {
+        dispatch(setLoading(true))
+        dispatch(setKey(storedKey))
+      }
+    } else {
+      const staleKeys = Object.keys(localStorage).filter(k => k.startsWith('bringid_key_'))
+      if (staleKeys.length > 0) {
+        addLog(`[localStorage] no key for current address, clearing ${staleKeys.length} stale entry(s)`)
+        staleKeys.forEach(k => localStorage.removeItem(k))
+      }
     }
   }, [address, user.isFarcaster]);
 
