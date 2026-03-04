@@ -212,8 +212,10 @@ const InnerContent: FC<TProps> = ({
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
           isFarcasterApp().then(inFarcaster => {
+            console.log('[USER_KEY_READY] inFarcaster:', inFarcaster, 'address:', userRef.current.address)
             if (inFarcaster && userRef.current.address) {
               localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
+              console.log('[USER_KEY_READY] key saved to localStorage')
             }
           })
           return;
@@ -384,9 +386,12 @@ const InnerContent: FC<TProps> = ({
 
   useEffect(() => {
     if (!address) return
+    console.log('[localStorage] checking for stored key, address:', address)
     isFarcasterApp().then(inFarcaster => {
+      console.log('[localStorage] inFarcaster:', inFarcaster)
       if (!inFarcaster) return
       const storedKey = localStorage.getItem(`bringid_key_${address}`)
+      console.log('[localStorage] storedKey found:', !!storedKey)
       if (storedKey && !userRef.current.key) {
         dispatch(setLoading(true))
         dispatch(setKey(storedKey))
