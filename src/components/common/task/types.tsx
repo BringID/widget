@@ -9,4 +9,5 @@ export type TProps = {
   ) => void
   onError: (errorText: string) => void
   onMessage: (message: string) => void
+  autoVerifyingTaskId?: string | null
 };

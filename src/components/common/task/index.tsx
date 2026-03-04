@@ -306,7 +306,8 @@ const Task: FC<TProps> = ({
   onError,
   onMessage,
   setIsActive,
-  isActive
+  isActive,
+  autoVerifyingTaskId
 }) => {
 
   const dispatch = useDispatch()
@@ -314,6 +315,7 @@ const Task: FC<TProps> = ({
   const userConfigs = useConfigs()
 
   const [ loading, setLoading ] = useState<boolean>(false)
+  const isAutoVerifying = autoVerifyingTaskId === task.id
   const plausible = usePlausible()
   const content = defineTaskContent(
     (eventName, options) => plausible(eventName, options),
@@ -321,7 +323,7 @@ const Task: FC<TProps> = ({
     task,
     user.key,
     user.appId,
-    loading,
+    loading || isAutoVerifying,
     setLoading,
     userConfigs.modeConfigs,
     user.mode,

@@ -22,6 +22,7 @@ import { useConfigs } from '../../store/reducers/configs';
 const renderContent = (
   userKey: string | null,
   verifications: TVerification[],
+  autoVerifyingTaskId?: string | null,
 ) => {
   if (!userKey) {
     return <AuthorizeContent>
@@ -31,11 +32,13 @@ const renderContent = (
 
   return <VerificationsListStyled
     verifications={verifications}
+    autoVerifyingTaskId={autoVerifyingTaskId}
   />
 }
 
 const Home: FC<TProps> = ({
-  setPage
+  setPage,
+  autoVerifyingTaskId
 }) => {
   const verificationsStore = useVerifications();
   const { verifications, loading } = verificationsStore;
@@ -54,6 +57,7 @@ const Home: FC<TProps> = ({
         {renderContent(
           user.key,
           verifications,
+          autoVerifyingTaskId,
         )}
       </Container>
 

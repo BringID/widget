@@ -29,10 +29,12 @@ import { taskManagerApi, verifierApi } from '../api'
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
+  autoVerifyingTaskId: string | null,
 ) => {
   switch (page) {
     case 'home': return <Home
       setPage={setPage}
+      autoVerifyingTaskId={autoVerifyingTaskId}
     />
     case 'proofs': return <Proofs
       onCancel={() => {
@@ -174,6 +176,8 @@ const InnerContent: FC<TProps> = ({
     signature: string
     message: TOAuthMessage
   } | null>(null)
+  const [ autoVerifyingTaskId, setAutoVerifyingTaskId ] = useState<string | null>(null)
+  const [ autoVerifyError, setAutoVerifyError ] = useState<string | null>(null)
   const [ debugLogs, setDebugLogs ] = useState<string[]>([])
   const addLog = (msg: string) => setDebugLogs(prev => [...prev, msg])
 
@@ -440,6 +444,8 @@ const InnerContent: FC<TProps> = ({
       return
     }
 
+    setAutoVerifyingTaskId(matchingTask.id)
+
     const processVerification = async () => {
       const group = defineGroupForAuth(matchingTask, message.score)
       if (!group) return
@@ -487,11 +493,15 @@ const InnerContent: FC<TProps> = ({
         }))
       }
 
+      setAutoVerifyingTaskId(null)
       setPendingVerification(null)
     }
 
     processVerification().catch(err => {
       console.error('[auto-verify] Failed:', err)
+      const msg = typeof err === 'string' ? err : (err as Error).message
+      setAutoVerifyError(msg)
+      setAutoVerifyingTaskId(null)
       setPendingVerification(null)
     })
   }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications])
@@ -605,6 +615,10 @@ const InnerContent: FC<TProps> = ({
         }, window.location.origin)
       }}
     />}
+    {autoVerifyError && <ErrorOverlay
+      errorText={autoVerifyError}
+      onClose={() => setAutoVerifyError(null)}
+    />}
     {(debugLogs.length > 0 || true) && (
       <div style={{
         position: 'absolute',
@@ -630,6 +644,7 @@ const InnerContent: FC<TProps> = ({
       {defineContent(
         page,
         setPage,
+        autoVerifyingTaskId,
       )}
     </Content>
   </Container>
