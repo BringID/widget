@@ -11,9 +11,7 @@ import {
   getAuthSemaphoreData,
   getZKTLSSemaphoreData,
   defineGroupByZKTLSResult,
-  isFarcasterApp,
 } from '@/utils'
-import { sdk } from '@farcaster/miniapp-sdk'
 import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
@@ -60,15 +58,14 @@ const defineTaskContent = (
                   ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
                   : task.verificationUrl
 
-                const inFarcaster = await isFarcasterApp()
-
-                if (inFarcaster) {
+                if (redirectUrl) {
                   setLoading(true)
                   setIsActive(true)
-                  const finalUrl = redirectUrl
-                    ? `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
-                    : authUrl
-                  await sdk.actions.openUrl(finalUrl)
+                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
+                  window.postMessage(
+                    { type: 'FARCASTER_OPEN_URL', payload: { url: finalUrl } },
+                    window.location.origin
+                  )
                   return
                 }
 

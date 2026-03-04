@@ -10,4 +10,5 @@ export type TUser = {
   mode: string
   appId: string | null
   redirectUrl: string | null
+  isFarcaster: boolean
 };

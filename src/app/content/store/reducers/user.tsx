@@ -16,7 +16,8 @@ enum ActionType {
   '/user/setMessage' = '/user/setMessage',
   '/user/setMode' = '/user/setMode',
   '/user/setAppId' = '/user/setAppId',
-  '/user/setRedirectUrl' = '/user/setRedirectUrl'
+  '/user/setRedirectUrl' = '/user/setRedirectUrl',
+  '/user/setIsFarcaster' = '/user/setIsFarcaster'
 }
 
 type Action<payload> = {
@@ -38,7 +39,8 @@ const initState: State = {
   message: null,
   mode: '',
   appId: null,
-  redirectUrl: null
+  redirectUrl: null,
+  isFarcaster: false
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({
@@ -106,6 +108,11 @@ export const setRedirectUrl = (redirectUrl: string | null): Action<string | null
   payload: redirectUrl,
 })
 
+export const setIsFarcaster = (isFarcaster: boolean): Action<boolean> => ({
+  type: ActionType['/user/setIsFarcaster'],
+  payload: isFarcaster,
+})
+
 export default function user(state = initState, action: Action<any>): State {
   switch (action.type) {
     case ActionType['/user/setKey']:
@@ -146,6 +153,9 @@ export default function user(state = initState, action: Action<any>): State {
 
     case ActionType['/user/setRedirectUrl']:
       return { ...state, redirectUrl: action.payload };
+
+    case ActionType['/user/setIsFarcaster']:
+      return { ...state, isFarcaster: action.payload };
 
     default:
       return state;

@@ -9,7 +9,7 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
-import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, setIsFarcaster, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage, TOAuthMessage } from '@/types';
 import { TProofSuccess } from '../api/indexer/types';
 import semaphore from '../semaphore';
@@ -23,7 +23,7 @@ import {
 import { LoadingOverlay, ErrorOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { getAppSemaphoreGroupId, getAllScores, isFarcasterApp, createSemaphoreIdentity, defineGroupForAuth } from '@/utils'
+import { getAppSemaphoreGroupId, getAllScores, createSemaphoreIdentity, defineGroupForAuth } from '@/utils'
 import { taskManagerApi, verifierApi } from '../api'
 
 const defineContent = (
@@ -213,13 +213,11 @@ const InnerContent: FC<TProps> = ({
           plausible('generate_user_key_finished');
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
-          isFarcasterApp(addLog).then(inFarcaster => {
-            addLog(`[USER_KEY_READY] inFarcaster: ${inFarcaster}, address: ${userRef.current.address}`)
-            if (inFarcaster && userRef.current.address) {
-              localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
-              addLog('[USER_KEY_READY] key saved to localStorage')
-            }
-          })
+          addLog(`[USER_KEY_READY] isFarcaster: ${userRef.current.isFarcaster}, address: ${userRef.current.address}`)
+          if (userRef.current.isFarcaster && userRef.current.address) {
+            localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
+            addLog('[USER_KEY_READY] key saved to localStorage')
+          }
           return;
         }
         
@@ -242,6 +240,7 @@ const InnerContent: FC<TProps> = ({
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
           dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
+          dispatch(setIsFarcaster(payload?.isFarcaster ?? false));
 
           if (payload?.verificationSignature && payload?.verificationMessage) {
             try {
@@ -293,6 +292,14 @@ const InnerContent: FC<TProps> = ({
           plausible('close_modal');
           window.parent.postMessage(
             { type: "CLOSE_MODAL" },
+            parentOrigin
+          );
+          return;
+        }
+
+        if (type === 'FARCASTER_OPEN_URL') {
+          window.parent.postMessage(
+            { type: 'FARCASTER_OPEN_URL', payload },
             parentOrigin
           );
           return;
@@ -388,18 +395,15 @@ const InnerContent: FC<TProps> = ({
 
   useEffect(() => {
     if (!address) return
-    addLog(`[localStorage] checking for stored key, address: ${address}`)
-    isFarcasterApp(addLog).then(inFarcaster => {
-      addLog(`[localStorage] inFarcaster: ${inFarcaster}`)
-      if (!inFarcaster) return
-      const storedKey = localStorage.getItem(`bringid_key_${address}`)
-      addLog(`[localStorage] storedKey found: ${!!storedKey}`)
-      if (storedKey && !userRef.current.key) {
-        dispatch(setLoading(true))
-        dispatch(setKey(storedKey))
-      }
-    })
-  }, [address]);
+    if (!user.isFarcaster) return
+    addLog(`[localStorage] isFarcaster: true, checking for stored key, address: ${address}`)
+    const storedKey = localStorage.getItem(`bringid_key_${address}`)
+    addLog(`[localStorage] storedKey found: ${!!storedKey}`)
+    if (storedKey && !userRef.current.key) {
+      dispatch(setLoading(true))
+      dispatch(setKey(storedKey))
+    }
+  }, [address, user.isFarcaster]);
 
   useEffect(() => {
     if (customTitles) {
@@ -592,7 +596,7 @@ const InnerContent: FC<TProps> = ({
         }, window.location.origin)
       }}
     />}
-    {debugLogs.length > 0 && (
+    {(debugLogs.length > 0 || true) && (
       <div style={{
         position: 'absolute',
         top: 0,
@@ -607,6 +611,9 @@ const InnerContent: FC<TProps> = ({
         maxHeight: '40%',
         overflowY: 'auto',
       }}>
+        <div>isFarcaster: {String(user.isFarcaster)}</div>
+        <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
+        <div>hasKey: {String(!!user.key)}</div>
         {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
       </div>
     )}
