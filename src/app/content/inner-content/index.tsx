@@ -441,6 +441,8 @@ const InnerContent: FC<TProps> = ({
     )
     if (alreadyVerified) {
       setPendingVerification(null)
+      dispatch(setRedirectUrl(null))
+      dispatch(setIsFarcaster(false))
       return
     }
 
@@ -495,6 +497,8 @@ const InnerContent: FC<TProps> = ({
 
       setAutoVerifyingTaskId(null)
       setPendingVerification(null)
+      dispatch(setRedirectUrl(null))
+      dispatch(setIsFarcaster(false))
     }
 
     processVerification().catch(err => {
@@ -503,6 +507,8 @@ const InnerContent: FC<TProps> = ({
       setAutoVerifyError(msg)
       setAutoVerifyingTaskId(null)
       setPendingVerification(null)
+      dispatch(setRedirectUrl(null))
+      dispatch(setIsFarcaster(false))
     })
   }, [pendingVerification, user.key, user.appId, userConfigs.tasks, userConfigs.modeConfigs, verifications])
 
