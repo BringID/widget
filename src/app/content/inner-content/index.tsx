@@ -613,11 +613,11 @@ const InnerContent: FC<TProps> = ({
         right: 0,
         background: 'rgba(0,0,0,0.85)',
         color: '#0f0',
-        fontSize: '10px',
+        fontSize: '8px',
         fontFamily: 'monospace',
         padding: '6px',
         zIndex: 9999,
-        maxHeight: '40%',
+        maxHeight: '50px',
         overflowY: 'auto',
       }}>
         <div>isFarcaster: {String(user.isFarcaster)}</div>
