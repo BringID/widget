@@ -174,6 +174,8 @@ const InnerContent: FC<TProps> = ({
     signature: string
     message: TOAuthMessage
   } | null>(null)
+  const [ debugLogs, setDebugLogs ] = useState<string[]>([])
+  const addLog = (msg: string) => setDebugLogs(prev => [...prev, msg])
 
   useEffect(() => {
     if (!parentUrl) {
@@ -211,11 +213,11 @@ const InnerContent: FC<TProps> = ({
           plausible('generate_user_key_finished');
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
-          isFarcasterApp().then(inFarcaster => {
-            console.log('[USER_KEY_READY] inFarcaster:', inFarcaster, 'address:', userRef.current.address)
+          isFarcasterApp(addLog).then(inFarcaster => {
+            addLog(`[USER_KEY_READY] inFarcaster: ${inFarcaster}, address: ${userRef.current.address}`)
             if (inFarcaster && userRef.current.address) {
               localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
-              console.log('[USER_KEY_READY] key saved to localStorage')
+              addLog('[USER_KEY_READY] key saved to localStorage')
             }
           })
           return;
@@ -386,12 +388,12 @@ const InnerContent: FC<TProps> = ({
 
   useEffect(() => {
     if (!address) return
-    console.log('[localStorage] checking for stored key, address:', address)
-    isFarcasterApp().then(inFarcaster => {
-      console.log('[localStorage] inFarcaster:', inFarcaster)
+    addLog(`[localStorage] checking for stored key, address: ${address}`)
+    isFarcasterApp(addLog).then(inFarcaster => {
+      addLog(`[localStorage] inFarcaster: ${inFarcaster}`)
       if (!inFarcaster) return
       const storedKey = localStorage.getItem(`bringid_key_${address}`)
-      console.log('[localStorage] storedKey found:', !!storedKey)
+      addLog(`[localStorage] storedKey found: ${!!storedKey}`)
       if (storedKey && !userRef.current.key) {
         dispatch(setLoading(true))
         dispatch(setKey(storedKey))
@@ -590,6 +592,24 @@ const InnerContent: FC<TProps> = ({
         }, window.location.origin)
       }}
     />}
+    {debugLogs.length > 0 && (
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        background: 'rgba(0,0,0,0.85)',
+        color: '#0f0',
+        fontSize: '10px',
+        fontFamily: 'monospace',
+        padding: '6px',
+        zIndex: 9999,
+        maxHeight: '40%',
+        overflowY: 'auto',
+      }}>
+        {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+      </div>
+    )}
     <Content>
       {defineContent(
         page,

@@ -2,24 +2,29 @@ import { sdk } from '@farcaster/miniapp-sdk'
 
 let _result: boolean | null = null
 
-const isFarcasterApp = async (): Promise<boolean> => {
+const isFarcasterApp = async (log?: (msg: string) => void): Promise<boolean> => {
+  const emit = (msg: string) => {
+    console.log(msg)
+    log?.(msg)
+  }
+
   if (_result !== null) {
-    console.log('[isFarcasterApp] cached result:', _result)
+    emit(`[isFarcasterApp] cached result: ${_result}`)
     return _result
   }
   try {
-    console.log('[isFarcasterApp] detecting...')
+    emit('[isFarcasterApp] detecting...')
     const context = await Promise.race([
       sdk.context,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500))
     ])
-    console.log('[isFarcasterApp] sdk.context resolved:', context)
+    emit(`[isFarcasterApp] sdk.context resolved: ${JSON.stringify(context)}`)
     _result = !!context
   } catch (err) {
-    console.log('[isFarcasterApp] sdk.context threw:', err)
+    emit(`[isFarcasterApp] sdk.context threw: ${err}`)
     _result = false
   }
-  console.log('[isFarcasterApp] result:', _result)
+  emit(`[isFarcasterApp] result: ${_result}`)
   return _result
 }
 
