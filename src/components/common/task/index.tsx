@@ -39,6 +39,7 @@ const defineTaskContent = (
     active: boolean
   ) => void,
   redirectUrl: string | null,
+  isFarcaster: boolean,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void,
   messageCallback: (message: string) => void
@@ -57,20 +58,7 @@ const defineTaskContent = (
                 const authUrl = task.verificationType === 'oauth'
                   ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
                   : task.verificationUrl
-
-                if (redirectUrl) {
-                  setLoading(true)
-                  setIsActive(true)
-                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
-                  window.postMessage(
-                    { type: 'FARCASTER_OPEN_URL', payload: { url: finalUrl } },
-                    window.location.origin
-                  )
-                  return
-                }
-
-                setLoading(true)
-                setIsActive(true)
+                
                 plausibleEvent('oauth_verification_started', {
                   props: {
                     verification_started: task.service
@@ -81,6 +69,23 @@ const defineTaskContent = (
                     task_service: task.service
                   }
                 })
+
+                if (redirectUrl) {
+                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
+                  if (isFarcaster) {
+                    window.postMessage(
+                      { type: 'FARCASTER_OPEN_URL', payload: { url: finalUrl } },
+                      window.location.origin
+                    )
+                  } else {
+                    window.open(finalUrl)
+                  }
+                  return
+                }
+
+                setLoading(true)
+                setIsActive(true)
+                
 
                 const {
                   message,
@@ -330,6 +335,7 @@ const Task: FC<TProps> = ({
     isActive,
     setIsActive,
     user.redirectUrl,
+    user.isFarcaster,
     (verification) => {
       dispatch(addVerification(verification))
     },

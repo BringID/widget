@@ -26,6 +26,16 @@ export const AddressIcon = styled(Icons.AddressIcon)`
   margin-right: 4px;
 `
 
+export const LogoutIconStyled = styled(Icons.LogoutIcon)`
+  cursor: pointer;
+  margin-left: 6px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  &:hover {
+    opacity: 1;
+  }
+`
+
 export const CloseButtonStyled = styled(CloseButton)`
   position: absolute;
   right: 20px;

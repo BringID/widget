@@ -217,10 +217,13 @@ const InnerContent: FC<TProps> = ({
           plausible('generate_user_key_finished');
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
-          addLog(`[USER_KEY_READY] isFarcaster: ${userRef.current.isFarcaster}, address: ${userRef.current.address}`)
-          if (userRef.current.isFarcaster && userRef.current.address) {
-            localStorage.setItem(`bringid_key_${userRef.current.address}`, payload.signature)
-            addLog('[USER_KEY_READY] key saved to localStorage')
+          addLog(`[USER_KEY_READY] redirectUrl: ${userRef.current.redirectUrl}, address: ${userRef.current.address}`)
+          if (userRef.current.redirectUrl && userRef.current.address) {
+            localStorage.setItem('bringid_session', JSON.stringify({
+              address: userRef.current.address,
+              key: payload.signature
+            }))
+            addLog('[USER_KEY_READY] session saved to localStorage')
           }
           return;
         }
@@ -332,26 +335,30 @@ const InnerContent: FC<TProps> = ({
     if (apiKey) dispatch(setApiKey(apiKey));
   }, [user.address, apiKey, address]);
 
-  // ─── Farcaster: load key from localStorage if present ────────────────────
+  // ─── Load session key from localStorage if present ───────────────────────
   useEffect(() => {
     if (!address) return
-    if (!user.isFarcaster) return
-    addLog(`[localStorage] isFarcaster: true, checking for stored key, address: ${address}`)
-    const storedKey = localStorage.getItem(`bringid_key_${address}`)
-    addLog(`[localStorage] storedKey found: ${!!storedKey}`)
-    if (storedKey) {
-      if (!userRef.current.key) {
-        dispatch(setLoading(true))
-        dispatch(setKey(storedKey))
-      }
-    } else {
-      const staleKeys = Object.keys(localStorage).filter(k => k.startsWith('bringid_key_'))
-      if (staleKeys.length > 0) {
-        addLog(`[localStorage] no key for current address, clearing ${staleKeys.length} stale entry(s)`)
-        staleKeys.forEach(k => localStorage.removeItem(k))
-      }
-    }
-  }, [address, user.isFarcaster]);
+    try {
+      const raw = localStorage.getItem('bringid_session')
+      if (!raw) return
+      const session = JSON.parse(raw) as { address: string; key: string }
+      addLog(`[localStorage] session found for address: ${session.address}`)
+      if (session.address !== address) return
+      if (userRef.current.key) return
+      addLog('[localStorage] restoring session key')
+      dispatch(setLoading(true))
+      dispatch(setKey(session.key))
+    } catch {}
+  }, [address]);
+
+  // ─── Logout: clear session and reset all state ────────────────────────────
+  const handleLogout = () => {
+    localStorage.removeItem('bringid_session')
+    dispatch(setKey(null))
+    dispatch(addVerifications([]))
+    setConfigsPhase('idle')
+    setFlowPhase('idle')
+  }
 
   useEffect(() => {
     if (customTitles) dispatch(setCustomTitles(customTitles))
@@ -568,6 +575,7 @@ const InnerContent: FC<TProps> = ({
     <HeaderStyled
       address={user.address}
       userKey={user.key}
+      onLogout={handleLogout}
     />
     {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Thinking..."/>}
     {sessionLost && <ErrorOverlay
