@@ -17,7 +17,7 @@ enum ActionType {
   '/user/setMode' = '/user/setMode',
   '/user/setAppId' = '/user/setAppId',
   '/user/setRedirectUrl' = '/user/setRedirectUrl',
-  '/user/setIsFarcaster' = '/user/setIsFarcaster'
+  '/user/setIsMiniApp' = '/user/setIsMiniApp'
 }
 
 type Action<payload> = {
@@ -40,7 +40,7 @@ const initState: State = {
   mode: '',
   appId: null,
   redirectUrl: null,
-  isFarcaster: false
+  isMiniApp: false
 };
 
 export const setKey = (key: string | null): Action<string | null> => ({
@@ -108,9 +108,9 @@ export const setRedirectUrl = (redirectUrl: string | null): Action<string | null
   payload: redirectUrl,
 })
 
-export const setIsFarcaster = (isFarcaster: boolean): Action<boolean> => ({
-  type: ActionType['/user/setIsFarcaster'],
-  payload: isFarcaster,
+export const setIsMiniApp = (isMiniApp: boolean): Action<boolean> => ({
+  type: ActionType['/user/setIsMiniApp'],
+  payload: isMiniApp,
 })
 
 export default function user(state = initState, action: Action<any>): State {
@@ -154,8 +154,8 @@ export default function user(state = initState, action: Action<any>): State {
     case ActionType['/user/setRedirectUrl']:
       return { ...state, redirectUrl: action.payload };
 
-    case ActionType['/user/setIsFarcaster']:
-      return { ...state, isFarcaster: action.payload };
+    case ActionType['/user/setIsMiniApp']:
+      return { ...state, isMiniApp: action.payload };
 
     default:
       return state;

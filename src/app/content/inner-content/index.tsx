@@ -9,7 +9,7 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
-import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, setIsFarcaster, useUser } from '../store/reducers/user';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, setIsMiniApp, useUser } from '../store/reducers/user';
 import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage, TOAuthMessage } from '@/types';
 import { TProofSuccess } from '../api/indexer/types';
 import semaphore from '../semaphore';
@@ -250,7 +250,7 @@ const InnerContent: FC<TProps> = ({
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
           dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
-          dispatch(setIsFarcaster(payload?.isFarcaster ?? false));
+          dispatch(setIsMiniApp(payload?.isMiniApp ?? false));
 
           addLog(`[PROOFS_REQUEST] verificationSignature: ${payload?.verificationSignature ?? 'none'}`)
           addLog(`[PROOFS_REQUEST] verificationMessage: ${payload?.verificationMessage ?? 'none'}`)
@@ -300,8 +300,8 @@ const InnerContent: FC<TProps> = ({
           window.parent.postMessage({ type: "CLOSE_MODAL" }, parentOrigin);
           return;
         }
-        if (type === 'FARCASTER_OPEN_URL') {
-          window.parent.postMessage({ type: 'FARCASTER_OPEN_URL', payload }, parentOrigin);
+        if (type === 'OPEN_EXTERNAL_URL') {
+          window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', payload }, parentOrigin);
           return;
         }
         return;
@@ -479,7 +479,7 @@ const InnerContent: FC<TProps> = ({
           if (alreadyVerified) {
             setPendingVerification(null)
             dispatch(setRedirectUrl(null))
-            dispatch(setIsFarcaster(false))
+            dispatch(setIsMiniApp(false))
           } else {
           setAutoVerifyingTaskId(matchingTask.id)
           try {
@@ -538,7 +538,7 @@ const InnerContent: FC<TProps> = ({
           setAutoVerifyingTaskId(null)
           setPendingVerification(null)
           dispatch(setRedirectUrl(null))
-          dispatch(setIsFarcaster(false))
+          dispatch(setIsMiniApp(false))
           } // end else (not alreadyVerified)
         }
       }
@@ -631,7 +631,7 @@ const InnerContent: FC<TProps> = ({
         overflowY: 'auto',
       }}>
         <div>configs: {configsPhase} | flow: {flowPhase}</div>
-        <div>isFarcaster: {String(user.isFarcaster)} | hasKey: {String(!!user.key)}</div>
+        <div>isMiniApp: {String(user.isMiniApp)} | hasKey: {String(!!user.key)}</div>
         <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
         {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
       </div>

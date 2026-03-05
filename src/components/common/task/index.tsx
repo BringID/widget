@@ -39,7 +39,7 @@ const defineTaskContent = (
     active: boolean
   ) => void,
   redirectUrl: string | null,
-  isFarcaster: boolean,
+  isMiniApp: boolean,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void,
   messageCallback: (message: string) => void
@@ -72,9 +72,9 @@ const defineTaskContent = (
 
                 if (redirectUrl) {
                   const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
-                  if (isFarcaster) {
+                  if (isMiniApp) {
                     window.postMessage(
-                      { type: 'FARCASTER_OPEN_URL', payload: { url: finalUrl } },
+                      { type: 'OPEN_EXTERNAL_URL', payload: { url: finalUrl } },
                       window.location.origin
                     )
                   } else {
@@ -335,7 +335,7 @@ const Task: FC<TProps> = ({
     isActive,
     setIsActive,
     user.redirectUrl,
-    user.isFarcaster,
+    user.isMiniApp,
     (verification) => {
       dispatch(addVerification(verification))
     },
