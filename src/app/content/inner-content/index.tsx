@@ -301,6 +301,7 @@ const InnerContent: FC<TProps> = ({
           return;
         }
         if (type === 'OPEN_EXTERNAL_URL') {
+          addLog(`[OPEN_EXTERNAL_URL] url: ${payload?.url}`)
           window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', payload }, parentOrigin);
           return;
         }
