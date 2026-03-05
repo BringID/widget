@@ -346,7 +346,6 @@ const InnerContent: FC<TProps> = ({
       if (session.address !== address) return
       if (userRef.current.key) return
       addLog('[localStorage] restoring session key')
-      dispatch(setLoading(true))
       dispatch(setKey(session.key))
     } catch {}
   }, [address]);
