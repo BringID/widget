@@ -433,7 +433,10 @@ const InnerContent: FC<TProps> = ({
   // freshly scheduled verification from auto-verify.
   useEffect(() => {
     if (configsPhase !== 'done') return
-    if (!user.key || !user.appId) return
+    if (!user.key || !user.appId) {
+      dispatch(setLoading(false))
+      return
+    }
 
     const runId = ++flowRunIdRef.current
     setFlowPhase('loading')
