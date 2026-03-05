@@ -234,7 +234,8 @@ const InnerContent: FC<TProps> = ({
           const newMode = payload?.mode || 'production'
           const newAppId = payload?.appId || null
 
-          if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
+          const appChanged = !!userRef.current.appId && (newMode !== userRef.current.mode || newAppId !== userRef.current.appId)
+          if (appChanged) {
             dispatch(setKey(null))
             dispatch(addVerifications([]))
             setConfigsPhase('idle')
