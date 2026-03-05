@@ -449,8 +449,9 @@ const InnerContent: FC<TProps> = ({
       dispatch(setLoading(true))
 
       // Step 2: fetch prev on-chain verifications and replace store
+      let prevVerifs: TVerification[] = []
       if (tasks.length > 0 && modeConfigs.REGISTRY) {
-        const prevVerifs = await fetchPrevVerifications(tasks, key, appId, modeConfigs)
+        prevVerifs = await fetchPrevVerifications(tasks, key, appId, modeConfigs)
         if (flowRunIdRef.current !== runId) return
         dispatch(addVerifications(prevVerifs))
       } else {
@@ -467,6 +468,16 @@ const InnerContent: FC<TProps> = ({
         addLog(`[auto-verify] matchingTask: ${matchingTask?.id ?? 'not found'}`)
 
         if (matchingTask) {
+          const alreadyVerified = prevVerifs.some(
+            v => v.taskId === matchingTask.id && v.status === 'completed'
+          )
+          addLog(`[auto-verify] alreadyVerified: ${alreadyVerified}`)
+
+          if (alreadyVerified) {
+            setPendingVerification(null)
+            dispatch(setRedirectUrl(null))
+            dispatch(setIsFarcaster(false))
+          } else {
           setAutoVerifyingTaskId(matchingTask.id)
           try {
             const group = defineGroupForAuth(matchingTask, pending.message.score)
@@ -525,6 +536,7 @@ const InnerContent: FC<TProps> = ({
           setPendingVerification(null)
           dispatch(setRedirectUrl(null))
           dispatch(setIsFarcaster(false))
+          } // end else (not alreadyVerified)
         }
       }
 
