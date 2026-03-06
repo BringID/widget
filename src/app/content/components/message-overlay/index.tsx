@@ -11,6 +11,7 @@ import { Link } from '@/components/common'
 import TProps from './types'
 import configs from '@/app/configs'
 import { InstallExtensionButton } from './components'
+import CopyText from './components/copy-text'
 import { useModal } from '@/app/content/store/reducers/modal'
 
 
@@ -23,10 +24,13 @@ const defineMessageTitle = (
 
     case 'NOT_ENOUGH_SCORE':
       return 'Not enough score'
-    
+
+    case 'MANUAL_OPEN_LINK':
+      return 'Action required'
+
     default:
       return null
-  }  
+  }
 }
 
 const defineMessageText = (
@@ -40,28 +44,36 @@ const defineMessageText = (
     case 'NOT_ENOUGH_SCORE':
       return <>Unfortunately the score of your verified account is too low. Please make sure that there is enough activity to get {pointsTitle}</>
 
+    case 'MANUAL_OPEN_LINK':
+      return <>Please copy this link and paste in your system browser (iOS safari, etc)</>
+
     default:
       return null
   }
 }
 
 const defineMessageAction = (
-  errorText: string
+  errorText: string,
+  copyText?: string
 ) => {
   switch (errorText) {
     case 'EXTENSION_IS_NOT_INSTALLED':
       return <InstallExtensionButton />
-      
+
+    case 'MANUAL_OPEN_LINK':
+      return copyText ? <CopyText text={copyText} /> : null
+
     case 'NOT_ENOUGH_SCORE':
       return null
-    
+
     default:
       return null
-  }  
+  }
 }
 
 const MessageOverlay: FC<TProps> = ({
   message,
+  copyText,
   onClose
 }) => {
   const { customTitles } = useModal()
@@ -72,14 +84,14 @@ const MessageOverlay: FC<TProps> = ({
         <TextStyled>{defineMessageText(message, customTitles.pointsTitle)}</TextStyled>
 
         <ButtonsContainer>
-          {defineMessageAction(message)}
+          {defineMessageAction(message, copyText)}
           <ButtonStyled
             onClick={onClose}
           >
             Return
           </ButtonStyled>
         </ButtonsContainer>
-        
+
       </Content>
     </Container>
   );

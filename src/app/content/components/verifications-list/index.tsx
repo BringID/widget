@@ -29,6 +29,7 @@ const VerificationsList: FC<TProps> = ({
 
   const [ error, setError ] = useState<string | null>(null)
   const [ message, setMessage ] = useState<string | null>(null)
+  const [ copyText, setCopyText ] = useState<string | undefined>(undefined)
   const [ isActive, setIsActive ] = useState<boolean>(false)
 
   const effectiveIsActive = isActive || !!autoVerifyingTaskId
@@ -45,8 +46,10 @@ const VerificationsList: FC<TProps> = ({
 
       {message && <MessageOverlay
         message={message}
+        copyText={copyText}
         onClose={() => {
           setMessage(null)
+          setCopyText(undefined)
         }}
       />}
 
@@ -96,8 +99,9 @@ const VerificationsList: FC<TProps> = ({
             // here render task, not verification
             return (
               <Task
-                onMessage={message => {
+                onMessage={(message, copyText) => {
                   setMessage(message)
+                  setCopyText(copyText)
                 }}
                 task={task}
                 status='default'

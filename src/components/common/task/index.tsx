@@ -42,7 +42,7 @@ const defineTaskContent = (
   isMiniApp: boolean,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void,
-  messageCallback: (message: string) => void
+  messageCallback: (message: string, copyText?: string) => void
 ) => {
   switch (status) {
     case 'default':
@@ -73,6 +73,10 @@ const defineTaskContent = (
                 if (redirectUrl) {
                   const encodeParams = redirectUrl.includes('https://base.app') || redirectUrl.includes('cbwallet://')
                   const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}&encode_params=${encodeParams}`
+                  if (encodeParams) {
+                    messageCallback('MANUAL_OPEN_LINK', finalUrl)
+                    return
+                  }
                   if (isMiniApp) {
                     window.postMessage(
                       { type: 'OPEN_EXTERNAL_URL', payload: { url: finalUrl } },
