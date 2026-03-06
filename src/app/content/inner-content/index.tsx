@@ -259,7 +259,8 @@ const InnerContent: FC<TProps> = ({
             try {
               const sig = decodeURIComponent(payload.verificationSignature)
               const decodedOnce = decodeURIComponent(payload.verificationMessage)
-              const msg = JSON.parse(decodedOnce.startsWith('{') ? decodedOnce : decodeURIComponent(decodedOnce)) as TOAuthMessage
+              const decodedMsg = decodedOnce.includes('%') ? decodeURIComponent(decodedOnce) : decodedOnce
+              const msg = JSON.parse(decodedMsg) as TOAuthMessage
               addLog(`[PROOFS_REQUEST] parsed message domain: ${msg.domain}, score: ${msg.score}`)
               setPendingVerification({ signature: sig, message: msg })
             } catch (e) {
