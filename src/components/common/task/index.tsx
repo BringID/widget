@@ -71,7 +71,8 @@ const defineTaskContent = (
                 })
 
                 if (redirectUrl) {
-                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}`
+                  const encodeParams = redirectUrl.includes('https://base.app') || redirectUrl.includes('cbwallet://')
+                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}&encode_params=${encodeParams}`
                   if (isMiniApp) {
                     window.postMessage(
                       { type: 'OPEN_EXTERNAL_URL', payload: { url: finalUrl } },

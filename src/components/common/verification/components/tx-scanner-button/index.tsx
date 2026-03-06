@@ -3,6 +3,7 @@ import TProps from './types'
 import { Button } from '@/components/common'
 import { taskManagerApi } from '@/app/content/api'
 import { useConfigs } from '@/app/content/store/reducers/configs'
+import { useUser } from '@/app/content/store/reducers/user'
 import { defineExplorerURL } from '@/utils'
 
 const TXScannerButton: FC<TProps> = ({
@@ -10,6 +11,7 @@ const TXScannerButton: FC<TProps> = ({
   txHash: txHashProp
 }) => {
   const userConfigs = useConfigs()
+  const user = useUser()
   const [ loading, setLoading ] = useState<boolean>(!txHashProp)
   const [ txHash, setTxHash ] = useState<string | null>(txHashProp ?? null)
 
@@ -46,7 +48,12 @@ const TXScannerButton: FC<TProps> = ({
       if (!txHash) {
         return alert('txHash is not ready. Please try in few seconds')
       }
-      window.open(`${defineExplorerURL(Number(userConfigs.modeConfigs.CHAIN_ID || '8453'))}/tx/${txHash}`)
+      const url = `${defineExplorerURL(Number(userConfigs.modeConfigs.CHAIN_ID || '8453'))}/tx/${txHash}`
+      if (user.isMiniApp) {
+        window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url } }, window.location.origin)
+      } else {
+        window.open(url)
+      }
 
     }}
     size="small"
