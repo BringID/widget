@@ -359,7 +359,6 @@ const InnerContent: FC<TProps> = ({
     localStorage.removeItem('bringid_session')
     dispatch(setKey(null))
     dispatch(addVerifications([]))
-    setConfigsPhase('idle')
     setFlowPhase('idle')
   }
 
