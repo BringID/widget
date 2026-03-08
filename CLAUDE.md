@@ -208,7 +208,22 @@ window.postMessage({
 }, window.location.origin)
 ```
 
-#### 3. GENERATE_USER_KEY
+#### 3. OPEN_EXTERNAL_URL
+
+Sent to parent when the widget needs to open an external URL in a mini-app context (e.g. Farcaster frame) where `window.open` is not available.
+
+**Source:** `src/app/content/inner-content/index.tsx`
+
+```typescript
+window.parent.postMessage({
+  type: 'OPEN_EXTERNAL_URL',
+  payload: {
+    url: string   // The URL to open externally
+  }
+}, parentOrigin)
+```
+
+#### 4. GENERATE_USER_KEY
 
 Sent to parent to request user key generation (wallet signature).
 
@@ -246,7 +261,9 @@ Sent by the parent website to request proofs with specific requirements.
     contract?: string,    // Override registry contract address
     context?: number,     // Numeric context for scope derivation (default: 0)
     message?: string,     // Custom message for proofs
-    minPoints?: number    // Minimum points required
+    minPoints?: number,   // Minimum points required
+    redirectUrl?: string, // URL-encoded redirect URL after OAuth verification (e.g. deep links for Base app or Coinbase Wallet)
+    isMiniApp?: boolean   // Whether the widget is embedded in a mini-app context (e.g. Farcaster frame)
   }
 }
 ```

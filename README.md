@@ -4,6 +4,23 @@ BringID Widget is a privacy-focused identity verification application built on t
 
 This widget is not meant to be used standalone. It is accessed exclusively through the `BringIDModal` component provided by the [`bringid`](https://www.npmjs.com/package/bringid) npm package. The modal embeds the widget in an iframe and handles all communication between the host application and the verification flow.
 
+## SDK Constructor
+
+The widget is controlled by the `BringID` class from the `bringid` package:
+
+```ts
+import { BringID } from "bringid";
+
+const bringid = new BringID({
+  appId: "0x...",           // required
+  mode: "production",       // optional: "production" | "dev"
+  redirectUrl: "https://...", // optional: deep link to redirect after OAuth verification
+                              // (e.g. Base app or Coinbase Wallet URLs)
+});
+```
+
+When `redirectUrl` targets Base app (`https://base.app/...`) or Coinbase Wallet (`cbwallet://...`), the widget shows a **copy-to-clipboard** overlay instead of attempting to open the link directly in the browser, since these URLs cannot be navigated to from an iframe context. Mini-app detection (`isMiniApp`) is handled automatically by the SDK.
+
 ## Tech Stack
 
 - **Framework:** [Next.js 15](https://nextjs.org/) (App Router, Turbopack)
