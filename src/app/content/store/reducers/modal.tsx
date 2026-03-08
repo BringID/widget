@@ -33,7 +33,7 @@ const defaultCustomTitles: TCustomTitles = {
 }
 
 const initState: State = {
-  loading: false,
+  loading: true,
   minPoints: 0,
   customTitles: defaultCustomTitles
 };

@@ -25,6 +25,7 @@ import OKXIcon from './okx-icon'
 import AppleIcon from './apple-icon'
 import UberIcon from './uber-icon'
 import SelfIcon from './self-icon'
+import LogoutIcon from './logout'
 
 const Icons = {
   VehicleIcon,
@@ -53,7 +54,8 @@ const Icons = {
   ProfileIcon,
   FarcasterIcon,
   BinanceIcon,
-  OKXIcon
+  OKXIcon,
+  LogoutIcon
 };
 
 export default Icons;

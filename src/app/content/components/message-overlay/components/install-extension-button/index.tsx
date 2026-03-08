@@ -2,6 +2,7 @@ import { FC, useState } from 'react'
 import { ButtonStyled } from './styled-components'
 import configs from '@/app/configs'
 import { usePlausible } from 'next-plausible'
+import { useUser } from '@/app/content/store/reducers/user'
 
 const InstallExtensionButton: FC = () => {
   const [
@@ -9,6 +10,7 @@ const InstallExtensionButton: FC = () => {
     setInstallationStarted
   ] = useState<boolean>(false)
   const plausible = usePlausible()
+  const user = useUser()
 
   if (installationStarted) {
     return <ButtonStyled
@@ -28,7 +30,11 @@ const InstallExtensionButton: FC = () => {
     appearance='action'
     onClick={() => {
       plausible('extension_install_clicked')
-      window.open(configs.EXTENSION_URL, '_blank')
+      if (user.isMiniApp) {
+        window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url: configs.EXTENSION_URL } }, window.location.origin)
+      } else {
+        window.open(configs.EXTENSION_URL, '_blank')
+      }
       setInstallationStarted(true)
     }}
   >

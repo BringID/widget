@@ -8,5 +8,6 @@ export type TProps = {
     active: boolean
   ) => void
   onError: (errorText: string) => void
-  onMessage: (message: string) => void
+  onMessage: (message: string, copyText?: string) => void
+  autoVerifyingTaskId?: string | null
 };

@@ -38,9 +38,11 @@ const defineTaskContent = (
   setIsActive: (
     active: boolean
   ) => void,
+  redirectUrl: string | null,
+  isMiniApp: boolean,
   resultCallback: (verification: TVerification) => void,
   errorCallback: (errorText: string) => void,
-  messageCallback: (message: string) => void
+  messageCallback: (message: string, copyText?: string) => void
 ) => {
   switch (status) {
     case 'default':
@@ -53,8 +55,10 @@ const defineTaskContent = (
           onClick={async () => {
             try {
               if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
-                setLoading(true)
-                setIsActive(true)
+                const authUrl = task.verificationType === 'oauth'
+                  ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
+                  : task.verificationUrl
+                
                 plausibleEvent('oauth_verification_started', {
                   props: {
                     verification_started: task.service
@@ -66,12 +70,35 @@ const defineTaskContent = (
                   }
                 })
 
+                if (redirectUrl) {
+                  const encodeParams = redirectUrl.includes('https://base.app') || redirectUrl.includes('cbwallet://')
+                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}&encode_params=${encodeParams}`
+                  if (encodeParams) {
+                    messageCallback('MANUAL_OPEN_LINK', finalUrl)
+                    return
+                  }
+                  if (isMiniApp) {
+                    window.postMessage(
+                      { type: 'OPEN_EXTERNAL_URL', payload: { url: finalUrl } },
+                      window.location.origin
+                    )
+                  } else {
+                    window.open(finalUrl)
+                  }
+                  return
+                }
+
+                setLoading(true)
+                setIsActive(true)
+                
+
                 const {
                   message,
                   signature
                 } = await getAuthSemaphoreData(
                   task,
-                  plausibleEvent
+                  plausibleEvent,
+                  authUrl
                 )
 
                 const group = defineGroupForAuth(
@@ -289,7 +316,8 @@ const Task: FC<TProps> = ({
   onError,
   onMessage,
   setIsActive,
-  isActive
+  isActive,
+  autoVerifyingTaskId
 }) => {
 
   const dispatch = useDispatch()
@@ -297,6 +325,7 @@ const Task: FC<TProps> = ({
   const userConfigs = useConfigs()
 
   const [ loading, setLoading ] = useState<boolean>(false)
+  const isAutoVerifying = autoVerifyingTaskId === task.id
   const plausible = usePlausible()
   const content = defineTaskContent(
     (eventName, options) => plausible(eventName, options),
@@ -304,12 +333,14 @@ const Task: FC<TProps> = ({
     task,
     user.key,
     user.appId,
-    loading,
+    loading || isAutoVerifying,
     setLoading,
     userConfigs.modeConfigs,
     user.mode,
     isActive,
     setIsActive,
+    user.redirectUrl,
+    user.isMiniApp,
     (verification) => {
       dispatch(addVerification(verification))
     },

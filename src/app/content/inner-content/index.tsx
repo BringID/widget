@@ -9,27 +9,35 @@ import { TProps } from './types'
 import { Home, Proofs } from '../pages'
 import { useDispatch } from 'react-redux'
 import { setLoading, useModal, setMinPoints, setCustomTitles } from '../store/reducers/modal';
-import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, useUser } from '../store/reducers/user';
-import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage } from '@/types';
+import { setAddress, setApiKey, setAppId, setKey, setMessage, setMode, setContract, setContext, setRedirectUrl, setIsMiniApp, useUser } from '../store/reducers/user';
+import { TVerification, TVerificationStatus, TTask, TModeConfigs, TWidgetMessage, TOAuthMessage } from '@/types';
 import { TProofSuccess } from '../api/indexer/types';
 import semaphore from '../semaphore';
-import { configs } from '../../core'
+import { configs as remoteConfigs } from '../../core'
+import configs from '../../configs'
 import {
+  addVerification,
   addVerifications,
   useVerifications
 } from '../store/reducers/verifications';
 import { LoadingOverlay, ErrorOverlay } from '../components'
 import { addModeConfigs, addTasks, useConfigs } from '../store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { getAppSemaphoreGroupId, getAllScores } from '@/utils'
+import { getAppSemaphoreGroupId, getAllScores, createSemaphoreIdentity, defineGroupForAuth } from '@/utils'
+import { taskManagerApi, verifierApi } from '../api'
+
+type ConfigsPhase = 'idle' | 'loading' | 'done'
+type FlowPhase = 'idle' | 'loading' | 'ready'
 
 const defineContent = (
   page: string,
   setPage: (page: string) => void,
+  autoVerifyingTaskId: string | null,
 ) => {
   switch (page) {
     case 'home': return <Home
       setPage={setPage}
+      autoVerifyingTaskId={autoVerifyingTaskId}
     />
     case 'proofs': return <Proofs
       onCancel={() => {
@@ -53,19 +61,12 @@ const defineContent = (
   }
 }
 
-const uploadPrevVerifications = async (
+const fetchPrevVerifications = async (
   tasks: TTask[],
   userKey: string,
   appId: string,
-  setLoading: (
-    loading: boolean
-  ) => void,
   modeConfigs: TModeConfigs,
-  addVerifications: (verifications: TVerification[]) => void
-) => {
-  setLoading(true)
-
-  // Collect all identity data for batch request
+): Promise<TVerification[]> => {
   const identityDataList: {
     identityCommitment: string,
     semaphoreGroupId: string,
@@ -103,7 +104,6 @@ const uploadPrevVerifications = async (
   const verifications: TVerification[] = []
 
   try {
-
     const proofs = await semaphore.getProofs(
       identityDataList.map(({ identityCommitment, semaphoreGroupId }) => ({
         identityCommitment,
@@ -142,9 +142,7 @@ const uploadPrevVerifications = async (
     console.log('Failed to fetch proofs:', err);
   }
 
-  addVerifications(verifications)
-
-  setLoading(false)
+  return verifications
 }
 
 const InnerContent: FC<TProps> = ({
@@ -159,14 +157,38 @@ const InnerContent: FC<TProps> = ({
   const { loading } = useModal()
   const user = useUser()
   const { verifications } = useVerifications()
+  const userConfigs = useConfigs()
+  const plausible = usePlausible()
+
   const [ page, setPage ] = useState('home')
   const [ sessionLost, setSessionLost ] = useState(false)
   const [ invalidAppId, setInvalidAppId ] = useState(false)
-  const userConfigs = useConfigs()
-  const plausible = usePlausible()
+
+  const [ pendingVerification, setPendingVerification ] = useState<{
+    signature: string
+    message: TOAuthMessage
+  } | null>(null)
+  const pendingVerificationRef = useRef(pendingVerification)
+  pendingVerificationRef.current = pendingVerification
+
+  const [ autoVerifyingTaskId, setAutoVerifyingTaskId ] = useState<string | null>(null)
+  const [ autoVerifyError, setAutoVerifyError ] = useState<string | null>(null)
+
+  // Phase tracking for the sequential flow
+  const [ configsPhase, setConfigsPhase ] = useState<ConfigsPhase>('idle')
+  const [ flowPhase, setFlowPhase ] = useState<FlowPhase>('idle')
+
+  // Cancellation counters — incrementing invalidates any in-flight async run
+  const configsRunIdRef = useRef(0)
+  const flowRunIdRef = useRef(0)
+
   const userRef = useRef(user)
   userRef.current = user
 
+  const [ debugLogs, setDebugLogs ] = useState<string[]>([])
+  const addLog = (msg: string) => setDebugLogs(prev => [...prev, msg])
+
+  // ─── Message handler ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!parentUrl) {
       console.warn("No parent URL configured for iframe communication");
@@ -176,18 +198,10 @@ const InnerContent: FC<TProps> = ({
     const parentOrigin = new URL(parentUrl).origin;
 
     const handler = async (event: MessageEvent<TWidgetMessage>) => {
-      if (!event.data || typeof event.data !== 'object') {
-        return;
-      }
-
+      if (!event.data || typeof event.data !== 'object') return;
       const { type, payload } = event.data;
+      if (typeof type !== 'string') return;
 
-
-      if (typeof type !== 'string') {
-        return;
-      }
-
-      // Handle messages from parent website
       if (event.origin === parentOrigin && event.source === window.parent) {
         if (type === 'USER_KEY_READY') {
           if (!payload?.signature) {
@@ -203,18 +217,29 @@ const InnerContent: FC<TProps> = ({
           plausible('generate_user_key_finished');
           dispatch(setLoading(true));
           dispatch(setKey(payload.signature));
+          addLog(`[USER_KEY_READY] redirectUrl: ${userRef.current.redirectUrl}, address: ${userRef.current.address}`)
+          if (userRef.current.redirectUrl && userRef.current.address) {
+            localStorage.setItem('bringid_session', JSON.stringify({
+              address: userRef.current.address,
+              key: payload.signature
+            }))
+            addLog('[USER_KEY_READY] session saved to localStorage')
+          }
           return;
         }
-        
+
         if (type === 'PROOFS_REQUEST') {
           plausible('verify_humanity_request_started');
 
           const newMode = payload?.mode || 'production'
           const newAppId = payload?.appId || null
 
-          if (newMode !== userRef.current.mode || newAppId !== userRef.current.appId) {
+          const appChanged = !!userRef.current.appId && (newMode !== userRef.current.mode || newAppId !== userRef.current.appId)
+          if (appChanged) {
             dispatch(setKey(null))
             dispatch(addVerifications([]))
+            setConfigsPhase('idle')
+            setFlowPhase('idle')
             setInvalidAppId(false)
           }
 
@@ -224,6 +249,25 @@ const InnerContent: FC<TProps> = ({
           dispatch(setContext(payload?.context ?? 0));
           dispatch(setMessage(payload?.message || null));
           dispatch(setMinPoints(payload?.minPoints || 0));
+          dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
+          dispatch(setIsMiniApp(payload?.isMiniApp ?? false));
+
+          addLog(`[PROOFS_REQUEST] verificationSignature: ${payload?.verificationSignature ?? 'none'}`)
+          addLog(`[PROOFS_REQUEST] verificationMessage: ${payload?.verificationMessage ?? 'none'}`)
+
+          if (payload?.verificationSignature && payload?.verificationMessage) {
+            try {
+              const sig = decodeURIComponent(payload.verificationSignature)
+              const decodedOnce = decodeURIComponent(payload.verificationMessage)
+              const decodedMsg = decodedOnce.includes('%') ? decodeURIComponent(decodedOnce) : decodedOnce
+              const msg = JSON.parse(decodedMsg) as TOAuthMessage
+              addLog(`[PROOFS_REQUEST] parsed message domain: ${msg.domain}, score: ${msg.score}`)
+              setPendingVerification({ signature: sig, message: msg })
+            } catch (e) {
+              addLog(`[PROOFS_REQUEST] failed to parse: ${e}`)
+              console.error('[PROOFS_REQUEST] Failed to parse verification data:', e)
+            }
+          }
 
           console.log('[PROOFS_REQUEST] dispatched:', {
             mode: newMode,
@@ -243,212 +287,312 @@ const InnerContent: FC<TProps> = ({
       if (event.source === window && event.origin === window.location.origin) {
         if (type === 'GENERATE_USER_KEY') {
           plausible('generate_user_key_started');
-          window.parent.postMessage(
-            { type: "GENERATE_USER_KEY", payload },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "GENERATE_USER_KEY", payload }, parentOrigin);
           return;
         }
-
         if (type === 'PROOFS_RESPONSE') {
           setPage('home');
           plausible('verify_humanity_request_finished');
-          window.parent.postMessage(
-            { type: "PROOFS_RESPONSE", payload },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "PROOFS_RESPONSE", payload }, parentOrigin);
           return;
         }
-
         if (type === 'CLOSE_MODAL') {
           setPage('home');
           plausible('close_modal');
-          window.parent.postMessage(
-            { type: "CLOSE_MODAL" },
-            parentOrigin
-          );
+          window.parent.postMessage({ type: "CLOSE_MODAL" }, parentOrigin);
           return;
         }
-
-        return; // Ignore other self-messages
+        if (type === 'OPEN_EXTERNAL_URL') {
+          addLog(`[OPEN_EXTERNAL_URL] url: ${payload?.url}`)
+          window.parent.postMessage({ type: 'OPEN_EXTERNAL_URL', payload }, parentOrigin);
+          return;
+        }
+        return;
       }
 
-
-      console.warn("Blocked message from untrusted source:", {
-        origin: event.origin,
-        expectedOrigin: parentOrigin,
-        type
-      });
+      console.warn("Blocked message from untrusted source:", { origin: event.origin, expectedOrigin: parentOrigin, type });
     }
+
     window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [parentUrl])
 
-    return () => {
-      window.removeEventListener("message", handler);
+  // ─── Address sync + reset ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (address) {
+      if (user.address && address !== user.address) {
+        dispatch(setKey(null))
+        dispatch(addVerifications([]))
+        setConfigsPhase('idle')
+        setFlowPhase('idle')
+      }
+      dispatch(setAddress(address))
+    } else {
+      if (user.address) {
+        dispatch(setKey(null))
+        dispatch(addVerifications([]))
+        dispatch(setAddress(null))
+        setConfigsPhase('idle')
+        setFlowPhase('idle')
+      }
     }
-  }, [
-    parentUrl
-  ])
+    if (apiKey) dispatch(setApiKey(apiKey));
+  }, [user.address, apiKey, address]);
 
+  // ─── Load session key from localStorage if present ───────────────────────
+  useEffect(() => {
+    if (!address) return
+    try {
+      const raw = localStorage.getItem('bringid_session')
+      if (!raw) return
+      const session = JSON.parse(raw) as { address: string; key: string }
+      addLog(`[localStorage] session found for address: ${session.address}`)
+      if (session.address !== address) return
+      if (userRef.current.key) return
+      addLog('[localStorage] restoring session key')
+      dispatch(setKey(session.key))
+    } catch {}
+  }, [address]);
+
+  // ─── Logout: clear session and reset all state ────────────────────────────
+  const handleLogout = () => {
+    localStorage.removeItem('bringid_session')
+    dispatch(setKey(null))
+    dispatch(addVerifications([]))
+    setFlowPhase('idle')
+  }
 
   useEffect(() => {
-    if (!verifications) { return }
+    if (customTitles) dispatch(setCustomTitles(customTitles))
+  }, [customTitles])
 
-    const interval = setInterval(async () => {
+  // ─── Step 1: Load configs + enrich tasks with scores ──────────────────────
+  useEffect(() => {
+    if (!user.address || !user.mode || !user.appId) {
+      setConfigsPhase('idle')
+      return
+    }
+
+    const runId = ++configsRunIdRef.current
+    setConfigsPhase('loading')
+
+    const run = async () => {
+      const remoteData = await remoteConfigs(user.mode === 'dev')
+      if (configsRunIdRef.current !== runId) return
+
+      dispatch(addModeConfigs(remoteData.configs))
+
       try {
-        const notCompletedVerifications = verifications.filter(
-          (verification) => verification.status !== 'completed',
-        );
-        if (notCompletedVerifications.length === 0) {
-          return;
+        const scoresMap = await getAllScores(
+          remoteData.configs.REGISTRY,
+          user.appId as string,
+          remoteData.configs.CHAIN_ID
+        )
+        if (configsRunIdRef.current !== runId) return
+
+        if (scoresMap === null) {
+          setInvalidAppId(true)
+          dispatch(addTasks([]))
+          dispatch(setLoading(false))
+          setConfigsPhase('idle')
+          return
         }
 
-        let updated = false
+        const enrichedTasks = remoteData.tasks
+          .map(task => ({
+            ...task,
+            groups: task.groups.map(group => ({
+              ...group,
+              score: scoresMap.get(group.credentialGroupId) ?? 0
+            }))
+          }))
+          .filter(task => task.groups.some(group => group.score > 0))
 
-        const verificationsUpdated = verifications.map(item => {
-          if (item.status !== 'completed') {
-            const now = +new Date();
-            const expiration = item.scheduledTime - now;
-            if (expiration <= 0) {
-              updated = true
-              return {
-                ...item,
-                status: 'completed' as TVerificationStatus
+        dispatch(addTasks(enrichedTasks))
+      } catch (err) {
+        console.error('Failed to fetch scores:', err)
+        if (configsRunIdRef.current !== runId) return
+        dispatch(addTasks(remoteData.tasks))
+      }
+
+      if (configsRunIdRef.current !== runId) return
+      setConfigsPhase('done')
+    }
+
+    run().catch(err => {
+      if (configsRunIdRef.current !== runId) return
+      console.error('Failed to load configs:', err)
+      dispatch(setLoading(false))
+      setConfigsPhase('idle')
+    })
+  }, [user.address, user.mode, user.appId])
+
+  // ─── Steps 2–4: prev verifications → pending verification → ready ─────────
+  //
+  // Runs only after configs are loaded and the user key is available.
+  // The key arrives either from localStorage (Farcaster) or from USER_KEY_READY.
+  // Steps are strictly sequential so addVerifications() never overwrites a
+  // freshly scheduled verification from auto-verify.
+  useEffect(() => {
+    if (configsPhase !== 'done') return
+    if (!user.key || !user.appId) {
+      dispatch(setLoading(false))
+      return
+    }
+
+    const runId = ++flowRunIdRef.current
+    setFlowPhase('loading')
+
+    // Capture current values — these are stable for the lifetime of this run
+    const tasks = userConfigs.tasks
+    const modeConfigs = userConfigs.modeConfigs
+    const key = user.key
+    const appId = user.appId
+    const mode = user.mode
+
+    const run = async () => {
+      dispatch(setLoading(true))
+
+      // Step 2: fetch prev on-chain verifications and replace store
+      let prevVerifs: TVerification[] = []
+      if (tasks.length > 0 && modeConfigs.REGISTRY) {
+        prevVerifs = await fetchPrevVerifications(tasks, key, appId, modeConfigs)
+        if (flowRunIdRef.current !== runId) return
+        dispatch(addVerifications(prevVerifs))
+      } else {
+        dispatch(addVerifications([]))
+      }
+
+      if (flowRunIdRef.current !== runId) return
+
+      // Step 3: process pending verification (from PROOFS_REQUEST verificationSignature)
+      const pending = pendingVerificationRef.current
+      if (pending) {
+        addLog(`[auto-verify] domain=${pending.message.domain}, score=${pending.message.score}`)
+        const matchingTask = tasks.find(task => task.domain === pending.message.domain)
+        addLog(`[auto-verify] matchingTask: ${matchingTask?.id ?? 'not found'}`)
+
+        if (matchingTask) {
+          const alreadyVerified = prevVerifs.some(
+            v => v.taskId === matchingTask.id && v.status === 'completed'
+          )
+          addLog(`[auto-verify] alreadyVerified: ${alreadyVerified}`)
+
+          if (alreadyVerified) {
+            setPendingVerification(null)
+            dispatch(setRedirectUrl(null))
+            dispatch(setIsMiniApp(false))
+          } else {
+          setAutoVerifyingTaskId(matchingTask.id)
+          try {
+            const group = defineGroupForAuth(matchingTask, pending.message.score)
+            if (group) {
+              const semaphoreIdentity = createSemaphoreIdentity(key, appId, group.credentialGroupId)
+
+              const verify = await verifierApi.verifyOAuth(
+                configs.ZUPLO_API_URL,
+                pending.message,
+                pending.signature,
+                modeConfigs.REGISTRY,
+                Number(modeConfigs.CHAIN_ID),
+                group.credentialGroupId,
+                appId,
+                String(semaphoreIdentity.commitment),
+                mode
+              )
+
+              if (flowRunIdRef.current !== runId) return
+
+              const { signature: verifierSignature, attestation: { credential_id, issued_at, chain_id } } = verify
+
+              const { task: taskCreated, success } = await taskManagerApi.addVerification(
+                configs.ZUPLO_API_URL,
+                group.credentialGroupId,
+                credential_id,
+                issued_at,
+                chain_id,
+                appId,
+                String(semaphoreIdentity.commitment),
+                verifierSignature,
+                modeConfigs
+              )
+
+              if (flowRunIdRef.current !== runId) return
+
+              if (success) {
+                dispatch(addVerification({
+                  status: 'scheduled',
+                  scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
+                  taskId: taskCreated.id,
+                  credentialGroupId: group.credentialGroupId,
+                  fetched: false,
+                  score: group.score ?? 0,
+                  chainId: chain_id,
+                }))
               }
             }
+          } catch (err) {
+            if (flowRunIdRef.current !== runId) return
+            console.error('[auto-verify] Failed:', err)
+            setAutoVerifyError(typeof err === 'string' ? err : (err as Error).message)
+          }
+
+          setAutoVerifyingTaskId(null)
+          setPendingVerification(null)
+          dispatch(setRedirectUrl(null))
+          dispatch(setIsMiniApp(false))
+          } // end else (not alreadyVerified)
+        }
+      }
+
+      if (flowRunIdRef.current !== runId) return
+
+      // Step 4: mark ready — interval can now start
+      dispatch(setLoading(false))
+      setFlowPhase('ready')
+    }
+
+    run().catch(err => {
+      if (flowRunIdRef.current !== runId) return
+      console.error('Flow failed:', err)
+      dispatch(setLoading(false))
+      setFlowPhase('ready')
+    })
+  }, [configsPhase, user.key, user.appId])
+
+  // ─── Step 5: Interval — check task completion every 2s ───────────────────
+  useEffect(() => {
+    if (flowPhase !== 'ready') return
+    if (!verifications) return
+
+    const interval = setInterval(() => {
+      try {
+        const notCompleted = verifications.filter(v => v.status !== 'completed')
+        if (notCompleted.length === 0) return
+
+        let updated = false
+        const next = verifications.map(item => {
+          if (item.status !== 'completed' && item.scheduledTime - +new Date() <= 0) {
+            updated = true
+            return { ...item, status: 'completed' as TVerificationStatus }
           }
           return item
         })
-    
-        if (updated) dispatch(addVerifications(verificationsUpdated))
 
+        if (updated) dispatch(addVerifications(next))
       } catch (err) {
         console.error({ err });
       }
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [
-    verifications
-  ]);
-
-  useEffect(() => {
-    if (address) {
-      if (user.address) {
-        if (address !== user.address) {
-          dispatch(setKey(null))
-          dispatch(addVerifications([]))
-        }
-      }
-      dispatch(setAddress(address))
-    } else {
-      if (user.address) {        
-        dispatch(setKey(null))
-        dispatch(addVerifications([]))
-        dispatch(setAddress(null))
-      }
-    }
-
-    if (apiKey) {
-      dispatch(setApiKey(apiKey));
-    }
-
-  }, [
-    user.address,
-    apiKey,
-    address,
-  ]);
-
-  useEffect(() => {
-    if (customTitles) {
-      dispatch(setCustomTitles(customTitles))
-    }
-  }, [customTitles])
-
-  useEffect(() => {
-
-    if (!user.address) return
-    if (!user.mode) return
-    if (!user.appId) return
-
-    const init = async () => {
-      const userConfigs = await configs(user.mode === 'dev')
-      dispatch(addModeConfigs(userConfigs.configs))
-
-      try {
-        const scoresMap = await getAllScores(
-          userConfigs.configs.REGISTRY,
-          user.appId as string,
-          userConfigs.configs.CHAIN_ID
-        )
-        if (scoresMap === null) {
-          setInvalidAppId(true)
-          dispatch(addTasks([]))
-          dispatch(setLoading(false))
-          return
-        }
-        const enrichedTasks = userConfigs.tasks.map(task => ({
-          ...task,
-          groups: task.groups.map(group => ({
-            ...group,
-            score: scoresMap.get(group.credentialGroupId) ?? 0
-          }))
-        })).filter(task => task.groups.some(group => group.score > 0))
-        dispatch(addTasks(enrichedTasks))
-      } catch (err) {
-        console.error('Failed to fetch scores:', err)
-        dispatch(addTasks(userConfigs.tasks))
-      }
-    }
-    init().catch(err => {
-      console.error('Failed to load configs:', err)
-      dispatch(setLoading(false))
-    })
-  }, [
-    user.address,
-    user.mode,
-    user.appId
-  ])
-
-  useEffect(() => {
-    if (!user.key) return
-    if (!user.appId) return
-    console.log({
-      userConfigs
-    })
-    if (userConfigs.tasks.length === 0) {
-      dispatch(setLoading(false))
-      return
-    }
-    if (!userConfigs.modeConfigs.REGISTRY) {
-      dispatch(setLoading(false))
-      return
-    }
-
-    uploadPrevVerifications(
-      userConfigs.tasks,
-      user.key,
-      user.appId,
-      (loading: boolean) => dispatch(setLoading(loading)),
-      userConfigs.modeConfigs,
-      (verifications) => {
-        console.log('HERE uploading verifications')
-        dispatch(addVerifications(verifications))
-      }
-    ).catch(err => {
-      console.error('Failed to upload previous verifications:', err)
-      dispatch(setLoading(false))
-    })
-  }, [
-    userConfigs,
-    user.key,
-    user.appId
-  ]);
-
+  }, [flowPhase, verifications]);
 
   return <Container>
     <HeaderStyled
       address={user.address}
       userKey={user.key}
+      onLogout={handleLogout}
     />
     {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Thinking..."/>}
     {sessionLost && <ErrorOverlay
@@ -456,9 +600,7 @@ const InnerContent: FC<TProps> = ({
       buttonTitle='Close'
       onClose={() => {
         setSessionLost(false)
-        window.postMessage({
-          type: 'CLOSE_MODAL',
-        }, window.location.origin)
+        window.postMessage({ type: 'CLOSE_MODAL' }, window.location.origin)
       }}
     />}
     {invalidAppId && <ErrorOverlay
@@ -468,16 +610,37 @@ const InnerContent: FC<TProps> = ({
         setInvalidAppId(false)
         dispatch(setAppId(null))
         dispatch(setMode(''))
-        window.postMessage({
-          type: 'CLOSE_MODAL',
-        }, window.location.origin)
+        window.postMessage({ type: 'CLOSE_MODAL' }, window.location.origin)
       }}
     />}
+    {autoVerifyError && <ErrorOverlay
+      errorText={autoVerifyError}
+      onClose={() => setAutoVerifyError(null)}
+    />}
+    {(debugLogs.length > 0 || true) && (
+      <div style={{
+        display: 'none',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        background: 'rgba(0,0,0,0.85)',
+        color: '#0f0',
+        fontSize: '8px',
+        fontFamily: 'monospace',
+        padding: '6px',
+        zIndex: 9999,
+        maxHeight: '50px',
+        overflowY: 'auto',
+      }}>
+        <div>configs: {configsPhase} | flow: {flowPhase}</div>
+        <div>isMiniApp: {String(user.isMiniApp)} | hasKey: {String(!!user.key)}</div>
+        <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
+        {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+      </div>
+    )}
     <Content>
-      {defineContent(
-        page,
-        setPage,
-      )}
+      {defineContent(page, setPage, autoVerifyingTaskId)}
     </Content>
   </Container>
 }

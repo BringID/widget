@@ -3,13 +3,15 @@ import {
   Header,
   AddressText,
   AddressIcon,
+  LogoutIconStyled,
   CloseButtonStyled
 } from './styled-components'
 import TProps from './types'
 import { shortenString } from '@/utils'
 const defineContent = (
   address: string | null,
-  userKey: string | null
+  userKey: string | null,
+  onLogout?: () => void
 ) => {
 
   if (!address || !userKey) {
@@ -19,18 +21,21 @@ const defineContent = (
   return (
     <>
       <AddressIcon /> <AddressText>{shortenString(address)}</AddressText>
+      {onLogout && <LogoutIconStyled onClick={onLogout} />}
     </>
   );
 };
 
 const HeaderComponent: FC<TProps> = ({
   address,
-  userKey
+  userKey,
+  onLogout
 }) => {
   return <Header>
     {defineContent(
       address,
-      userKey
+      userKey,
+      onLogout
     )}
     <CloseButtonStyled
       onClick={() => {
