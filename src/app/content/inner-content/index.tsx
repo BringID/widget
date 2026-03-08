@@ -620,6 +620,7 @@ const InnerContent: FC<TProps> = ({
     />}
     {(debugLogs.length > 0 || true) && (
       <div style={{
+        display: 'none',
         position: 'absolute',
         top: 0,
         left: 0,
