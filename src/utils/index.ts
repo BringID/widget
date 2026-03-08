@@ -30,8 +30,6 @@ import isValidAuthSuccessPayload from './is-valid-auth-success-payload'
 import defineTaskIcon from './define-task-icon'
 import generateRequestId from './generate-request-id'
 import { getAppSemaphoreGroupId, getAllScores } from './registry-contract'
-import isFarcasterApp from './is-farcaster-app'
-
 
 export {
     isValidZKTLSErrorMessage,
@@ -67,5 +65,4 @@ export {
   defineGroupForAuth,
   getAppSemaphoreGroupId,
   getAllScores,
-  isFarcasterApp,
 }
