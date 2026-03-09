@@ -72,7 +72,12 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           const data = res.data
           if (data?.state === 'completed' && data.message && data.signature) {
             stopPolling()
-            preOpenedWindowRef.current?.close()
+            const win = preOpenedWindowRef.current
+            if (win && !win.closed) {
+              // Navigate to our own page so window.close() works reliably
+              // (direct cross-origin close is unreliable on mobile browsers)
+              win.location.href = window.location.origin + '/verification-finished'
+            }
             preOpenedWindowRef.current = null
             setProcessing(true)
 
@@ -106,6 +111,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           preOpenedWindowRef.current = null
           onError(err instanceof Error ? err.message : 'Polling failed')
         }
+
       }, POLL_INTERVAL_MS)
     },
     [stopPolling, onComplete, onError]
