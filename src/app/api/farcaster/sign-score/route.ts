@@ -82,7 +82,16 @@ export async function POST(request: NextRequest) {
     const timestamp = Math.floor(Date.now() / 1000)
     const signedResult = await createSignedMessage('farcaster.xyz', String(verifyResult.fid), score, timestamp)
 
-    return NextResponse.json(signedResult)
+    // Return user_id (snake_case) to match the popup message format that verifyOAuth expects
+    return NextResponse.json({
+      message: {
+        domain: signedResult.message.domain,
+        user_id: signedResult.message.userId,
+        score: signedResult.message.score,
+        timestamp: signedResult.message.timestamp,
+      },
+      signature: signedResult.signature,
+    })
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.startsWith('NOT_ENOUGH_SCORE')) {

@@ -1,8 +1,12 @@
 import TTask from '@/types/task'
-import TOAuthMessage from '@/types/oauth-message'
 
 export type TFarcasterCompleteData = {
-  message: TOAuthMessage
+  message: {
+    domain: string
+    user_id: string
+    score: number
+    timestamp: number
+  }
   signature: string
 }
 
