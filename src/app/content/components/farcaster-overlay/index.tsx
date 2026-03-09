@@ -108,6 +108,11 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
   const handleStart = useCallback(async () => {
     setConnecting(true)
+
+    // Open a blank window synchronously during the user gesture so the browser
+    // doesn't block it. We'll navigate it to the Farcaster URL once we have it.
+    const preOpenedWindow = isMobile && !isMiniApp ? window.open('', '_blank') : null
+
     try {
       const res = await appClient.current.createChannel({
         siweUri: SIWE_URI,
@@ -116,6 +121,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
       })
 
       if (res.isError || !res.data) {
+        preOpenedWindow?.close()
         onError(res.error?.message || 'Failed to connect')
         return
       }
@@ -127,8 +133,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
       if (isMobile) {
         if (isMiniApp) {
           window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url: connectUrl } }, window.location.origin)
-        } else {
-          window.open(connectUrl, '_blank')
+        } else if (preOpenedWindow) {
+          preOpenedWindow.location.href = connectUrl
         }
         setWaiting(true)
       }
