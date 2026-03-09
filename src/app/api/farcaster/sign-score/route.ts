@@ -35,13 +35,15 @@ async function getScore(fid: number): Promise<number> {
   const user = response.users[0]
   if (!user) throw new Error('USER_NOT_FOUND')
 
-  const neynarScore = user.score ?? 0
-  if (neynarScore < 0.5) throw new Error('NOT_ENOUGH_SCORE')
 
-  for (const tier of SCORE_TIERS) {
-    if (neynarScore >= tier.min) return tier.score
-  }
-  return 0
+  return 10
+  // const neynarScore = user.score ?? 0
+  // if (neynarScore < 0.5) throw new Error('NOT_ENOUGH_SCORE')
+
+  // for (const tier of SCORE_TIERS) {
+  //   if (neynarScore >= tier.min) return tier.score
+  // }
+  // return 0
 }
 
 async function createSignedMessage(domain: string, userId: string, score: number, timestamp: number) {
