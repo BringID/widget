@@ -35,15 +35,13 @@ async function getScore(fid: number): Promise<number> {
   const user = response.users[0]
   if (!user) throw new Error('USER_NOT_FOUND')
 
+  const neynarScore = user.score ?? 0
+  if (neynarScore < 0.5) throw new Error('NOT_ENOUGH_SCORE')
 
-  return 10
-  // const neynarScore = user.score ?? 0
-  // if (neynarScore < 0.5) throw new Error('NOT_ENOUGH_SCORE')
-
-  // for (const tier of SCORE_TIERS) {
-  //   if (neynarScore >= tier.min) return tier.score
-  // }
-  // return 0
+  for (const tier of SCORE_TIERS) {
+    if (neynarScore >= tier.min) return tier.score
+  }
+  return 0
 }
 
 async function createSignedMessage(domain: string, userId: string, score: number, timestamp: number) {
@@ -82,16 +80,7 @@ export async function POST(request: NextRequest) {
     const timestamp = Math.floor(Date.now() / 1000)
     const signedResult = await createSignedMessage('farcaster.xyz', String(verifyResult.fid), score, timestamp)
 
-    // Return user_id (snake_case) to match the popup message format that verifyOAuth expects
-    return NextResponse.json({
-      message: {
-        domain: signedResult.message.domain,
-        user_id: signedResult.message.userId,
-        score: signedResult.message.score,
-        timestamp: signedResult.message.timestamp,
-      },
-      signature: signedResult.signature,
-    })
+    return NextResponse.json(signedResult)
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.startsWith('NOT_ENOUGH_SCORE')) {
