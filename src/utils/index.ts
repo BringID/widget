@@ -1,3 +1,7 @@
+import runOAuthVerification from './run-oauth-verification'
+import runZKTLSVerification from './run-zktls-verification'
+import runInternalVerification from './run-internal-verification'
+import submitOAuthVerification from './submit-oauth-verification'
 import isValidZKTLSErrorMessage from './is-valid-zktls-error-message'
 import isValidZKTLSSuccessMessage from './is-valid-zktls-success-message'
 import alertError from './alert-error'
@@ -65,4 +69,8 @@ export {
   defineGroupForAuth,
   getAppSemaphoreGroupId,
   getAllScores,
+  runOAuthVerification,
+  runZKTLSVerification,
+  runInternalVerification,
+  submitOAuthVerification,
 }

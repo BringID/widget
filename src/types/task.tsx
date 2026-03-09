@@ -14,6 +14,7 @@ type TTask = {
   permissionUrl?: string[],
   steps: any
   domain?: string;
+  internal?: boolean;
 };
 
 export default TTask;

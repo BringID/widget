@@ -1,48 +1,28 @@
 import React, { FC, useState } from 'react'
 import { TProps } from './types'
 import { Value } from './styled-components'
-import { TaskContainer, Icons, Tag } from '../'
+import { TaskContainer, Icons } from '../'
 import Button from '../button'
-import configs from '@/app/configs'
 import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types'
 import {
-  createSemaphoreIdentity,
+  runOAuthVerification,
+  runZKTLSVerification,
+  runInternalVerification,
+  submitOAuthVerification,
   defineGroupForAuth,
-  getAuthSemaphoreData,
-  getZKTLSSemaphoreData,
-  defineGroupByZKTLSResult,
 } from '@/utils'
-import { taskManagerApi, verifierApi } from '@/app/content/api'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
 import { usePlausible } from 'next-plausible'
+import { FarcasterOverlay } from '@/app/content/components'
 
 const defineTaskContent = (
-  plausibleEvent: (
-    eventName: string,
-    options?: {
-      props?: Record<string, string>
-    }
-  ) => void,
   status: TVerificationStatus,
-  task: TTask,
-  userKey: string | null,
-  appId: string | null,
   loading: boolean,
-  setLoading: (loading: boolean) => void,
-  modeConfigs: TModeConfigs,
-  mode: string,
   isActive: boolean,
-  setIsActive: (
-    active: boolean
-  ) => void,
-  redirectUrl: string | null,
-  isMiniApp: boolean,
-  resultCallback: (verification: TVerification) => void,
-  errorCallback: (errorText: string) => void,
-  messageCallback: (message: string, copyText?: string) => void
+  onClick: () => void,
 ) => {
   switch (status) {
     case 'default':
@@ -52,263 +32,18 @@ const defineTaskContent = (
           size="small"
           loading={loading}
           disabled={loading || isActive}
-          onClick={async () => {
-            try {
-              if (task.verificationType === 'oauth' || task.verificationType === 'auth') {
-                const authUrl = task.verificationType === 'oauth'
-                  ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
-                  : task.verificationUrl
-                
-                plausibleEvent('oauth_verification_started', {
-                  props: {
-                    verification_started: task.service
-                  }
-                })
-                plausibleEvent('verification_started', {
-                  props: {
-                    task_service: task.service
-                  }
-                })
-
-                if (redirectUrl) {
-                  const encodeParams = redirectUrl.includes('https://base.app') || redirectUrl.includes('cbwallet://')
-                  const finalUrl = `${authUrl}?redirect_url=${encodeURIComponent(redirectUrl)}&encode_params=${encodeParams}`
-                  if (encodeParams) {
-                    messageCallback('MANUAL_OPEN_LINK', finalUrl)
-                    return
-                  }
-                  if (isMiniApp) {
-                    window.postMessage(
-                      { type: 'OPEN_EXTERNAL_URL', payload: { url: finalUrl } },
-                      window.location.origin
-                    )
-                  } else {
-                    window.open(finalUrl)
-                  }
-                  return
-                }
-
-                setLoading(true)
-                setIsActive(true)
-                
-
-                const {
-                  message,
-                  signature
-                } = await getAuthSemaphoreData(
-                  task,
-                  plausibleEvent,
-                  authUrl
-                )
-
-                const group = defineGroupForAuth(
-                  task,
-                  message.score
-                )
-
-                if (group) {
-
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, group.credentialGroupId)
-
-                  const verify = await verifierApi.verifyOAuth(
-                    configs.ZUPLO_API_URL,
-                    message,
-                    signature,
-                    modeConfigs.REGISTRY,
-                    Number(modeConfigs.CHAIN_ID),
-                    group.credentialGroupId,
-                    appId as string,
-                    String(semaphoreIdentity.commitment),
-                    mode
-                  )
-
-                  const {
-                    signature: verifierSignature,
-                    attestation: {
-                      credential_id,
-                      issued_at,
-                      chain_id
-                    }
-                  } = verify
-
-                  const { task: taskCreated, success } = await taskManagerApi.addVerification(
-                    configs.ZUPLO_API_URL,
-                    group.credentialGroupId,
-                    credential_id,
-                    issued_at,
-                    chain_id,
-                    appId as string,
-                    String(semaphoreIdentity.commitment),
-                    verifierSignature,
-                    modeConfigs
-                  )
-
-                  console.log({ task: taskCreated, success  })
-
-                  if (success) {
-                    setLoading(false)
-                    setIsActive(false)
-                    plausibleEvent('oauth_verification_finished', {
-                      props: {
-                        verification_finished: task.service
-                      }
-                    })
-                    plausibleEvent('verification_finished', {
-                      props: {
-                        task_service: task.service
-                      }
-                    })
-                    resultCallback({
-                      status: 'scheduled',
-                      scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
-                      taskId: taskCreated.id,
-                      credentialGroupId: group?.credentialGroupId,
-                      fetched: false,
-                      score: group.score ?? 0,
-                      chainId: chain_id,
-                    })
-                  }
-
-                } else {
-                  messageCallback('NOT_ENOUGH_SCORE')
-                  return
-                }
-
-
-              } else {
-                plausibleEvent('zktls_verification_started', {
-                  props: {
-                    verification_started: task.service,
-                  }
-                })
-                plausibleEvent('verification_started', {
-                  props: {
-                    task_service: task.service
-                  }
-                })
-
-
-                const bringIdInstalled = (window as any).bringID
-                if (!bringIdInstalled) {
-                  plausibleEvent('zktls_extension_not_installed')
-                  messageCallback('EXTENSION_IS_NOT_INSTALLED')
-                  return
-                }
-
-                setLoading(true)
-                setIsActive(true)
-
-                const {
-                  presentationData,
-                  transcriptRecv
-                } = await getZKTLSSemaphoreData(
-                  task,
-                  plausibleEvent
-                )
-
-              
-                const groupData = defineGroupByZKTLSResult(
-                  transcriptRecv as string,
-                  task.groups
-                )
-
-                if (groupData) {
-                  const { credentialGroupId } = groupData
-                  const semaphoreIdentity = createSemaphoreIdentity(userKey as string, appId as string, groupData?.credentialGroupId)
-                  const verify = await verifierApi.verify(
-                    configs.ZUPLO_API_URL,
-                    presentationData,
-                    modeConfigs.REGISTRY,
-                    Number(modeConfigs.CHAIN_ID),
-                    credentialGroupId,
-                    appId as string,
-                    String(semaphoreIdentity.commitment),
-                    mode
-                  )
-
-                  const {
-                    signature: verifierSignature,
-                    attestation: {
-                      credential_id,
-                      issued_at,
-                      chain_id
-                    }
-                  } = verify
-
-                  const { task: taskCreated, success } = await taskManagerApi.addVerification(
-                    configs.ZUPLO_API_URL,
-                    credentialGroupId,
-                    credential_id,
-                    issued_at,
-                    chain_id,
-                    appId as string,
-                    String(semaphoreIdentity.commitment),
-                    verifierSignature,
-                    modeConfigs
-                  )
-
-                  if (success) {
-                    setLoading(false)
-                    setIsActive(false)
-                    plausibleEvent('zktls_verification_finished', {
-                      props: {
-                        verification_finished: task.service
-                      }
-                    })
-                    plausibleEvent('verification_finished', {
-                      props: {
-                        task_service: task.service
-                      }
-                    })
-                    resultCallback({
-                      status: 'scheduled',
-                      scheduledTime: taskCreated.scheduled_time + Number(configs.TASK_PENDING_TIME || 0),
-                      taskId: taskCreated.id,
-                      credentialGroupId,
-                      fetched: false,
-                      score: task.groups.find(g => g.credentialGroupId === credentialGroupId)?.score ?? 0,
-                      chainId: chain_id,
-                    })
-                  }
-
-                } else {
-                  messageCallback('NOT_ENOUGH_SCORE')
-                  return
-                }
-
-              }
-
-            } catch (err) {
-              setLoading(false)
-              setIsActive(false)
-              const errMessage = typeof err === 'string' ? err : (err as Error).message
-              const isExpectedError = [
-                'POPUP_BLOCKED', 'POPUP_CLOSED',
-                'VERIFICATION_TIMED_OUT',
-              ].some(e => errMessage?.includes(e))
-              if (!isExpectedError) {
-                plausibleEvent('verification_error')
-              }
-              plausibleEvent('verification_failed', {
-                props: {
-                  task_service: task.service
-                }
-              })
-              errorCallback(errMessage)
-            }
-          }}
+          onClick={onClick}
         >
           Verify
         </Button>
-      );
+      )
     case 'pending':
     case 'scheduled':
-      return <Icons.Clock />;
-
+      return <Icons.Clock />
     default:
-      return <Icons.Check />;
+      return <Icons.Check />
   }
-};
+}
 
 const Task: FC<TProps> = ({
   status,
@@ -317,36 +52,87 @@ const Task: FC<TProps> = ({
   onMessage,
   setIsActive,
   isActive,
-  autoVerifyingTaskId
+  autoVerifyingTaskId,
 }) => {
-
   const dispatch = useDispatch()
   const user = useUser()
   const userConfigs = useConfigs()
-
-  const [ loading, setLoading ] = useState<boolean>(false)
-  const isAutoVerifying = autoVerifyingTaskId === task.id
   const plausible = usePlausible()
-  const content = defineTaskContent(
-    (eventName, options) => plausible(eventName, options),
-    status,
+
+  const [loading, setLoading] = useState(false)
+  const [showFarcasterOverlay, setShowFarcasterOverlay] = useState(false)
+
+  const isAutoVerifying = autoVerifyingTaskId === task.id
+
+  const baseParams = {
     task,
-    user.key,
-    user.appId,
-    loading || isAutoVerifying,
+    userKey: user.key as string,
+    appId: user.appId as string,
+    modeConfigs: userConfigs.modeConfigs,
+    mode: user.mode,
+    plausible: (event: string, options?: { props?: Record<string, string> }) => plausible(event, options),
     setLoading,
-    userConfigs.modeConfigs,
-    user.mode,
-    isActive,
     setIsActive,
-    user.redirectUrl,
-    user.isMiniApp,
-    (verification) => {
+    resultCallback: (verification: TVerification) => dispatch(addVerification(verification)),
+    messageCallback: onMessage,
+  }
+
+  const handleClick = async () => {
+    try {
+      if (task.internal) {
+        runInternalVerification(() => setShowFarcasterOverlay(true))
+        return
+      }
+
+      if (task.verificationType === 'zktls') {
+        await runZKTLSVerification(baseParams)
+      } else {
+        await runOAuthVerification({
+          ...baseParams,
+          redirectUrl: user.redirectUrl,
+          isMiniApp: user.isMiniApp,
+        })
+      }
+    } catch (err) {
+      setLoading(false)
+      setIsActive(false)
+      const errMessage = typeof err === 'string' ? err : (err as Error).message
+      const isExpectedError = ['POPUP_BLOCKED', 'POPUP_CLOSED', 'VERIFICATION_TIMED_OUT'].some(
+        (e) => errMessage?.includes(e)
+      )
+      if (!isExpectedError) plausible('verification_error')
+      plausible('verification_failed', { props: { task_service: task.service } })
+      onError(errMessage)
+    }
+  }
+
+  const handleFarcasterComplete = async ({ message, signature }: { message: any; signature: string }) => {
+    setShowFarcasterOverlay(false)
+    setLoading(true)
+    setIsActive(true)
+    try {
+      const verification = await submitOAuthVerification(message, signature, baseParams)
+      setLoading(false)
+      setIsActive(false)
       dispatch(addVerification(verification))
-    },
-    onError,
-    onMessage
-  );
+    } catch (err) {
+      setLoading(false)
+      setIsActive(false)
+      const errMessage = typeof err === 'string' ? err : (err as Error).message
+      if (errMessage === 'NOT_ENOUGH_SCORE') {
+        onMessage('NOT_ENOUGH_SCORE')
+      } else {
+        onError(errMessage)
+      }
+    }
+  }
+
+  const content = defineTaskContent(
+    status,
+    loading || isAutoVerifying,
+    isActive,
+    handleClick,
+  )
 
   return (
     <TaskContainer
@@ -358,9 +144,17 @@ const Task: FC<TProps> = ({
       icon={task.icon}
       groups={task.groups}
     >
+      {showFarcasterOverlay && (
+        <FarcasterOverlay
+          task={task}
+          onComplete={handleFarcasterComplete}
+          onError={(err) => { setShowFarcasterOverlay(false); onError(err) }}
+          onClose={() => setShowFarcasterOverlay(false)}
+        />
+      )}
       <Value>{content}</Value>
     </TaskContainer>
-  );
-};
+  )
+}
 
-export default Task;
+export default Task

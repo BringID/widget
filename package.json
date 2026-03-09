@@ -11,6 +11,9 @@
     "clean": "npx rimraf .next"
   },
   "dependencies": {
+    "@farcaster/auth-client": "^0.7.1",
+    "@farcaster/auth-kit": "^0.8.2",
+    "@neynar/nodejs-sdk": "^3.137.0",
     "@reduxjs/toolkit": "^2.3.0",
     "@semaphore-protocol/core": "^4.13.1",
     "@semaphore-protocol/data": "^4.11.1",
