@@ -37,6 +37,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   const nonceRef = useRef(generateNonce())
   const channelTokenRef = useRef<string | null>(null)
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const preOpenedWindowRef = useRef<Window | null>(null)
   const isMobile = isMobileDevice() || isMiniApp
 
   const appClient = useRef(
@@ -71,6 +72,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           const data = res.data
           if (data?.state === 'completed' && data.message && data.signature) {
             stopPolling()
+            preOpenedWindowRef.current?.close()
+            preOpenedWindowRef.current = null
             setProcessing(true)
 
             try {
@@ -99,6 +102,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           }
         } catch (err) {
           stopPolling()
+          preOpenedWindowRef.current?.close()
+          preOpenedWindowRef.current = null
           onError(err instanceof Error ? err.message : 'Polling failed')
         }
       }, POLL_INTERVAL_MS)
@@ -112,6 +117,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
     // Open a blank window synchronously during the user gesture so the browser
     // doesn't block it. We'll navigate it to the Farcaster URL once we have it.
     const preOpenedWindow = isMobile && !isMiniApp ? window.open('', '_blank') : null
+    preOpenedWindowRef.current = preOpenedWindow
 
     try {
       const res = await appClient.current.createChannel({
