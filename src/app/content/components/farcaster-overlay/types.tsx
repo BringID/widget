@@ -8,6 +8,7 @@ export type TFarcasterCompleteData = {
 
 export type TProps = {
   task: TTask
+  isMiniApp: boolean
   onComplete: (data: TFarcasterCompleteData) => void
   onError: (error: string) => void
   onClose: () => void

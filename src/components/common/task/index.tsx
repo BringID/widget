@@ -147,6 +147,7 @@ const Task: FC<TProps> = ({
       {showFarcasterOverlay && (
         <FarcasterOverlay
           task={task}
+          isMiniApp={user.isMiniApp}
           onComplete={handleFarcasterComplete}
           onError={(err) => { setShowFarcasterOverlay(false); onError(err) }}
           onClose={() => setShowFarcasterOverlay(false)}

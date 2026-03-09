@@ -28,15 +28,16 @@ function generateNonce(): string {
 const isMobileDevice = () =>
   typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
-const FarcasterOverlay: FC<TProps> = ({ task, onComplete, onError, onClose }) => {
+const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose }) => {
   const [connecting, setConnecting] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [waiting, setWaiting] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
 
   const nonceRef = useRef(generateNonce())
   const channelTokenRef = useRef<string | null>(null)
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const isMobile = isMobileDevice()
+  const isMobile = isMobileDevice() || isMiniApp
 
   const appClient = useRef(
     createAppClient({
@@ -124,7 +125,12 @@ const FarcasterOverlay: FC<TProps> = ({ task, onComplete, onError, onClose }) =>
       setUrl(connectUrl)
 
       if (isMobile) {
-        window.open(connectUrl, '_blank')
+        if (isMiniApp) {
+          window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url: connectUrl } }, window.location.origin)
+        } else {
+          window.open(connectUrl, '_blank')
+        }
+        setWaiting(true)
       }
 
       startPolling(channelToken)
@@ -133,23 +139,15 @@ const FarcasterOverlay: FC<TProps> = ({ task, onComplete, onError, onClose }) =>
     } finally {
       setConnecting(false)
     }
-  }, [isMobile, startPolling, onError])
+  }, [isMobile, isMiniApp, startPolling, onError])
 
   const renderBody = () => {
-    if (processing) return <SpinnerStyled size="large" />
+    if (processing || waiting) return <SpinnerStyled size="large" />
 
     if (!url) {
       return (
         <ButtonStyled appearance="action" loading={connecting} onClick={handleStart}>
           Connect Farcaster
-        </ButtonStyled>
-      )
-    }
-
-    if (isMobile) {
-      return (
-        <ButtonStyled appearance="action" onClick={() => window.open(url, '_blank')}>
-          Open Farcaster
         </ButtonStyled>
       )
     }
