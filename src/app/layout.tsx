@@ -1,6 +1,5 @@
 'use server'
 import './globals.css'
-import '@farcaster/auth-kit/styles.css'
 import styles from './page.module.css'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers' // added
