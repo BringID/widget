@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { FarcasterOverlay } from '@/app/content/components'
+import { FarcasterOverlay, ZKPassportOverlay } from '@/app/content/components'
 
 const defineTaskContent = (
   status: TVerificationStatus,
@@ -61,6 +61,7 @@ const Task: FC<TProps> = ({
 
   const [loading, setLoading] = useState(false)
   const [showFarcasterOverlay, setShowFarcasterOverlay] = useState(false)
+  const [showZKPassportOverlay, setShowZKPassportOverlay] = useState(false)
 
   const isAutoVerifying = autoVerifyingTaskId === task.id
 
@@ -80,7 +81,11 @@ const Task: FC<TProps> = ({
   const handleClick = async () => {
     try {
       if (task.internal) {
-        runInternalVerification(() => setShowFarcasterOverlay(true))
+        if (task.service === 'farcaster') {
+          runInternalVerification(() => setShowFarcasterOverlay(true))
+        } else {
+          runInternalVerification(() => setShowZKPassportOverlay(true))
+        }
         return
       }
 
@@ -106,8 +111,11 @@ const Task: FC<TProps> = ({
     }
   }
 
-  const handleFarcasterComplete = async ({ message, signature }: { message: any; signature: string }) => {
-    setShowFarcasterOverlay(false)
+  const handleInternalComplete = async (
+    hideOverlay: () => void,
+    { message, signature }: { message: any; signature: string }
+  ) => {
+    hideOverlay()
     setLoading(true)
     setIsActive(true)
     try {
@@ -148,9 +156,18 @@ const Task: FC<TProps> = ({
         <FarcasterOverlay
           task={task}
           isMiniApp={user.isMiniApp}
-          onComplete={handleFarcasterComplete}
+          onComplete={(data) => handleInternalComplete(() => setShowFarcasterOverlay(false), data)}
           onError={(err) => { setShowFarcasterOverlay(false); onError(err) }}
           onClose={() => setShowFarcasterOverlay(false)}
+        />
+      )}
+      {showZKPassportOverlay && (
+        <ZKPassportOverlay
+          task={task}
+          isMiniApp={user.isMiniApp}
+          onComplete={(data) => handleInternalComplete(() => setShowZKPassportOverlay(false), data)}
+          onError={(err) => { setShowZKPassportOverlay(false); onError(err) }}
+          onClose={() => setShowZKPassportOverlay(false)}
         />
       )}
       <Value>{content}</Value>
