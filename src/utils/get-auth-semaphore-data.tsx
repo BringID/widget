@@ -1,14 +1,12 @@
 import {
   TOAuthResponse,
   TOAuthResponsePayload,
-  TVerificationType
 } from '../types'
 import {
   isValidAuthErrorPayload,
   isValidAuthSuccessPayload
 } from '.'
 import { TTask } from '../types'
-import configs from '@/app/configs'
 
 type TGetAuthSemaphoreData = (
   task: TTask,
@@ -27,7 +25,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
 ) => {
 
   const popupURL = authUrl
-  const awaitingEventSource = task.verificationType === 'oauth' ? configs.AUTH_DOMAIN : new URL(task.verificationUrl).origin
+  const awaitingEventSource = new URL(authUrl).origin
 
   return new Promise((resolve, reject) => {
     const popup = window.open(

@@ -1,5 +1,4 @@
 import { TModeConfigs, TTask, TVerification } from '@/types'
-import configs from '@/app/configs'
 import { getAuthSemaphoreData } from '@/utils'
 import submitOAuthVerification from './submit-oauth-verification'
 
@@ -25,9 +24,7 @@ const runOAuthVerification = async (params: TRunOAuthVerificationParams): Promis
     setLoading, setIsActive, resultCallback, messageCallback,
   } = params
 
-  const authUrl = task.verificationType === 'oauth'
-    ? `${configs.AUTH_DOMAIN}/${task.verificationUrl}`
-    : task.verificationUrl
+  const authUrl = task.verificationUrl
 
   plausible('oauth_verification_started', { props: { verification_started: task.service } })
   plausible('verification_started', { props: { task_service: task.service } })
