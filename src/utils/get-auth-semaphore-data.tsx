@@ -67,6 +67,7 @@ const getAuthSemaphoreData: TGetAuthSemaphoreData = (
 
       switch (data.type) {
         case "AUTH_SUCCESS": {
+          console.log('[AUTH_SUCCESS]', JSON.stringify(data, null, 2))
           if (!isValidAuthSuccessPayload(data.payload)) {
             cleanup()
             reject('INVALID_PAYLOAD_STRUCTURE')
