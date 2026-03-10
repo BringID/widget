@@ -83,10 +83,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(signedResult)
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message.startsWith('NOT_ENOUGH_SCORE')) {
+      if (error.message === 'NOT_ENOUGH_SCORE') {
         return NextResponse.json({ error: 'NOT_ENOUGH_SCORE' }, { status: 400 })
       }
+      if (error.message === 'USER_NOT_FOUND') {
+        return NextResponse.json({ error: 'USER_NOT_FOUND' }, { status: 404 })
+      }
+      if (
+        error.message === 'NEYNAR_API_KEY is not configured' ||
+        error.message === 'VERIFIER_PRIVATE_KEY is not configured'
+      ) {
+        console.error('[sign-score] missing env:', error.message)
+        return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+      }
     }
+    console.error('[sign-score] unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
