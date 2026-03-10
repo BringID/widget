@@ -82,7 +82,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
             setProcessing(true)
 
             try {
-              const apiRes = await fetch('/api/farcaster/sign-score', {
+              const apiRes = await fetch('/content/api/farcaster/sign-score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

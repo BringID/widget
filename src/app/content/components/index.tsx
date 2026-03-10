@@ -8,6 +8,7 @@ import Footer from './footer'
 import ErrorOverlay from './error-overlay'
 import MessageOverlay from './message-overlay'
 import FarcasterOverlay from './farcaster-overlay'
+import ZKPassportOverlay from './zkpassport-overlay'
 
 export {
   Header,
@@ -20,4 +21,5 @@ export {
   ErrorOverlay,
   MessageOverlay,
   FarcasterOverlay,
+  ZKPassportOverlay,
 }
