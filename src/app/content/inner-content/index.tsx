@@ -594,7 +594,7 @@ const InnerContent: FC<TProps> = ({
       userKey={user.key}
       onLogout={handleLogout}
     />
-    {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Thinking..."/>}
+    {loading && !sessionLost && !invalidAppId && <LoadingOverlay title="Loading..."/>}
     {sessionLost && <ErrorOverlay
       errorText="SESSION_LOST"
       buttonTitle='Close'

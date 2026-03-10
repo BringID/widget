@@ -7,6 +7,7 @@ import Authorize from './authorize';
 import Footer from './footer'
 import ErrorOverlay from './error-overlay'
 import MessageOverlay from './message-overlay'
+import FarcasterOverlay from './farcaster-overlay'
 
 export {
   Header,
@@ -17,5 +18,6 @@ export {
   Authorize,
   Footer,
   ErrorOverlay,
-  MessageOverlay
+  MessageOverlay,
+  FarcasterOverlay,
 }
