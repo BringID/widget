@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsHmrCache: false, // defaults to true
   },
+  serverExternalPackages: ['@neynar/nodejs-sdk', '@zkpassport/sdk', 'pino', 'thread-stream'],
   webpack: (
     config,
     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }

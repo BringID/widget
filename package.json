@@ -19,6 +19,7 @@
     "@semaphore-protocol/data": "^4.11.1",
     "@semaphore-protocol/identity": "^4.13.1",
     "@walletconnect/utils": "2.0.0-beta.100",
+    "@zkpassport/sdk": "^0.12.5",
     "ethers": "^6.8.0",
     "next": "15.0.7",
     "next-plausible": "^3.12.4",
@@ -45,5 +46,8 @@
   },
   "browser": {
     "fs": false
+  },
+  "resolutions": {
+    "**/@noble/hashes": "^1.8.0"
   }
 }
