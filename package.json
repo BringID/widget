@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "npx rimraf .next",
-    "postinstall": "node scripts/postinstall.mjs"
+    "postinstall": "node scripts/postinstall.mjs",
+    "postbuild": "node scripts/postbuild.mjs"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.7.1",
