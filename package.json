@@ -45,6 +45,9 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "browser": {
     "fs": false
   },
