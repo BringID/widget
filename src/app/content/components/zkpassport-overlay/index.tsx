@@ -76,39 +76,56 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
         setUrl(verificationUrl)
         setLoading(false)
 
-        onBridgeConnect(() => {})
-        onRequestReceived(() => {})
-        onGeneratingProof(() => {})
+        onBridgeConnect(() => { console.log('[ZKPassport] bridge connected') })
+        onRequestReceived(() => { console.log('[ZKPassport] request received by app') })
+        onGeneratingProof(() => { console.log('[ZKPassport] generating proof...') })
 
         onProofGenerated((proof: ProofResult) => {
+          console.log('[ZKPassport] proof generated:', proof.name, proof.version)
           proofsRef.current.push(proof)
         })
 
         onResult(async (response) => {
+          console.log('[ZKPassport] result received:', {
+            verified: response.verified,
+            uniqueIdentifier: response.uniqueIdentifier,
+            result: response.result,
+          })
+
           if (!response.verified) {
             onError('Verification failed')
             return
           }
 
           setProcessing(true)
+          const payload = {
+            proofs: proofsRef.current,
+            queryResult: response.result,
+            uniqueIdentifier: response.uniqueIdentifier,
+            devMode: DEV_MODE,
+          }
+          console.log('[ZKPassport] sending to sign-score API:', {
+            proofCount: payload.proofs.length,
+            proofNames: payload.proofs.map(p => p.name),
+            proofVersions: payload.proofs.map(p => p.version),
+            uniqueIdentifier: payload.uniqueIdentifier,
+            devMode: payload.devMode,
+          })
           try {
             const apiRes = await fetch('/content/api/zkpassport/sign-score', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                proofs: proofsRef.current,
-                queryResult: response.result,
-                uniqueIdentifier: response.uniqueIdentifier,
-                devMode: DEV_MODE,
-              }),
+              body: JSON.stringify(payload),
             })
 
             if (!apiRes.ok) {
               const errData = await apiRes.json()
+              console.error('[ZKPassport] sign-score API error:', errData)
               throw new Error(errData.error || 'Failed to sign score')
             }
 
             const { message, signature } = await apiRes.json()
+            console.log('[ZKPassport] sign-score success')
             onComplete({ message, signature })
           } catch (err) {
             onError(err instanceof Error ? err.message : 'Unknown error')
@@ -118,10 +135,12 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
         })
 
         onReject(() => {
+          console.log('[ZKPassport] user rejected')
           onError('USER_REJECTED')
         })
 
         onSdkError((error: string) => {
+          console.error('[ZKPassport] SDK error:', error)
           onError(error)
         })
       } catch (err) {

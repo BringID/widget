@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.verified) {
-      return NextResponse.json({ error: 'PROOF_VERIFICATION_FAILED' }, { status: 401 })
+      console.error('ZKPassport verification failed:', JSON.stringify(result.queryResultErrors ?? result, null, 2))
+      return NextResponse.json({ error: 'PROOF_VERIFICATION_FAILED', details: result.queryResultErrors }, { status: 401 })
     }
 
     if (result.uniqueIdentifier !== uniqueIdentifier) {
