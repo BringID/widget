@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 import { ethers } from 'ethers'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
 
 const DEV_MODE = process.env.NEXT_PUBLIC_ZKPASSPORT_DEV_MODE === 'true'
 
@@ -12,6 +12,45 @@ function getVerificationDomain(request: NextRequest): string {
   const host = request.headers.get('host')
   if (host) return host.split(':')[0].toLowerCase()
   return request.nextUrl.hostname
+}
+
+// Compute the service scope hash: SHA256(domain).slice(0, 31) as BigInt
+// This matches getServiceScopeHash from @zkpassport/utils
+function computeDomainScope(domain: string): bigint {
+  const hash = createHash('sha256').update(domain, 'utf8').digest()
+  return BigInt('0x' + hash.slice(0, 31).toString('hex'))
+}
+
+type ProofResult = {
+  name?: string
+  version?: string
+  proof?: string
+  publicInputs?: string[]
+}
+
+function verifyProofs(proofs: ProofResult[], domain: string, uniqueIdentifier: string): { verified: boolean; reason?: string } {
+  // Find the disclose proof — it holds the domain scope and nullifier
+  const discloseProof = proofs.find(p => p.name?.startsWith('disclose'))
+  if (!discloseProof?.publicInputs?.length) {
+    return { verified: false, reason: 'No disclose proof found' }
+  }
+
+  // Check domain scope: publicInputs[2] must match SHA256(domain).slice(0,31)
+  const expectedScope = computeDomainScope(domain)
+  const actualScope = BigInt(discloseProof.publicInputs[2])
+  if (expectedScope !== actualScope) {
+    console.error('[ZKPassport] Scope mismatch:', { expected: expectedScope.toString(), actual: actualScope.toString(), domain })
+    return { verified: false, reason: 'SCOPE_MISMATCH' }
+  }
+
+  // Extract nullifier (uniqueIdentifier) from the last public input of the disclose proof
+  const nullifier = BigInt(discloseProof.publicInputs[discloseProof.publicInputs.length - 1]).toString()
+  if (nullifier !== uniqueIdentifier) {
+    console.error('[ZKPassport] Unique identifier mismatch:', { fromProof: nullifier, fromRequest: uniqueIdentifier })
+    return { verified: false, reason: 'UNIQUE_IDENTIFIER_MISMATCH' }
+  }
+
+  return { verified: true }
 }
 
 async function createSignedMessage(domain: string, userId: string, score: number, timestamp: number) {
@@ -32,7 +71,7 @@ async function createSignedMessage(domain: string, userId: string, score: number
 
 export async function POST(request: NextRequest) {
   try {
-    const { proofs, queryResult, uniqueIdentifier, devMode } = await request.json()
+    const { proofs, queryResult, uniqueIdentifier, devMode: _devMode } = await request.json()
 
     if (!proofs || !queryResult || !uniqueIdentifier) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
@@ -41,38 +80,9 @@ export async function POST(request: NextRequest) {
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 
-    // Intercept SDK console.warn to capture internal errors
-    const sdkWarnings: string[] = []
-    const origWarn = console.warn
-    console.warn = (...args: unknown[]) => {
-      sdkWarnings.push(args.map(a => (a instanceof Error ? a.message : String(a))).join(' '))
-      origWarn(...args)
-    }
-
-    const { ZKPassport } = await import('@zkpassport/sdk')
-    const zkPassport = new ZKPassport(domain)
-    let result
-    try {
-      result = await zkPassport.verify({
-        proofs,
-        queryResult,
-        devMode: devMode ?? DEV_MODE,
-      })
-    } finally {
-      console.warn = origWarn
-    }
-
-    if (sdkWarnings.length > 0) {
-      console.error('[ZKPassport] SDK warnings during verify:', sdkWarnings)
-    }
-
-    if (!result.verified) {
-      console.error('ZKPassport verification failed:', JSON.stringify(result.queryResultErrors ?? result, null, 2))
-      return NextResponse.json({ error: 'PROOF_VERIFICATION_FAILED', details: result.queryResultErrors }, { status: 401 })
-    }
-
-    if (result.uniqueIdentifier !== uniqueIdentifier) {
-      return NextResponse.json({ error: 'UNIQUE_IDENTIFIER_MISMATCH' }, { status: 400 })
+    const { verified, reason } = verifyProofs(proofs, domain, uniqueIdentifier)
+    if (!verified) {
+      return NextResponse.json({ error: reason ?? 'PROOF_VERIFICATION_FAILED' }, { status: 401 })
     }
 
     const timestamp = Math.floor(Date.now() / 1000)
