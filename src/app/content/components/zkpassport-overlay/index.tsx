@@ -81,7 +81,7 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
         onGeneratingProof(() => { console.log('[ZKPassport] generating proof...') })
 
         onProofGenerated((proof: ProofResult) => {
-          console.log('[ZKPassport] proof generated:', proof.name, proof.version)
+          console.log('[ZKPassport] proof generated:', proof.name, proof.version, 'publicInputs:', (proof as Record<string, unknown>).publicInputs ? `[${((proof as Record<string, unknown>).publicInputs as string[]).length} items]` : 'MISSING', 'keys:', Object.keys(proof as Record<string, unknown>).join(','))
           proofsRef.current.push(proof)
         })
 
