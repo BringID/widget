@@ -3,8 +3,15 @@ import { ethers } from 'ethers'
 
 export const runtime = 'nodejs'
 
-const DOMAIN = process.env.ZKPASSPORT_DOMAIN || 'widget.bringid.org'
 const DEV_MODE = process.env.NEXT_PUBLIC_ZKPASSPORT_DEV_MODE === 'true'
+
+function getVerificationDomain(request: NextRequest): string {
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  if (forwardedHost) return forwardedHost.split(',')[0].trim().split(':')[0].toLowerCase()
+  const host = request.headers.get('host')
+  if (host) return host.split(':')[0].toLowerCase()
+  return request.nextUrl.hostname
+}
 
 async function createSignedMessage(domain: string, userId: string, score: number, timestamp: number) {
   const privateKey = process.env.VERIFIER_PRIVATE_KEY
@@ -30,8 +37,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
+    const domain = getVerificationDomain(request)
+    console.log('[ZKPassport] verifying with domain:', domain)
+
     const { ZKPassport } = await import('@zkpassport/sdk')
-    const zkPassport = new ZKPassport(DOMAIN)
+    const zkPassport = new ZKPassport(domain)
     const result = await zkPassport.verify({
       proofs,
       queryResult,
