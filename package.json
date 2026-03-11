@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "npx rimraf .next",
-    "postinstall": "rm -rf node_modules/@scure/bip32/node_modules"
+    "postinstall": "rm -rf node_modules/@scure/bip32/node_modules && sed -i.bak \"s|from'buffer/'|from'buffer'|g\" node_modules/@zkpassport/sdk/dist/esm/index.js && rm -f node_modules/@zkpassport/sdk/dist/esm/index.js.bak"
   },
   "dependencies": {
     "@farcaster/auth-client": "^0.7.1",
