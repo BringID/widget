@@ -1,6 +1,6 @@
 'use client'
 import { FC, useState, useEffect, useRef } from 'react'
-import { ZKPassport, type ProofResult } from '@zkpassport/sdk'
+import type { ProofResult } from '@zkpassport/sdk'
 import QRCode from 'react-qr-code'
 import {
   Container,
@@ -27,7 +27,8 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
   const [processing, setProcessing] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
 
-  const zkpassportRef = useRef<ZKPassport | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const zkpassportRef = useRef<any>(null)
   const requestIdRef = useRef<string | null>(null)
   const proofsRef = useRef<ProofResult[]>([])
   const isMobile = isMobileDevice() || isMiniApp
@@ -37,6 +38,7 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
 
     const start = async () => {
       try {
+        const { ZKPassport } = await import('@zkpassport/sdk')
         const zkpassport = new ZKPassport()
         zkpassportRef.current = zkpassport
 
