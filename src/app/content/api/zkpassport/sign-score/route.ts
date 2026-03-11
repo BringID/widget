@@ -30,9 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
-    // Server-side proof verification via CJS require to avoid Next.js ESM bundling issues
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { ZKPassport } = require('@zkpassport/sdk')
+    const { ZKPassport } = await import('@zkpassport/sdk')
     const zkPassport = new ZKPassport(DOMAIN)
     const result = await zkPassport.verify({
       proofs,
