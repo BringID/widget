@@ -7,11 +7,6 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsHmrCache: false, // defaults to true
   },
-  outputFileTracingIncludes: {
-    '/content/api/zkpassport/sign-score': [
-      './node_modules/@aztec/bb.js/dest/node/barretenberg_wasm/**/*.wasm.gz',
-    ],
-  },
   serverExternalPackages: ['@neynar/nodejs-sdk', '@zkpassport/sdk', 'pino', 'thread-stream'],
   webpack: (
     config,
