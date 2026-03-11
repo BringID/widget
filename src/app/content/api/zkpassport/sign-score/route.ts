@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 import { ethers } from 'ethers'
+import {
+  getProofData,
+  getNumberOfPublicInputs,
+  getNullifierFromDisclosureProof,
+  getServiceScopeFromDisclosureProof,
+  getServiceScopeHash,
+} from '@zkpassport/utils'
 
 export const runtime = 'nodejs'
-
-const DEV_MODE = process.env.NEXT_PUBLIC_ZKPASSPORT_DEV_MODE === 'true'
 
 function getVerificationDomain(request: NextRequest): string {
   const forwardedHost = request.headers.get('x-forwarded-host')
@@ -14,37 +18,35 @@ function getVerificationDomain(request: NextRequest): string {
   return request.nextUrl.hostname
 }
 
-// Compute the service scope hash: SHA256(domain).slice(0, 31) as BigInt
-// This matches getServiceScopeHash from @zkpassport/utils
-function computeDomainScope(domain: string): bigint {
-  const hash = createHash('sha256').update(domain, 'utf8').digest()
-  return BigInt('0x' + hash.slice(0, 31).toString('hex'))
-}
-
 type ProofResult = {
   name?: string
   version?: string
   proof?: string
-  publicInputs?: string[]
 }
 
 function verifyProofs(proofs: ProofResult[], domain: string, uniqueIdentifier: string): { verified: boolean; reason?: string } {
-  // Find the disclose proof — it holds the domain scope and nullifier
   const discloseProof = proofs.find(p => p.name?.startsWith('disclose'))
-  if (!discloseProof?.publicInputs?.length) {
+  if (!discloseProof?.proof) {
     return { verified: false, reason: 'No disclose proof found' }
   }
 
-  // Check domain scope: publicInputs[2] must match SHA256(domain).slice(0,31)
-  const expectedScope = computeDomainScope(domain)
-  const actualScope = BigInt(discloseProof.publicInputs[2])
+  let proofData
+  try {
+    const numInputs = getNumberOfPublicInputs(discloseProof.name ?? 'disclose_bytes')
+    proofData = getProofData(discloseProof.proof, numInputs)
+  } catch (err) {
+    console.error('[ZKPassport] Failed to extract proof data:', err)
+    return { verified: false, reason: 'PROOF_PARSE_FAILED' }
+  }
+
+  const expectedScope = getServiceScopeHash(domain)
+  const actualScope = getServiceScopeFromDisclosureProof(proofData)
   if (expectedScope !== actualScope) {
     console.error('[ZKPassport] Scope mismatch:', { expected: expectedScope.toString(), actual: actualScope.toString(), domain })
     return { verified: false, reason: 'SCOPE_MISMATCH' }
   }
 
-  // Extract nullifier (uniqueIdentifier) from the last public input of the disclose proof
-  const nullifier = BigInt(discloseProof.publicInputs[discloseProof.publicInputs.length - 1]).toString()
+  const nullifier = getNullifierFromDisclosureProof(proofData).toString()
   if (nullifier !== uniqueIdentifier) {
     console.error('[ZKPassport] Unique identifier mismatch:', { fromProof: nullifier, fromRequest: uniqueIdentifier })
     return { verified: false, reason: 'UNIQUE_IDENTIFIER_MISMATCH' }
