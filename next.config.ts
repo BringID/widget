@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
   ) => {
     // Important: return the modified config
     config.externals.push('pino-pretty', 'lokijs', 'encoding')
+
+    if (!isServer) {
+      // Use CJS build of @zkpassport/sdk for client bundle to avoid ESM compatibility issues
+      // (buffer/ directory import, JSON import attributes, CJS named imports)
+      config.resolve.alias['@zkpassport/sdk'] = '@zkpassport/sdk/dist/cjs/index.cjs'
+    }
+
     return config
   },
 }
