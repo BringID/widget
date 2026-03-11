@@ -40,13 +40,30 @@ export async function POST(request: NextRequest) {
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 
+    // Intercept SDK console.warn to capture internal errors
+    const sdkWarnings: string[] = []
+    const origWarn = console.warn
+    console.warn = (...args: unknown[]) => {
+      sdkWarnings.push(args.map(a => (a instanceof Error ? a.message : String(a))).join(' '))
+      origWarn(...args)
+    }
+
     const { ZKPassport } = await import('@zkpassport/sdk')
     const zkPassport = new ZKPassport(domain)
-    const result = await zkPassport.verify({
-      proofs,
-      queryResult,
-      devMode: devMode ?? DEV_MODE,
-    })
+    let result
+    try {
+      result = await zkPassport.verify({
+        proofs,
+        queryResult,
+        devMode: devMode ?? DEV_MODE,
+      })
+    } finally {
+      console.warn = origWarn
+    }
+
+    if (sdkWarnings.length > 0) {
+      console.error('[ZKPassport] SDK warnings during verify:', sdkWarnings)
+    }
 
     if (!result.verified) {
       console.error('ZKPassport verification failed:', JSON.stringify(result.queryResultErrors ?? result, null, 2))
