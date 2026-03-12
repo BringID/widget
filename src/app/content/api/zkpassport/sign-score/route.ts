@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
     console.log('[ZKPassport] verification result:', {
       verified: result.verified,
       uniqueIdentifier: result.uniqueIdentifier,
+      queryResultErrors: result.queryResultErrors,
     })
 
     if (!result.verified) {
