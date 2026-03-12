@@ -1,6 +1,7 @@
 'use client'
 import { FC, useState, useEffect, useRef } from 'react'
 import { ZKPassport, type ProofResult } from '@zkpassport/sdk'
+import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
 import {
   Container,
@@ -98,33 +99,14 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
           }
 
           setProcessing(true)
-          const payload = {
-            proofs: proofsRef.current,
-            queryResult: response.result,
-            uniqueIdentifier: response.uniqueIdentifier,
-            devMode: DEV_MODE,
-          }
-          console.log('[ZKPassport] sending to sign-score API:', {
-            proofCount: payload.proofs.length,
-            proofNames: payload.proofs.map(p => p.name),
-            proofVersions: payload.proofs.map(p => p.version),
-            uniqueIdentifier: payload.uniqueIdentifier,
-            devMode: payload.devMode,
-          })
           try {
-            const apiRes = await fetch('/content/api/zkpassport/sign-score', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            })
-
-            if (!apiRes.ok) {
-              const errData = await apiRes.json()
-              console.error('[ZKPassport] sign-score API error:', errData)
-              throw new Error(errData.error || 'Failed to sign score')
-            }
-
-            const { message, signature } = await apiRes.json()
+            const { message, signature } = await messageSignerApi.signZKPassport(
+              task.messageSignerUrl!,
+              proofsRef.current,
+              response.result,
+              response.uniqueIdentifier,
+              window.location.hostname,
+            )
             console.log('[ZKPassport] sign-score success')
             onComplete({ message, signature })
           } catch (err) {
