@@ -47,6 +47,14 @@ export async function POST(request: NextRequest) {
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 
+    // Capture SDK's internal console.warn to surface hidden errors
+    const originalWarn = console.warn
+    const capturedWarnings: unknown[] = []
+    console.warn = (...args: unknown[]) => {
+      capturedWarnings.push(args)
+      originalWarn(...args)
+    }
+
     const zkpassport = new ZKPassport(domain)
     const result = await zkpassport.verify({
       proofs,
@@ -54,6 +62,12 @@ export async function POST(request: NextRequest) {
       devMode: devMode ?? DEV_MODE,
       writingDirectory: '/tmp',
     })
+
+    console.warn = originalWarn
+
+    if (capturedWarnings.length > 0) {
+      console.log('[ZKPassport] SDK warnings during verify:', JSON.stringify(capturedWarnings, null, 2))
+    }
 
     console.log('[ZKPassport] verification result:', {
       verified: result.verified,
