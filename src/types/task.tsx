@@ -15,6 +15,7 @@ type TTask = {
   steps: any
   domain?: string;
   internal?: boolean;
+  messageSignerUrl?: string;
 };
 
 export default TTask;

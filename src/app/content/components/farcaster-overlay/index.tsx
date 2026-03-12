@@ -1,6 +1,7 @@
 'use client'
 import { FC, useState, useEffect, useRef, useCallback } from 'react'
 import { createAppClient, viemConnector } from '@farcaster/auth-client'
+import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
 import {
   Container,
@@ -82,22 +83,12 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
             setProcessing(true)
 
             try {
-              const apiRes = await fetch('/content/api/farcaster/sign-score', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  message: data.message,
-                  signature: data.signature,
-                  nonce: nonceRef.current,
-                }),
-              })
-
-              if (!apiRes.ok) {
-                const errData = await apiRes.json()
-                throw new Error(errData.error || 'Failed to sign score')
-              }
-
-              const { message: scoreMessage, signature: scoreSignature } = await apiRes.json()
+              const { message: scoreMessage, signature: scoreSignature } = await messageSignerApi.signFarcaster(
+                task.messageSignerUrl!,
+                data.message,
+                data.signature,
+                nonceRef.current,
+              )
               onComplete({ message: scoreMessage, signature: scoreSignature })
             } catch (err) {
               onError(err instanceof Error ? err.message : 'Unknown error')
