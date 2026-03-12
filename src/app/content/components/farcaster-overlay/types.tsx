@@ -3,7 +3,7 @@ import TTask from '@/types/task'
 export type TFarcasterCompleteData = {
   message: {
     domain: string
-    user_id: string
+    userId: string
     score: number
     timestamp: number
   }

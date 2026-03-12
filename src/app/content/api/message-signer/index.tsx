@@ -1,4 +1,3 @@
-import { type ProofResult } from '@zkpassport/sdk'
 import configs from '../../../configs'
 import { api } from '@/utils'
 import { TSignFarcaster, TSignZKPassport } from './types'
