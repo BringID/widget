@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ethers } from 'ethers'
-import {
-  getProofData,
-  getNumberOfPublicInputs,
-  getNullifierFromDisclosureProof,
-  getServiceScopeFromDisclosureProof,
-  getServiceScopeHash,
-} from '@zkpassport/utils'
+import { ZKPassport, type ProofResult, type QueryResult } from '@zkpassport/sdk'
 
 export const runtime = 'nodejs'
+export const maxDuration = 300
+
+const DEV_MODE = process.env.NEXT_PUBLIC_ZKPASSPORT_DEV_MODE === 'true'
 
 function getVerificationDomain(request: NextRequest): string {
   const forwardedHost = request.headers.get('x-forwarded-host')
@@ -16,43 +13,6 @@ function getVerificationDomain(request: NextRequest): string {
   const host = request.headers.get('host')
   if (host) return host.split(':')[0].toLowerCase()
   return request.nextUrl.hostname
-}
-
-type ProofResult = {
-  name?: string
-  version?: string
-  proof?: string
-}
-
-function verifyProofs(proofs: ProofResult[], domain: string, uniqueIdentifier: string): { verified: boolean; reason?: string } {
-  const discloseProof = proofs.find(p => p.name?.startsWith('disclose'))
-  if (!discloseProof?.proof) {
-    return { verified: false, reason: 'No disclose proof found' }
-  }
-
-  let proofData
-  try {
-    const numInputs = getNumberOfPublicInputs(discloseProof.name ?? 'disclose_bytes')
-    proofData = getProofData(discloseProof.proof, numInputs)
-  } catch (err) {
-    console.error('[ZKPassport] Failed to extract proof data:', err)
-    return { verified: false, reason: 'PROOF_PARSE_FAILED' }
-  }
-
-  const expectedScope = getServiceScopeHash(domain)
-  const actualScope = getServiceScopeFromDisclosureProof(proofData)
-  if (expectedScope !== actualScope) {
-    console.error('[ZKPassport] Scope mismatch:', { expected: expectedScope.toString(), actual: actualScope.toString(), domain })
-    return { verified: false, reason: 'SCOPE_MISMATCH' }
-  }
-
-  const nullifier = getNullifierFromDisclosureProof(proofData).toString()
-  if (nullifier !== uniqueIdentifier) {
-    console.error('[ZKPassport] Unique identifier mismatch:', { fromProof: nullifier, fromRequest: uniqueIdentifier })
-    return { verified: false, reason: 'UNIQUE_IDENTIFIER_MISMATCH' }
-  }
-
-  return { verified: true }
 }
 
 async function createSignedMessage(domain: string, userId: string, score: number, timestamp: number) {
@@ -73,7 +33,12 @@ async function createSignedMessage(domain: string, userId: string, score: number
 
 export async function POST(request: NextRequest) {
   try {
-    const { proofs, queryResult, uniqueIdentifier, devMode: _devMode } = await request.json()
+    const { proofs, queryResult, uniqueIdentifier, devMode } = await request.json() as {
+      proofs: ProofResult[]
+      queryResult: QueryResult
+      uniqueIdentifier: string
+      devMode?: boolean
+    }
 
     if (!proofs || !queryResult || !uniqueIdentifier) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
@@ -82,9 +47,29 @@ export async function POST(request: NextRequest) {
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 
-    const { verified, reason } = verifyProofs(proofs, domain, uniqueIdentifier)
-    if (!verified) {
-      return NextResponse.json({ error: reason ?? 'PROOF_VERIFICATION_FAILED' }, { status: 401 })
+    const zkpassport = new ZKPassport(domain)
+    const result = await zkpassport.verify({
+      proofs,
+      queryResult,
+      devMode: devMode ?? DEV_MODE,
+      writingDirectory: '/tmp',
+    })
+
+    console.log('[ZKPassport] verification result:', {
+      verified: result.verified,
+      uniqueIdentifier: result.uniqueIdentifier,
+    })
+
+    if (!result.verified) {
+      return NextResponse.json({ error: 'PROOF_VERIFICATION_FAILED' }, { status: 401 })
+    }
+
+    if (result.uniqueIdentifier !== uniqueIdentifier) {
+      console.error('[ZKPassport] Unique identifier mismatch:', {
+        fromProof: result.uniqueIdentifier,
+        fromRequest: uniqueIdentifier,
+      })
+      return NextResponse.json({ error: 'UNIQUE_IDENTIFIER_MISMATCH' }, { status: 400 })
     }
 
     const timestamp = Math.floor(Date.now() / 1000)
@@ -101,6 +86,7 @@ export async function POST(request: NextRequest) {
       signature: signedResult.signature,
     })
   } catch (error) {
+    console.error('[ZKPassport] Error in sign-score:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
