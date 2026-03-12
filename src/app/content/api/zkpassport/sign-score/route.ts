@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
+    // Point bb.js CRS to the pre-bundled files (avoids runtime download on cold starts)
+    if (!process.env.CRS_PATH) {
+      process.env.CRS_PATH = `${process.cwd()}/crs-cache`
+    }
+
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 

@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/content/api/zkpassport/sign-score': [
       './node_modules/@aztec/bb.js/dest/node/**/*.wasm.gz',
+      './crs-cache/**',
     ],
   },
   serverExternalPackages: ['@neynar/nodejs-sdk', '@zkpassport/sdk', '@zkpassport/utils', 'pino', 'thread-stream'],
