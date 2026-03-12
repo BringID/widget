@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
     const domain = getVerificationDomain(request)
     console.log('[ZKPassport] verifying with domain:', domain)
 
-    // Capture SDK's internal console.warn to surface hidden errors
+    // Capture SDK's internal console.warn/error to surface hidden errors
     const originalWarn = console.warn
-    const capturedWarnings: unknown[] = []
-    console.warn = (...args: unknown[]) => {
-      capturedWarnings.push(args)
-      originalWarn(...args)
-    }
+    const originalError = console.error
+    const capturedLogs: unknown[] = []
+    console.warn = (...args: unknown[]) => { capturedLogs.push({ level: 'warn', args: args.map(String) }); originalWarn(...args) }
+    console.error = (...args: unknown[]) => { capturedLogs.push({ level: 'error', args: args.map(String) }); originalError(...args) }
 
+    const t0 = Date.now()
     const zkpassport = new ZKPassport(domain)
     const result = await zkpassport.verify({
       proofs,
@@ -62,21 +62,18 @@ export async function POST(request: NextRequest) {
       devMode: devMode ?? DEV_MODE,
       writingDirectory: '/tmp',
     })
+    const elapsed = Date.now() - t0
 
     console.warn = originalWarn
+    console.error = originalError
 
-    if (capturedWarnings.length > 0) {
-      console.log('[ZKPassport] SDK warnings during verify:', JSON.stringify(capturedWarnings, null, 2))
-    }
-
-    console.log('[ZKPassport] verification result:', {
-      verified: result.verified,
-      uniqueIdentifier: result.uniqueIdentifier,
-      queryResultErrors: result.queryResultErrors,
-    })
+    console.log('[ZKPassport] verify done:', { verified: result.verified, elapsed, logs: capturedLogs, queryResultErrors: result.queryResultErrors })
 
     if (!result.verified) {
-      return NextResponse.json({ error: 'PROOF_VERIFICATION_FAILED', details: result.queryResultErrors }, { status: 401 })
+      return NextResponse.json({
+        error: 'PROOF_VERIFICATION_FAILED',
+        debug: { elapsed, logs: capturedLogs, queryResultErrors: result.queryResultErrors },
+      }, { status: 401 })
     }
 
     if (result.uniqueIdentifier !== uniqueIdentifier) {
