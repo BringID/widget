@@ -1,5 +1,6 @@
 'use client'
 import { FC, useState, useEffect, useRef, useCallback } from 'react'
+import { useTheme } from 'styled-components'
 import { SelfAppBuilder, type SelfApp } from '@selfxyz/qrcode'
 import { REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common'
 import { io, type Socket } from 'socket.io-client'
@@ -13,6 +14,7 @@ import {
   ButtonStyled,
   SpinnerStyled,
   QRWrapper,
+  QRContainer,
   QRHint,
 } from './styled-components'
 import { TProps, TSelfCompleteData } from './types'
@@ -34,6 +36,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const isMobile = isMobileDevice() || isMiniApp
+  const theme = useTheme()
 
   const signerUrl = task.messageSignerUrl!
   const qrUrl = `${REDIRECT_URL}?sessionId=${sessionId}`
@@ -149,7 +152,9 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     return (
       <QRWrapper>
-        <QRCode value={qrUrl} size={200} />
+        <QRContainer>
+          <QRCode value={qrUrl} size={180} fgColor={theme.highlightColor} bgColor="transparent" />
+        </QRContainer>
         <QRHint>Scan with Self app</QRHint>
       </QRWrapper>
     )
