@@ -88,6 +88,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
                 data.message,
                 data.signature,
                 nonceRef.current,
+                window.location.hostname,
               )
               onComplete({ message: scoreMessage, signature: scoreSignature })
             } catch (err) {
