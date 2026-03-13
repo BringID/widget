@@ -17,6 +17,7 @@ import {
 } from './styled-components'
 import { TProps } from './types'
 import { TSelfEndpointType } from '@/types'
+import { api } from '@/utils'
 
 const APP_NAME = process.env.NEXT_PUBLIC_SELF_APP_NAME || 'BringID'
 const SCOPE = process.env.NEXT_PUBLIC_SELF_SCOPE || 'bringid-verification'
@@ -43,19 +44,13 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     setProcessing(true)
 
     try {
-      const res = await fetch(`${signerUrl}/get-result`, {
-        credentials: 'include',
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}`,
-        },
-      })
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || `Failed to get result: ${res.status}`)
-      }
-
-      const { message, signature } = await res.json()
+      const { message, signature } = await api<{ message: string; signature: string }>(
+        `${signerUrl}/get-result`,
+        'GET',
+        { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
+        {},
+        'include'
+      )
       onComplete({ message, signature })
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Failed to get result')
@@ -68,18 +63,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   useEffect(() => {
     const init = async () => {
       try {
-        const res = await fetch(`${signerUrl}/init-session`, {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}`,
-          },
-        })
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}))
-          throw new Error(errData.error || 'Failed to initialize session')
-        }
-
-        const { userId } = await res.json()
+        const { userId } = await api<{ userId: string }>(
+          `${signerUrl}/init-session`,
+          'GET',
+          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` }
+        )
 
         const app = new SelfAppBuilder({
           version: 2,
