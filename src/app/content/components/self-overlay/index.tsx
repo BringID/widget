@@ -69,7 +69,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     const init = async () => {
       try {
         const res = await fetch(`${signerUrl}/init-session`, {
-          credentials: 'include',
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}`,
           },
