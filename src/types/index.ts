@@ -33,6 +33,7 @@ export type { TVerification } from './verification';
 
 export type { TTaskServer } from './task-server';
 export type { TVerifyResult } from './verify-result';
+export type { default as TSelfEndpointType } from './self-endpoint-type';
 
 export type {
   TVerificationType,

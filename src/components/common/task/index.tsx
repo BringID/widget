@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { FarcasterOverlay, ZKPassportOverlay } from '@/app/content/components'
+import { FarcasterOverlay, ZKPassportOverlay, SelfOverlay } from '@/app/content/components'
 
 const defineTaskContent = (
   status: TVerificationStatus,
@@ -62,6 +62,7 @@ const Task: FC<TProps> = ({
   const [loading, setLoading] = useState(false)
   const [showFarcasterOverlay, setShowFarcasterOverlay] = useState(false)
   const [showZKPassportOverlay, setShowZKPassportOverlay] = useState(false)
+  const [showSelfOverlay, setShowSelfOverlay] = useState(false)
 
   const isAutoVerifying = autoVerifyingTaskId === task.id
 
@@ -83,6 +84,8 @@ const Task: FC<TProps> = ({
       if (task.internal) {
         if (task.service?.toLowerCase() === 'farcaster') {
           runInternalVerification(() => setShowFarcasterOverlay(true))
+        } else if (task.service?.toLowerCase() === 'self') {
+          runInternalVerification(() => setShowSelfOverlay(true))
         } else {
           runInternalVerification(() => setShowZKPassportOverlay(true))
         }
@@ -168,6 +171,15 @@ const Task: FC<TProps> = ({
           onComplete={(data) => handleInternalComplete(() => setShowZKPassportOverlay(false), data)}
           onError={(err) => { setShowZKPassportOverlay(false); onError(err) }}
           onClose={() => setShowZKPassportOverlay(false)}
+        />
+      )}
+      {showSelfOverlay && (
+        <SelfOverlay
+          task={task}
+          isMiniApp={user.isMiniApp}
+          onComplete={(data) => handleInternalComplete(() => setShowSelfOverlay(false), data)}
+          onError={(err) => { setShowSelfOverlay(false); onError(err) }}
+          onClose={() => setShowSelfOverlay(false)}
         />
       )}
       <Value>{content}</Value>

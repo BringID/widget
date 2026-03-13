@@ -14,7 +14,9 @@
   "dependencies": {
     "@farcaster/auth-client": "^0.7.1",
     "@farcaster/auth-kit": "^0.8.2",
-"@reduxjs/toolkit": "^2.3.0",
+    "@reduxjs/toolkit": "^2.3.0",
+    "@selfxyz/common": "^0.0.9",
+    "@selfxyz/qrcode": "^1.0.22",
     "@semaphore-protocol/core": "^4.13.1",
     "@semaphore-protocol/data": "^4.11.1",
     "@semaphore-protocol/identity": "^4.13.1",
@@ -31,6 +33,7 @@
     "redux": "^4.1.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.4.1",
+    "socket.io-client": "^4.8.3",
     "styled-components": "^6.1.13"
   },
   "devDependencies": {
@@ -44,7 +47,7 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5"
   },
-"browser": {
+  "browser": {
     "fs": false
   },
   "resolutions": {
