@@ -16,7 +16,6 @@ import {
 import { TProps } from './types'
 
 const RELAY = process.env.NEXT_PUBLIC_FARCASTER_RELAY || 'https://relay.farcaster.xyz'
-const SIWE_URI = process.env.NEXT_PUBLIC_FARCASTER_SIWE_URI || 'https://widget.bringid.org'
 const POLL_INTERVAL_MS = 1500
 
 function generateNonce(): string {
@@ -118,7 +117,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
     try {
       const res = await appClient.current.createChannel({
-        siweUri: SIWE_URI,
+        siweUri: window.location.origin,
         domain: window.location.hostname,
         nonce: nonceRef.current,
       })
