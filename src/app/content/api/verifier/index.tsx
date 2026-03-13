@@ -57,7 +57,12 @@ const verifyOAuth: TVerifyOAuth = async (
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
     {
-      message,
+      message: {
+        domain: message.domain,
+        userId: message.user_id,
+        score: message.score,
+        timestamp: message.timestamp,
+      },
       signature,
       registry,
       chain_id: chainId,

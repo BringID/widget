@@ -1,6 +1,6 @@
 type TOAuthMessage = {
   domain: string
-  userId: string
+  user_id: string
   score: number
   timestamp: number
 }

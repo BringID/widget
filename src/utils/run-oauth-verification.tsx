@@ -47,8 +47,7 @@ const runOAuthVerification = async (params: TRunOAuthVerificationParams): Promis
   setLoading(true)
   setIsActive(true)
 
-  const { message: rawMessage, signature } = await getAuthSemaphoreData(task, plausible, authUrl)
-  const message = { domain: rawMessage.domain, userId: rawMessage.user_id, score: rawMessage.score, timestamp: rawMessage.timestamp }
+  const { message, signature } = await getAuthSemaphoreData(task, plausible, authUrl)
 
   const verification = await submitOAuthVerification(message, signature, { task, userKey, appId, modeConfigs, mode, plausible })
 
