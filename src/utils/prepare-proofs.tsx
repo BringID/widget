@@ -1,9 +1,9 @@
 import { TModeConfigs, TSemaphoreProof, TTask, TVerification } from "@/types";
 import { defineTaskByCredentialGroupId, calculateScope, getAppSemaphoreGroupId } from "@/utils";
-import semaphore from "../semaphore";
+import semaphore from "@/app/content/semaphore";
 import { generateProof } from '@semaphore-protocol/core';
-import indexer from "../api/indexer";
-import configs from '../../configs';
+import indexer from "@/app/content/api/indexer";
+import configs from '@/app/configs';
 import { ethers } from 'ethers';
 
 type TGetProofs = (

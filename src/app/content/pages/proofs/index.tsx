@@ -33,7 +33,7 @@ import {
   TOnConfirm,
   TSetPage
 } from './types'
-import { prepareProofs } from '../../utils'
+import { prepareProofs } from '@/utils'
 import { useConfigs } from '../../store/reducers/configs'
 import { useModal } from '../../store/reducers/modal'
 import { usePlausible } from 'next-plausible'
