@@ -66,7 +66,9 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         const { userId } = await api<{ userId: string }>(
           `${signerUrl}/init-session`,
           'GET',
-          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` }
+          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
+          {},
+          'include'
         )
 
         const app = new SelfAppBuilder({
