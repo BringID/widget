@@ -15,7 +15,7 @@ import {
   QRWrapper,
   QRHint,
 } from './styled-components'
-import { TProps } from './types'
+import { TProps, TSelfCompleteData } from './types'
 import { TSelfEndpointType } from '@/types'
 import { api } from '@/utils'
 
@@ -44,7 +44,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     setProcessing(true)
 
     try {
-      const { message, signature } = await api<{ message: string; signature: string }>(
+      const { message, signature } = await api<TSelfCompleteData>(
         `${signerUrl}/get-result`,
         'GET',
         { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
