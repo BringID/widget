@@ -25,7 +25,7 @@ const signZKPassport: TSignZKPassport = (
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
-    { proofs, queryResult, uniqueIdentifier, domain },
+    { proofs, query_result: queryResult, unique_identifier: uniqueIdentifier, domain },
   )
 
 const messageSignerApi = {

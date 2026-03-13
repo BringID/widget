@@ -1,8 +1,12 @@
 import { type ProofResult } from '@zkpassport/sdk'
-import TOAuthMessage from '@/types/oauth-message'
 
 type TSignedMessage = {
-  message: TOAuthMessage
+  message: {
+    domain: string
+    user_id: string
+    score: number
+    timestamp: number
+  }
   signature: string
 }
 

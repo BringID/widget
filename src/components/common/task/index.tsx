@@ -113,13 +113,14 @@ const Task: FC<TProps> = ({
 
   const handleInternalComplete = async (
     hideOverlay: () => void,
-    { message, signature }: { message: any; signature: string }
+    { message, signature }: { message: { domain: string; user_id: string; score: number; timestamp: number }; signature: string }
   ) => {
     hideOverlay()
     setLoading(true)
     setIsActive(true)
     try {
-      const verification = await submitOAuthVerification(message, signature, baseParams)
+      const oauthMessage = { domain: message.domain, userId: message.user_id, score: message.score, timestamp: message.timestamp }
+      const verification = await submitOAuthVerification(oauthMessage, signature, baseParams)
       setLoading(false)
       setIsActive(false)
       dispatch(addVerification(verification))
