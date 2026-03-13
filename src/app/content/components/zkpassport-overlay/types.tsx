@@ -3,7 +3,7 @@ import TTask from '@/types/task'
 export type TZKPassportCompleteData = {
   message: {
     domain: string
-    userId: string
+    user_id: string
     score: number
     timestamp: number
   }
