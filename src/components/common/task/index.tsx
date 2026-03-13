@@ -81,7 +81,7 @@ const Task: FC<TProps> = ({
   const handleClick = async () => {
     try {
       if (task.internal) {
-        if (task.service === 'farcaster') {
+        if (task.service?.toLowerCase() === 'farcaster') {
           runInternalVerification(() => setShowFarcasterOverlay(true))
         } else {
           runInternalVerification(() => setShowZKPassportOverlay(true))
