@@ -16,7 +16,6 @@ import {
 import { TProps } from './types'
 
 const RELAY = process.env.NEXT_PUBLIC_FARCASTER_RELAY || 'https://relay.farcaster.xyz'
-const DOMAIN = process.env.NEXT_PUBLIC_FARCASTER_DOMAIN || 'widget.bringid.org'
 const SIWE_URI = process.env.NEXT_PUBLIC_FARCASTER_SIWE_URI || 'https://widget.bringid.org'
 const POLL_INTERVAL_MS = 1500
 
@@ -120,7 +119,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
     try {
       const res = await appClient.current.createChannel({
         siweUri: SIWE_URI,
-        domain: DOMAIN,
+        domain: window.location.hostname,
         nonce: nonceRef.current,
       })
 
