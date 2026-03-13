@@ -58,11 +58,10 @@ const verifyOAuth: TVerifyOAuth = async (
     },
     {
       message: {
-        ...message,
-        user_id: undefined,
-
-        // @ts-ignore
-        userId: message.user_id
+        domain: message.domain,
+        userId: message.user_id,
+        score: message.score,
+        timestamp: message.timestamp,
       },
       signature,
       registry,

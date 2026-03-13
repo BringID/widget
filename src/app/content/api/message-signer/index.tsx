@@ -2,14 +2,14 @@ import configs from '../../../configs'
 import { api } from '@/utils'
 import { TSignFarcaster, TSignZKPassport } from './types'
 
-const signFarcaster: TSignFarcaster = (signerEndpoint, message, signature, nonce) =>
+const signFarcaster: TSignFarcaster = (signerEndpoint, message, signature, nonce, domain) =>
   api(
     signerEndpoint,
     'POST',
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
     },
-    { message, signature, nonce },
+    { message, signature, nonce, domain },
   )
 
 const signZKPassport: TSignZKPassport = (

@@ -14,7 +14,8 @@ type TSignFarcaster = (
   signerEndpoint: string,
   message: string,
   signature: string,
-  nonce: string
+  nonce: string,
+  domain: string
 ) => Promise<TSignedMessage>
 
 type TSignZKPassport = (

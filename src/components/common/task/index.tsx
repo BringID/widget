@@ -119,8 +119,7 @@ const Task: FC<TProps> = ({
     setLoading(true)
     setIsActive(true)
     try {
-      const oauthMessage = { domain: message.domain, userId: message.user_id, score: message.score, timestamp: message.timestamp }
-      const verification = await submitOAuthVerification(oauthMessage, signature, baseParams)
+      const verification = await submitOAuthVerification(message, signature, baseParams)
       setLoading(false)
       setIsActive(false)
       dispatch(addVerification(verification))
