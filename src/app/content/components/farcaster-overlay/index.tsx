@@ -66,11 +66,14 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
           if (res.isError) {
             stopPolling()
-            onError(res.error?.message || 'Authentication failed')
+            const msg = res.error?.message || 'Authentication failed'
+            addLog(`[poll] isError: ${msg}`)
+            onError(msg)
             return
           }
 
           const data = res.data
+          addLog(`[poll] state=${data?.state} hasMsg=${!!data?.message} hasSig=${!!data?.signature}`)
           if (data?.state === 'completed' && data.message && data.signature) {
             stopPolling()
             addLog('[farcaster] state=completed, closing window')
