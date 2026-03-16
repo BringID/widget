@@ -36,6 +36,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [logs, setLogs] = useState<string[]>([])
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const urlOpenedRef = useRef(false)
   const isMobile = isMobileDevice() || isMiniApp
   const theme = useTheme()
 
@@ -44,9 +46,17 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   const addLog = (msg: string) => setLogs(prev => [...prev, msg])
 
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current)
+      pollingRef.current = null
+    }
+  }, [])
+
   const fetchResult = useCallback(async () => {
     if (resultRequestInFlightRef.current) return
     resultRequestInFlightRef.current = true
+    stopPolling()
     setProcessing(true)
     addLog('[self] fetchResult called')
 
@@ -68,7 +78,33 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
       resultRequestInFlightRef.current = false
       setProcessing(false)
     }
-  }, [signerUrl, onComplete, onError])
+  }, [signerUrl, onComplete, onError, stopPolling])
+
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) return
+    addLog('[self] starting result polling')
+    pollingRef.current = setInterval(async () => {
+      if (resultRequestInFlightRef.current) return
+      resultRequestInFlightRef.current = true
+      try {
+        const { message, signature } = await api<TSelfCompleteData>(
+          `${signerUrl}/get-result`,
+          'GET',
+          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
+          {},
+          'include'
+        )
+        addLog('[self] poll: result found')
+        stopPolling()
+        setProcessing(true)
+        onComplete({ message, signature })
+      } catch {
+        // Result not ready yet, continue polling
+      } finally {
+        resultRequestInFlightRef.current = false
+      }
+    }, 3000)
+  }, [signerUrl, onComplete, stopPolling])
 
   useEffect(() => {
     addLog(`[self] mount sessionId=${sessionId}`)
@@ -111,6 +147,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
 
     init()
+
+    return () => stopPolling()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -125,9 +163,15 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     })
 
     socketRef.current = socket
+    let isFirstConnect = true
 
     socket.on('connect', () => {
       addLog(`[socket] connected id=${socket.id}`)
+      if (!isFirstConnect) {
+        addLog('[socket] reconnected → re-emitting self_app')
+        socket.emit('self_app', { ...selfApp, sessionId })
+      }
+      isFirstConnect = false
     })
 
     socket.on('disconnect', (reason) => {
@@ -156,7 +200,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     socket.on('connect_error', (err) => {
       addLog(`[socket] connect_error: ${err.message}`)
-      onError('Failed to connect to Self relayer')
+      // Don't call onError here — socket.io will auto-retry
     })
 
     return () => {
@@ -166,6 +210,33 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
   }, [selfApp]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && urlOpenedRef.current && !resultRequestInFlightRef.current) {
+        addLog('[self] page visible after url open → checking result')
+        resultRequestInFlightRef.current = true
+        api<TSelfCompleteData>(
+          `${signerUrl}/get-result`,
+          'GET',
+          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
+          {},
+          'include'
+        ).then(({ message, signature }) => {
+          addLog('[self] visibility check: result found')
+          stopPolling()
+          setProcessing(true)
+          onComplete({ message, signature })
+        }).catch(() => {
+          // Not ready yet, polling will catch it
+        }).finally(() => {
+          resultRequestInFlightRef.current = false
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleOpenUrl = () => {
     addLog(`[self] opening url isMiniApp=${isMiniApp}`)
     if (isMiniApp) {
@@ -173,6 +244,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     } else {
       window.open(qrUrl, '_blank')
     }
+    urlOpenedRef.current = true
+    startPolling()
   }
 
   const renderBody = () => {
