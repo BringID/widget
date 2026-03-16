@@ -4,7 +4,7 @@ import { TSignFarcaster, TSignZKPassport } from './types'
 
 const signFarcaster: TSignFarcaster = (signerEndpoint, message, signature, nonce, domain) =>
   api(
-    signerEndpoint,
+    `${signerEndpoint}/verify`,
     'POST',
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
@@ -20,7 +20,7 @@ const signZKPassport: TSignZKPassport = (
   domain,
 ) =>
   api(
-    signerEndpoint,
+    `${signerEndpoint}/verify`,
     'POST',
     {
       Authorization: `Bearer ${configs.ZUPLO_API_KEY}`,
