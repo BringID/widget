@@ -56,7 +56,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   const getResultUrl = useCallback(() => {
     const uid = userIdRef.current
-    return uid ? `${signerUrl}/get-result?userId=${uid}` : `${signerUrl}/get-result`
+    const url = uid ? `${signerUrl}/get-result?userId=${uid}` : `${signerUrl}/get-result`
+    return url
   }, [signerUrl])
 
   const fetchResult = useCallback(async () => {
@@ -88,7 +89,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   const startPolling = useCallback(() => {
     if (pollingRef.current) return
-    addLog('[self] starting result polling')
+    addLog(`[self] starting result polling url=${getResultUrl()}`)
     pollingRef.current = setInterval(async () => {
       if (resultRequestInFlightRef.current) return
       resultRequestInFlightRef.current = true
@@ -121,14 +122,15 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     const init = async () => {
       try {
         addLog('[self] calling init-session...')
-        const { userId } = await api<{ userId: string }>(
+        const initResponse = await api<Record<string, unknown>>(
           `${signerUrl}/init-session`,
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
           'include'
         )
-        addLog(`[self] init-session OK userId=${userId}`)
+        addLog(`[self] init-session response: ${JSON.stringify(initResponse)}`)
+        const userId = initResponse.userId as string
         userIdRef.current = userId
 
         const app = new SelfAppBuilder({
