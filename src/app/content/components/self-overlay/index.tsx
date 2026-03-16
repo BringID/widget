@@ -37,6 +37,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const urlOpenedRef = useRef(false)
   const isMobile = isMobileDevice() || isMiniApp
   const theme = useTheme()
 
@@ -209,6 +210,33 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
   }, [selfApp]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && urlOpenedRef.current && !resultRequestInFlightRef.current) {
+        addLog('[self] page visible after url open → checking result')
+        resultRequestInFlightRef.current = true
+        api<TSelfCompleteData>(
+          `${signerUrl}/get-result`,
+          'GET',
+          { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
+          {},
+          'include'
+        ).then(({ message, signature }) => {
+          addLog('[self] visibility check: result found')
+          stopPolling()
+          setProcessing(true)
+          onComplete({ message, signature })
+        }).catch(() => {
+          // Not ready yet, polling will catch it
+        }).finally(() => {
+          resultRequestInFlightRef.current = false
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleOpenUrl = () => {
     addLog(`[self] opening url isMiniApp=${isMiniApp}`)
     if (isMiniApp) {
@@ -216,6 +244,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     } else {
       window.open(qrUrl, '_blank')
     }
+    urlOpenedRef.current = true
     startPolling()
   }
 
