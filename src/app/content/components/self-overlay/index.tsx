@@ -33,12 +33,12 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [processing, setProcessing] = useState(false)
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null)
   const [sessionId] = useState(() => uuidv4())
+  const [socketReady, setSocketReady] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const urlOpenedRef = useRef(false)
-  const userIdRef = useRef<string | null>(null)
   const isMobile = isMobileDevice() || isMiniApp
   const theme = useTheme()
 
@@ -54,12 +54,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
   }, [])
 
-  const getResultUrl = useCallback(() => {
-    const uid = userIdRef.current
-    const url = uid ? `${signerUrl}/get-result?userId=${uid}` : `${signerUrl}/get-result`
-    return url
-  }, [signerUrl])
-
   const fetchResult = useCallback(async () => {
     if (resultRequestInFlightRef.current) return
     resultRequestInFlightRef.current = true
@@ -69,7 +63,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     try {
       const { message, signature } = await api<TSelfCompleteData>(
-        getResultUrl(),
+        `${signerUrl}/get-result`,
         'GET',
         { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
         {},
@@ -85,17 +79,17 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
       resultRequestInFlightRef.current = false
       setProcessing(false)
     }
-  }, [signerUrl, onComplete, onError, stopPolling, getResultUrl])
+  }, [signerUrl, onComplete, onError, stopPolling])
 
   const startPolling = useCallback(() => {
     if (pollingRef.current) return
-    addLog(`[self] starting result polling url=${getResultUrl()}`)
+    addLog('[self] starting result polling')
     pollingRef.current = setInterval(async () => {
       if (resultRequestInFlightRef.current) return
       resultRequestInFlightRef.current = true
       try {
         const { message, signature } = await api<TSelfCompleteData>(
-          getResultUrl(),
+          `${signerUrl}/get-result`,
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
@@ -111,7 +105,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         resultRequestInFlightRef.current = false
       }
     }, 3000)
-  }, [signerUrl, onComplete, stopPolling, getResultUrl])
+  }, [signerUrl, onComplete, stopPolling])
 
   useEffect(() => {
     addLog(`[self] mount sessionId=${sessionId}`)
@@ -131,7 +125,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         )
         addLog(`[self] init-session response: ${JSON.stringify(initResponse)}`)
         const userId = initResponse.userId as string
-        userIdRef.current = userId
 
         const app = new SelfAppBuilder({
           version: 2,
@@ -176,15 +169,19 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     socket.on('connect', () => {
       addLog(`[socket] connected id=${socket.id}`)
-      if (!isFirstConnect) {
+      setSocketReady(true)
+      if (isFirstConnect) {
+        addLog('[socket] first connect → emitting self_app')
+      } else {
         addLog('[socket] reconnected → re-emitting self_app')
-        socket.emit('self_app', { ...selfApp, sessionId })
       }
+      socket.emit('self_app', { ...selfApp, sessionId })
       isFirstConnect = false
     })
 
     socket.on('disconnect', (reason) => {
       addLog(`[socket] disconnected reason=${reason}`)
+      setSocketReady(false)
     })
 
     socket.on('mobile_status', (data: { status?: string; error_code?: string; reason?: string }) => {
@@ -225,7 +222,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         addLog('[self] page visible after url open → checking result')
         resultRequestInFlightRef.current = true
         api<TSelfCompleteData>(
-          getResultUrl(),
+          `${signerUrl}/get-result`,
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
@@ -237,7 +234,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           onComplete({ message, signature })
         }).catch((err) => {
           addLog(`[self] visibility check: not ready (${err instanceof Error ? err.message : 'error'})`)
-          // Not ready yet, polling will catch it
         }).finally(() => {
           resultRequestInFlightRef.current = false
         })
@@ -245,7 +241,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [signerUrl, onComplete, stopPolling, getResultUrl]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenUrl = () => {
     addLog(`[self] opening url isMiniApp=${isMiniApp}`)
@@ -263,8 +259,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     if (isMobile) {
       return (
-        <ButtonStyled appearance="action" onClick={handleOpenUrl}>
-          Open Self app
+        <ButtonStyled appearance="action" onClick={handleOpenUrl} disabled={!socketReady}>
+          {socketReady ? 'Open Self app' : 'Connecting...'}
         </ButtonStyled>
       )
     }
