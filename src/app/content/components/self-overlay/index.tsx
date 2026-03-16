@@ -38,6 +38,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const urlOpenedRef = useRef(false)
+  const userIdRef = useRef<string | null>(null)
   const isMobile = isMobileDevice() || isMiniApp
   const theme = useTheme()
 
@@ -53,6 +54,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
   }, [])
 
+  const getResultUrl = useCallback(() => {
+    const uid = userIdRef.current
+    return uid ? `${signerUrl}/get-result?userId=${uid}` : `${signerUrl}/get-result`
+  }, [signerUrl])
+
   const fetchResult = useCallback(async () => {
     if (resultRequestInFlightRef.current) return
     resultRequestInFlightRef.current = true
@@ -62,7 +68,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
     try {
       const { message, signature } = await api<TSelfCompleteData>(
-        `${signerUrl}/get-result`,
+        getResultUrl(),
         'GET',
         { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
         {},
@@ -78,7 +84,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
       resultRequestInFlightRef.current = false
       setProcessing(false)
     }
-  }, [signerUrl, onComplete, onError, stopPolling])
+  }, [signerUrl, onComplete, onError, stopPolling, getResultUrl])
 
   const startPolling = useCallback(() => {
     if (pollingRef.current) return
@@ -88,7 +94,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
       resultRequestInFlightRef.current = true
       try {
         const { message, signature } = await api<TSelfCompleteData>(
-          `${signerUrl}/get-result`,
+          getResultUrl(),
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
@@ -98,13 +104,13 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         stopPolling()
         setProcessing(true)
         onComplete({ message, signature })
-      } catch {
-        // Result not ready yet, continue polling
+      } catch (err) {
+        addLog(`[self] poll: not ready (${err instanceof Error ? err.message : 'error'})`)
       } finally {
         resultRequestInFlightRef.current = false
       }
     }, 3000)
-  }, [signerUrl, onComplete, stopPolling])
+  }, [signerUrl, onComplete, stopPolling, getResultUrl])
 
   useEffect(() => {
     addLog(`[self] mount sessionId=${sessionId}`)
@@ -123,6 +129,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           'include'
         )
         addLog(`[self] init-session OK userId=${userId}`)
+        userIdRef.current = userId
 
         const app = new SelfAppBuilder({
           version: 2,
@@ -216,7 +223,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         addLog('[self] page visible after url open → checking result')
         resultRequestInFlightRef.current = true
         api<TSelfCompleteData>(
-          `${signerUrl}/get-result`,
+          getResultUrl(),
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
@@ -226,7 +233,8 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           stopPolling()
           setProcessing(true)
           onComplete({ message, signature })
-        }).catch(() => {
+        }).catch((err) => {
+          addLog(`[self] visibility check: not ready (${err instanceof Error ? err.message : 'error'})`)
           // Not ready yet, polling will catch it
         }).finally(() => {
           resultRequestInFlightRef.current = false
@@ -235,7 +243,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [signerUrl, onComplete, stopPolling, getResultUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenUrl = () => {
     addLog(`[self] opening url isMiniApp=${isMiniApp}`)
