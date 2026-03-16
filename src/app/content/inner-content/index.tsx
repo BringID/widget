@@ -617,9 +617,8 @@ const InnerContent: FC<TProps> = ({
       errorText={autoVerifyError}
       onClose={() => setAutoVerifyError(null)}
     />}
-    {(debugLogs.length > 0 || true) && (
+    {(debugLogs.length > 0) && (
       <div style={{
-        display: 'none',
         position: 'absolute',
         top: 0,
         left: 0,
