@@ -33,7 +33,9 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   const [waiting, setWaiting] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [stageLogs, setStageLogs] = useState<string[]>([])
+  const [fatalError, setFatalError] = useState<string | null>(null)
   const addLog = (msg: string) => setStageLogs(prev => [...prev, msg])
+  const failWith = (msg: string) => { addLog(`[error] ${msg}`); setFatalError(msg) }
 
   const nonceRef = useRef(generateNonce())
   const channelTokenRef = useRef<string | null>(null)
@@ -67,8 +69,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           if (res.isError) {
             stopPolling()
             const msg = res.error?.message || 'Authentication failed'
-            addLog(`[poll] isError: ${msg}`)
-            onError(msg)
+            failWith(`poll isError: ${msg}`)
             return
           }
 
@@ -97,8 +98,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
               onComplete({ message: scoreMessage, signature: scoreSignature })
             } catch (err) {
               const msg = err instanceof Error ? err.message : 'Unknown error'
-              addLog(`[farcaster] signFarcaster error: ${msg}`)
-              onError(`signFarcaster: ${msg}`)
+              failWith(`signFarcaster: ${msg}`)
             } finally {
               setProcessing(false)
             }
@@ -108,8 +108,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           preOpenedWindowRef.current?.close()
           preOpenedWindowRef.current = null
           const msg = err instanceof Error ? err.message : 'Polling failed'
-          addLog(`[farcaster] polling error: ${msg}`)
-          onError(`polling: ${msg}`)
+          failWith(`polling: ${msg}`)
         }
 
       }, POLL_INTERVAL_MS)
@@ -135,9 +134,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
       if (res.isError || !res.data) {
         const msg = res.error?.message || 'Failed to connect'
-        addLog(`[farcaster] createChannel error: ${msg}`)
         preOpenedWindow?.close()
-        onError(`createChannel: ${msg}`)
+        failWith(`createChannel: ${msg}`)
         return
       }
 
@@ -158,14 +156,19 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
       startPolling(channelToken)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Connection failed'
-      addLog(`[farcaster] handleStart error: ${msg}`)
-      onError(`handleStart: ${msg}`)
+      failWith(`handleStart: ${msg}`)
     } finally {
       setConnecting(false)
     }
   }, [isMobile, isMiniApp, startPolling, onError])
 
+  const handleClose = () => {
+    if (fatalError) onError(fatalError)
+    else onClose()
+  }
+
   const renderBody = () => {
+    if (fatalError) return null
     if (processing || waiting) return <SpinnerStyled size="large" />
 
     if (!url) {
@@ -208,8 +211,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
         <TitleStyled>{task.title}</TitleStyled>
         {task.description && <DescriptionStyled>{task.description}</DescriptionStyled>}
         {renderBody()}
-        <ButtonStyled appearance="default" onClick={onClose}>
-          Cancel
+        <ButtonStyled appearance="default" onClick={handleClose}>
+          {fatalError ? 'Close' : 'Cancel'}
         </ButtonStyled>
       </Content>
     </Container>
