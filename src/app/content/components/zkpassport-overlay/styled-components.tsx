@@ -6,5 +6,6 @@ export {
   ButtonStyled,
   SpinnerStyled,
   QRWrapper,
+  QRContainer,
   QRHint,
 } from '../farcaster-overlay/styled-components'

@@ -3,6 +3,7 @@ import { FC, useState, useEffect, useRef, useCallback } from 'react'
 import { createAppClient, viemConnector } from '@farcaster/auth-client'
 import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
+import { useTheme } from 'styled-components'
 import {
   Container,
   Content,
@@ -11,6 +12,7 @@ import {
   ButtonStyled,
   SpinnerStyled,
   QRWrapper,
+  QRContainer,
   QRHint,
 } from './styled-components'
 import { TProps } from './types'
@@ -37,6 +39,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const preOpenedWindowRef = useRef<Window | null>(null)
   const isMobile = isMobileDevice() || isMiniApp
+  const theme = useTheme()
 
   const appClient = useRef(
     createAppClient({
@@ -158,7 +161,9 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
     return (
       <QRWrapper>
-        <QRCode value={url} size={200} />
+        <QRContainer>
+          <QRCode value={url} size={180} fgColor={theme.highlightColor} bgColor="transparent" />
+        </QRContainer>
         <QRHint>Scan with your Farcaster app</QRHint>
       </QRWrapper>
     )

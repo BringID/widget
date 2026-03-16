@@ -47,6 +47,14 @@ export const QRWrapper = styled.div`
   gap: 12px;
 `
 
+export const QRContainer = styled.div`
+  padding: 16px;
+  border-radius: 16px;
+  background-color: ${(props) => props.theme.primaryBackgroundColor};
+  border: 1px solid ${(props) => props.theme.primaryBorderColor};
+  line-height: 0;
+`
+
 export const QRHint = styled(Text)`
   text-align: center;
   font-size: 12px;
