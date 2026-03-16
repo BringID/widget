@@ -77,7 +77,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           addLog(`[poll] state=${data?.state} hasMsg=${!!data?.message} hasSig=${!!data?.signature}`)
           if (data?.state === 'completed' && data.message && data.signature) {
             stopPolling()
-            addLog(`[poll] msg type=${typeof data.message} preview=${JSON.stringify(data.message).substring(0, 120)}`)
+            addLog(`[poll] msg type=${typeof data.message} preview=${JSON.stringify(data.message).substring(0, 500)}`)
             addLog('[farcaster] state=completed, closing window')
             const win = preOpenedWindowRef.current
             if (win && !win.closed) {
@@ -196,14 +196,16 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
           top: 0,
           left: 0,
           right: 0,
-          background: 'rgba(0,0,0,0.85)',
+          height: '150px',
+          background: 'rgba(0,0,0,0.92)',
           color: '#0f0',
           fontSize: '10px',
           fontFamily: 'monospace',
           padding: '6px',
           zIndex: 9999,
-          maxHeight: '40%',
           overflowY: 'auto',
+          wordBreak: 'break-all',
+          whiteSpace: 'pre-wrap',
         }}>
           {stageLogs.map((log, i) => <div key={i}>{log}</div>)}
         </div>
