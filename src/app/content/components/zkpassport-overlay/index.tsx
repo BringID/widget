@@ -3,6 +3,7 @@ import { FC, useState, useEffect, useRef } from 'react'
 import { ZKPassport, type ProofResult } from '@zkpassport/sdk'
 import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
+import { useTheme } from 'styled-components'
 import {
   Container,
   Content,
@@ -11,6 +12,7 @@ import {
   ButtonStyled,
   SpinnerStyled,
   QRWrapper,
+  QRContainer,
   QRHint,
 } from './styled-components'
 import { TProps } from './types'
@@ -32,6 +34,7 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
   const requestIdRef = useRef<string | null>(null)
   const proofsRef = useRef<ProofResult[]>([])
   const isMobile = isMobileDevice() || isMiniApp
+  const theme = useTheme()
 
   useEffect(() => {
     let cancelled = false
@@ -166,7 +169,9 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
 
     return (
       <QRWrapper>
-        <QRCode value={url} size={200} />
+        <QRContainer>
+          <QRCode value={url} size={180} fgColor={theme.highlightColor} bgColor="transparent" />
+        </QRContainer>
         <QRHint>Scan with ZKPassport app</QRHint>
       </QRWrapper>
     )

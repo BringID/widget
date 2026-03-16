@@ -34,7 +34,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null)
   const [sessionId] = useState(() => uuidv4())
   const [socketReady, setSocketReady] = useState(false)
-  const [logs, setLogs] = useState<string[]>([])
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -44,8 +43,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   const signerUrl = task.messageSignerUrl!
   const qrUrl = `${REDIRECT_URL}?sessionId=${sessionId}`
-
-  const addLog = (msg: string) => setLogs(prev => [...prev, msg])
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -59,7 +56,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     resultRequestInFlightRef.current = true
     stopPolling()
     setProcessing(true)
-    addLog('[self] fetchResult called')
 
     try {
       const { message, signature } = await api<TSelfCompleteData>(
@@ -69,11 +65,10 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         {},
         'include'
       )
-      addLog('[self] fetchResult OK')
       onComplete({ message, signature })
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to get result'
-      addLog(`[self] fetchResult error: ${msg}`)
+      console.error('[self] fetchResult error:', msg)
       onError(msg)
     } finally {
       resultRequestInFlightRef.current = false
@@ -83,7 +78,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   const startPolling = useCallback(() => {
     if (pollingRef.current) return
-    addLog('[self] starting result polling')
     pollingRef.current = setInterval(async () => {
       if (resultRequestInFlightRef.current) return
       resultRequestInFlightRef.current = true
@@ -95,12 +89,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           {},
           'include'
         )
-        addLog('[self] poll: result found')
         stopPolling()
         setProcessing(true)
         onComplete({ message, signature })
-      } catch (err) {
-        addLog(`[self] poll: not ready (${err instanceof Error ? err.message : 'error'})`)
+      } catch {
+        // Result not ready yet, continue polling
       } finally {
         resultRequestInFlightRef.current = false
       }
@@ -108,23 +101,15 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   }, [signerUrl, onComplete, stopPolling])
 
   useEffect(() => {
-    addLog(`[self] mount sessionId=${sessionId}`)
-    addLog(`[self] qrUrl=${qrUrl}`)
-    addLog(`[self] signerUrl=${signerUrl}`)
-    addLog(`[self] isMiniApp=${isMiniApp} isMobile=${isMobile}`)
-
     const init = async () => {
       try {
-        addLog('[self] calling init-session...')
-        const initResponse = await api<Record<string, unknown>>(
+        const { userId } = await api<{ userId: string }>(
           `${signerUrl}/init-session`,
           'GET',
           { Authorization: `Bearer ${process.env.NEXT_PUBLIC_ZUPLO_API_KEY}` },
           {},
           'include'
         )
-        addLog(`[self] init-session response: ${JSON.stringify(initResponse)}`)
-        const userId = initResponse.userId as string
 
         const app = new SelfAppBuilder({
           version: 2,
@@ -137,12 +122,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           disclosures: {},
         }).build()
 
-        addLog(`[self] SelfApp built scope=${SCOPE} endpointType=${ENDPOINT_TYPE}`)
         setSelfApp(app)
         setLoading(false)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to initialize'
-        addLog(`[self] init-session error: ${msg}`)
+        console.error('[self] init-session error:', msg)
         onError(msg)
         setLoading(false)
       }
@@ -156,8 +140,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   useEffect(() => {
     if (!selfApp) return
 
-    addLog(`[self] connecting socket to ${WS_DB_RELAYER}/websocket sessionId=${sessionId}`)
-
     const socket: Socket = io(`${WS_DB_RELAYER}/websocket`, {
       path: '/',
       query: { sessionId, clientType: 'web' },
@@ -168,49 +150,37 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     let isFirstConnect = true
 
     socket.on('connect', () => {
-      addLog(`[socket] connected id=${socket.id}`)
       setSocketReady(true)
-      if (isFirstConnect) {
-        addLog('[socket] first connect → emitting self_app')
-      } else {
-        addLog('[socket] reconnected → re-emitting self_app')
+      if (!isFirstConnect) {
+        console.log('[self] socket reconnected → re-emitting self_app')
       }
       socket.emit('self_app', { ...selfApp, sessionId })
       isFirstConnect = false
     })
 
-    socket.on('disconnect', (reason) => {
-      addLog(`[socket] disconnected reason=${reason}`)
+    socket.on('disconnect', () => {
       setSocketReady(false)
     })
 
     socket.on('mobile_status', (data: { status?: string; error_code?: string; reason?: string }) => {
-      addLog(`[socket] mobile_status status=${data.status} error_code=${data.error_code ?? '-'} reason=${data.reason ?? '-'}`)
       switch (data.status) {
         case 'mobile_connected':
-          addLog('[socket] mobile_connected → emitting self_app')
           socket.emit('self_app', { ...selfApp, sessionId })
           break
         case 'proof_verified':
-          addLog('[socket] proof_verified → fetching result')
           fetchResult()
           break
         case 'proof_generation_failed':
-          addLog(`[socket] proof_generation_failed`)
           onError(data.reason || data.error_code || 'Proof generation failed')
           break
-        default:
-          addLog(`[socket] unknown status=${data.status}`)
       }
     })
 
     socket.on('connect_error', (err) => {
-      addLog(`[socket] connect_error: ${err.message}`)
-      // Don't call onError here — socket.io will auto-retry
+      console.error('[self] socket connect_error:', err.message)
     })
 
     return () => {
-      addLog('[socket] disconnecting')
       socket.disconnect()
       socketRef.current = null
     }
@@ -219,7 +189,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && urlOpenedRef.current && !resultRequestInFlightRef.current) {
-        addLog('[self] page visible after url open → checking result')
         resultRequestInFlightRef.current = true
         api<TSelfCompleteData>(
           `${signerUrl}/get-result`,
@@ -228,12 +197,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           {},
           'include'
         ).then(({ message, signature }) => {
-          addLog('[self] visibility check: result found')
           stopPolling()
           setProcessing(true)
           onComplete({ message, signature })
-        }).catch((err) => {
-          addLog(`[self] visibility check: not ready (${err instanceof Error ? err.message : 'error'})`)
+        }).catch(() => {
+          // Not ready yet, polling will catch it
         }).finally(() => {
           resultRequestInFlightRef.current = false
         })
@@ -244,7 +212,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenUrl = () => {
-    addLog(`[self] opening url isMiniApp=${isMiniApp}`)
     if (isMiniApp) {
       window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url: qrUrl } }, window.location.origin)
     } else {
@@ -277,26 +244,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   return (
     <Container>
-      {logs.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '150px',
-          background: 'rgba(0,0,0,0.92)',
-          color: '#0f0',
-          fontSize: '10px',
-          fontFamily: 'monospace',
-          padding: '6px',
-          zIndex: 9999,
-          overflowY: 'auto',
-          wordBreak: 'break-all',
-          whiteSpace: 'pre-wrap',
-        }}>
-          {logs.map((log, i) => <div key={i}>{log}</div>)}
-        </div>
-      )}
       <Content>
         <TitleStyled>{task.title}</TitleStyled>
         {task.description && <DescriptionStyled>{task.description}</DescriptionStyled>}
