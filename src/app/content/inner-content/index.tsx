@@ -636,6 +636,7 @@ const InnerContent: FC<TProps> = ({
         <div>configs: {configsPhase} | flow: {flowPhase}</div>
         <div>isMiniApp: {String(user.isMiniApp)} | hasKey: {String(!!user.key)}</div>
         <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
+        <div>ua: {navigator.userAgent}</div>
         {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
       </div>
     )}

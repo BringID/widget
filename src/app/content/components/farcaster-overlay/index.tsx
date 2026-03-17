@@ -32,7 +32,6 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   const [processing, setProcessing] = useState(false)
   const [waiting, setWaiting] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
-
   const nonceRef = useRef(generateNonce())
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const preOpenedWindowRef = useRef<Window | null>(null)
@@ -106,7 +105,6 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   )
 
   const handleStart = useCallback(async () => {
-    console.log('[Farcaster] handleStart isMiniApp=', isMiniApp, 'isMobile=', isMobile, 'userAgent=', navigator.userAgent)
     setConnecting(true)
 
     // Open a blank window synchronously during the user gesture so the browser
