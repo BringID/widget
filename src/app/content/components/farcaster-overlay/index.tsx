@@ -32,7 +32,6 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   const [processing, setProcessing] = useState(false)
   const [waiting, setWaiting] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
-
   const nonceRef = useRef(generateNonce())
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const preOpenedWindowRef = useRef<Window | null>(null)
