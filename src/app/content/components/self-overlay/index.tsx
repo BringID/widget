@@ -32,8 +32,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null)
   const [sessionId] = useState(() => uuidv4())
   const [socketReady, setSocketReady] = useState(false)
-  const [urlOpened, setUrlOpened] = useState(false)
-  const [checkingResult, setCheckingResult] = useState(false)
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -168,7 +166,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           socket.emit('self_app', { ...selfApp, sessionId })
           break
         case 'proof_verified':
-          setCheckingResult(true)
           fetchResult()
           break
         case 'proof_generation_failed':
@@ -191,7 +188,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && urlOpenedRef.current && !resultRequestInFlightRef.current) {
         resultRequestInFlightRef.current = true
-        setCheckingResult(true)
         api<TSelfCompleteData>(
           `${signerUrl}/get-result`,
           'GET',
@@ -203,7 +199,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           setProcessing(true)
           onComplete({ message, signature })
         }).catch(() => {
-          setCheckingResult(false)
+          // Not ready yet, polling will catch it
         }).finally(() => {
           resultRequestInFlightRef.current = false
         })
@@ -220,7 +216,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
       window.open(qrUrl, '_blank')
     }
     urlOpenedRef.current = true
-    setUrlOpened(true)
     startPolling()
   }
 
@@ -228,17 +223,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     if (loading || processing) return <SpinnerStyled size="large" />
 
     if (isMobile) {
-      if (urlOpened) {
-        if (checkingResult) return <SpinnerStyled size="large" />
-        return (
-          <>
-            <SpinnerStyled size="large" />
-            <ButtonStyled appearance="default" onClick={handleOpenUrl} disabled={!socketReady}>
-              {socketReady ? 'Open again' : 'Connecting...'}
-            </ButtonStyled>
-          </>
-        )
-      }
       return (
         <ButtonStyled appearance="action" onClick={handleOpenUrl} disabled={!socketReady}>
           {socketReady ? 'Open Self app' : 'Connecting...'}
