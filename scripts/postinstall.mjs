@@ -24,10 +24,10 @@ content = content.replace(
 content = content.replaceAll("from'buffer/'", "from'buffer'")
 
 // Fix 2: JSON imports need an import attribute in Node.js ESM.
-// Use 'assert' (not 'with') — supported on Node.js 18/20/22, whereas 'with' requires Node.js 21+
+// Use 'with' — the standard syntax supported on Node.js 21+
 content = content.replaceAll(
   "from'i18n-iso-countries/langs/en.json'",
-  "from'i18n-iso-countries/langs/en.json' assert { type: 'json' }"
+  "from'i18n-iso-countries/langs/en.json' with { type: 'json' }"
 )
 
 // Fix 3: i18n-iso-countries is CJS — Node.js ESM can't use named imports from it
