@@ -129,6 +129,12 @@ const Task: FC<TProps> = ({
       // auth — show the appropriate overlay
       if (service === 'farcaster') {
         setShowFarcasterOverlay(true)
+      } else if (service === 'self' && isMobileDevice()) {
+        await runOAuthVerification({
+          ...baseParams,
+          redirectUrl: null,
+          isMiniApp: false,
+        })
       } else if (service === 'self') {
         setShowSelfOverlay(true)
       } else {
