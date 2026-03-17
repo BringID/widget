@@ -31,6 +31,7 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
   const zkpassportRef = useRef<ZKPassport | null>(null)
   const requestIdRef = useRef<string | null>(null)
   const proofsRef = useRef<ProofResult[]>([])
+  const urlOpenedRef = useRef(false)
   const isMobile = isMobileDevice() || isMiniApp
   const theme = useTheme()
 
@@ -80,7 +81,7 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
 
         onBridgeConnect(() => { console.log('[ZKPassport] bridge connected') })
         onRequestReceived(() => { console.log('[ZKPassport] request received by app') })
-        onGeneratingProof(() => { console.log('[ZKPassport] generating proof...') })
+        onGeneratingProof(() => { setProcessing(true) })
 
         onProofGenerated((proof: ProofResult) => {
           console.log('[ZKPassport] proof generated:', proof.name, proof.version, 'publicInputs:', (proof as Record<string, unknown>).publicInputs ? `[${((proof as Record<string, unknown>).publicInputs as string[]).length} items]` : 'MISSING', 'keys:', Object.keys(proof as Record<string, unknown>).join(','))
@@ -144,8 +145,19 @@ const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, o
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && urlOpenedRef.current) {
+        setProcessing(true)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   const handleOpenUrl = () => {
     if (!url) return
+    urlOpenedRef.current = true
     if (isMiniApp) {
       window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url } }, window.location.origin)
     } else {
