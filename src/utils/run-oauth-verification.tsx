@@ -44,6 +44,11 @@ const runOAuthVerification = async (params: TRunOAuthVerificationParams): Promis
     return
   }
 
+  if (!authUrl) {
+    messageCallback('MISSING_VERIFICATION_URL')
+    return
+  }
+
   setLoading(true)
   setIsActive(true)
 

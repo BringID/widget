@@ -4,6 +4,7 @@ import { ZKPassport, type ProofResult } from '@zkpassport/sdk'
 import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
 import { useTheme } from 'styled-components'
+import isMobileDevice from '@/utils/is-mobile-device'
 import {
   Container,
   Content,
@@ -21,9 +22,6 @@ const APP_NAME = process.env.NEXT_PUBLIC_ZKPASSPORT_APP_NAME || 'BringID'
 const APP_LOGO = process.env.NEXT_PUBLIC_ZKPASSPORT_APP_LOGO || 'https://widget.bringid.org/logo.png'
 const PURPOSE = process.env.NEXT_PUBLIC_ZKPASSPORT_PURPOSE || 'Identity verification'
 const DEV_MODE = process.env.NEXT_PUBLIC_ZKPASSPORT_DEV_MODE === 'true'
-
-const isMobileDevice = () =>
-  typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
 const ZKPassportOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose }) => {
   const [loading, setLoading] = useState(true)

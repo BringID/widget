@@ -1,4 +1,5 @@
 import runOAuthVerification from './run-oauth-verification'
+import isMobileDevice from './is-mobile-device'
 import runZKTLSVerification from './run-zktls-verification'
 import runInternalVerification from './run-internal-verification'
 import submitOAuthVerification from './submit-oauth-verification'
@@ -70,6 +71,7 @@ export {
   defineGroupForAuth,
   getAppSemaphoreGroupId,
   getAllScores,
+  isMobileDevice,
   runOAuthVerification,
   runZKTLSVerification,
   runInternalVerification,
