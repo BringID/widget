@@ -33,8 +33,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [sessionId] = useState(() => uuidv4())
   const [socketReady, setSocketReady] = useState(false)
   const socketEverReadyRef = useRef(false)
-  const [logs, setLogs] = useState<string[]>([])
-  const addLog = useCallback((msg: string) => setLogs(prev => [...prev, `${new Date().toISOString().slice(11, 23)} ${msg}`]), [])
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -90,12 +88,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           {},
           'include'
         )
-        addLog('poll: result found!')
         stopPolling()
         setProcessing(true)
         onComplete({ message, signature })
-      } catch (err) {
-        addLog(`poll: ${err instanceof Error ? err.message : 'err'}`)
+      } catch {
+        // polling — silently retry
       } finally {
         resultRequestInFlightRef.current = false
       }
@@ -103,9 +100,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   }, [signerUrl, onComplete, stopPolling])
 
   useEffect(() => {
-    addLog(`session=${sessionId.slice(0, 8)} signer=${signerUrl.split('/').pop()}`)
     const init = async () => {
-      addLog('init-session...')
       try {
         const { userId } = await api<{ userId: string }>(
           `${signerUrl}/init-session`,
@@ -114,7 +109,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           {},
           'include'
         )
-        addLog(`userId=${userId.slice(0, 10)}...`)
 
         const app = new SelfAppBuilder({
           version: 2,
@@ -131,7 +125,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
         setLoading(false)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to initialize'
-        addLog(`init-session ERR: ${msg}`)
         onError(msg)
         setLoading(false)
       }
@@ -145,7 +138,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   useEffect(() => {
     if (!selfApp) return
 
-    addLog(`socket connecting...`)
     const socket: Socket = io(`${WS_DB_RELAYER}/websocket`, {
       path: '/',
       query: { sessionId, clientType: 'web' },
@@ -153,49 +145,30 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     })
 
     socketRef.current = socket
-    let isFirstConnect = true
 
     socket.on('connect', () => {
-      addLog(`socket connected id=${socket.id?.slice(0, 8)}`)
       if (!socketEverReadyRef.current) {
         socketEverReadyRef.current = true
         setSocketReady(true)
       }
       socket.emit('self_app', { ...selfApp, sessionId })
-      addLog(isFirstConnect ? 'emitted self_app (first)' : 'emitted self_app (reconnect)')
-      isFirstConnect = false
-    })
-
-    socket.on('disconnect', (reason) => {
-      addLog(`socket disconnected: ${reason}`)
     })
 
     socket.on('mobile_status', (data: { status?: string; error_code?: string; reason?: string }) => {
-      addLog(`mobile_status: ${data.status} err=${data.error_code ?? '-'} reason=${data.reason ?? '-'}`)
       switch (data.status) {
         case 'mobile_connected':
           socket.emit('self_app', { ...selfApp, sessionId })
-          addLog('mobile_connected → emitted self_app')
           break
         case 'proof_verified':
-          addLog('proof_verified → fetchResult')
           fetchResult()
           break
         case 'proof_generation_failed':
-          addLog(`proof_generation_failed: ${data.reason || data.error_code}`)
           onError(data.reason || data.error_code || 'Proof generation failed')
           break
-        default:
-          addLog(`unknown status: ${data.status}`)
       }
     })
 
-    socket.on('connect_error', (err) => {
-      addLog(`socket connect_error: ${err.message}`)
-    })
-
     return () => {
-      addLog('socket cleanup')
       socket.disconnect()
       socketRef.current = null
     }
@@ -204,7 +177,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && urlOpenedRef.current && !resultRequestInFlightRef.current) {
-        addLog('visible after open → get-result')
         resultRequestInFlightRef.current = true
         api<TSelfCompleteData>(
           `${signerUrl}/get-result`,
@@ -213,12 +185,11 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           {},
           'include'
         ).then(({ message, signature }) => {
-          addLog('visibility get-result OK')
           stopPolling()
           setProcessing(true)
           onComplete({ message, signature })
-        }).catch((err) => {
-          addLog(`visibility get-result fail: ${err instanceof Error ? err.message : err}`)
+        }).catch(() => {
+          // silently ignore — polling or socket will handle it
         }).finally(() => {
           resultRequestInFlightRef.current = false
         })
@@ -229,14 +200,12 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   }, [signerUrl, onComplete, stopPolling]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenUrl = () => {
-    addLog(`opening url isMiniApp=${isMiniApp}`)
     if (isMiniApp) {
       window.postMessage({ type: 'OPEN_EXTERNAL_URL', payload: { url: qrUrl } }, window.location.origin)
     } else {
       window.open(qrUrl, '_blank')
     }
     urlOpenedRef.current = true
-    addLog('polling started')
     startPolling()
   }
 
@@ -263,16 +232,6 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
 
   return (
     <Container>
-      {logs.length > 0 && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          height: '160px', background: 'rgba(0,0,0,0.92)', color: '#0f0',
-          fontSize: '9px', fontFamily: 'monospace', padding: '4px',
-          zIndex: 9999, overflowY: 'auto', wordBreak: 'break-all', whiteSpace: 'pre-wrap',
-        }}>
-          {logs.map((l, i) => <div key={i}>{l}</div>)}
-        </div>
-      )}
       <Content>
         <TitleStyled>{task.title}</TitleStyled>
         {task.description && <DescriptionStyled>{task.description}</DescriptionStyled>}
