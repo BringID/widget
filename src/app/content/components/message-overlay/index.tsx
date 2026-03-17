@@ -34,6 +34,9 @@ const defineMessageTitle = (
     case 'MISSING_REDIRECT_URL':
       return 'Configuration required'
 
+    case 'MISSING_VERIFICATION_URL':
+      return 'Configuration error'
+
     default:
       return null
   }
@@ -59,6 +62,9 @@ const defineMessageText = (
     case 'MISSING_REDIRECT_URL':
       return <>This verification requires a redirect URL to work inside a mini-app. Please contact the application developer.</>
 
+    case 'MISSING_VERIFICATION_URL':
+      return <>verificationUrl is required. Please check the tasks config.</>
+
     default:
       return null
   }
@@ -78,6 +84,7 @@ const defineMessageAction = (
     case 'NOT_ENOUGH_SCORE':
     case 'ZKTLS_MOBILE_NOT_SUPPORTED':
     case 'MISSING_REDIRECT_URL':
+    case 'MISSING_VERIFICATION_URL':
       return null
 
     default:
