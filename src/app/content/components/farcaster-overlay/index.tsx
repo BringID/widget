@@ -4,6 +4,7 @@ import { createAppClient, viemConnector } from '@farcaster/auth-client'
 import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
 import { useTheme } from 'styled-components'
+import isMobileDevice from '@/utils/is-mobile-device'
 import {
   Container,
   Content,
@@ -25,9 +26,6 @@ function generateNonce(): string {
   crypto.getRandomValues(array)
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('')
 }
-
-const isMobileDevice = () =>
-  typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
 const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose }) => {
   const [connecting, setConnecting] = useState(false)

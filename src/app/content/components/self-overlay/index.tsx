@@ -20,13 +20,11 @@ import {
 import { TProps, TSelfCompleteData } from './types'
 import { TSelfEndpointType } from '@/types'
 import { api } from '@/utils'
+import isMobileDevice from '@/utils/is-mobile-device'
 
 const APP_NAME = process.env.NEXT_PUBLIC_SELF_APP_NAME || 'BringID'
 const SCOPE = process.env.NEXT_PUBLIC_SELF_SCOPE || 'bringid-verification'
 const ENDPOINT_TYPE = (process.env.NEXT_PUBLIC_SELF_ENDPOINT_TYPE || 'https') as TSelfEndpointType
-
-const isMobileDevice = () =>
-  typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
 const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose }) => {
   const [loading, setLoading] = useState(true)
