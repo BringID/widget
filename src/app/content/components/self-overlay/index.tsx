@@ -32,6 +32,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null)
   const [sessionId] = useState(() => uuidv4())
   const [socketReady, setSocketReady] = useState(false)
+  const socketEverReadyRef = useRef(false)
   const socketRef = useRef<Socket | null>(null)
   const resultRequestInFlightRef = useRef(false)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -148,7 +149,10 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     let isFirstConnect = true
 
     socket.on('connect', () => {
-      setSocketReady(true)
+      if (!socketEverReadyRef.current) {
+        socketEverReadyRef.current = true
+        setSocketReady(true)
+      }
       if (!isFirstConnect) {
         console.log('[self] socket reconnected → re-emitting self_app')
       }
@@ -157,7 +161,7 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
     })
 
     socket.on('disconnect', () => {
-      setSocketReady(false)
+      // intentionally not resetting socketReady — button stays enabled after first connect
     })
 
     socket.on('mobile_status', (data: { status?: string; error_code?: string; reason?: string }) => {
