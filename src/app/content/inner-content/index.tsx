@@ -482,7 +482,6 @@ const InnerContent: FC<TProps> = ({
           if (alreadyVerified) {
             setPendingVerification(null)
             dispatch(setRedirectUrl(null))
-            dispatch(setIsMiniApp(false))
           } else {
           setAutoVerifyingTaskId(matchingTask.id)
           try {
@@ -541,7 +540,6 @@ const InnerContent: FC<TProps> = ({
           setAutoVerifyingTaskId(null)
           setPendingVerification(null)
           dispatch(setRedirectUrl(null))
-          dispatch(setIsMiniApp(false))
           } // end else (not alreadyVerified)
         }
       }
