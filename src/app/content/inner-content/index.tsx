@@ -252,6 +252,7 @@ const InnerContent: FC<TProps> = ({
           dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
           dispatch(setIsMiniApp(payload?.isMiniApp ?? false));
 
+          addLog(`[PROOFS_REQUEST] isMiniApp: ${payload?.isMiniApp ?? 'undefined'}`)
           addLog(`[PROOFS_REQUEST] verificationSignature: ${payload?.verificationSignature ?? 'none'}`)
           addLog(`[PROOFS_REQUEST] verificationMessage: ${payload?.verificationMessage ?? 'none'}`)
 
@@ -617,7 +618,7 @@ const InnerContent: FC<TProps> = ({
       errorText={autoVerifyError}
       onClose={() => setAutoVerifyError(null)}
     />}
-    {false && (debugLogs.length > 0) && (
+    {(debugLogs.length > 0) && (
       <div style={{
         position: 'absolute',
         top: 0,
