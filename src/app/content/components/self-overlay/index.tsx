@@ -110,6 +110,17 @@ const SelfOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose
           'include'
         )
 
+        console.log({
+          version: 2,
+          appName: APP_NAME,
+          scope: SCOPE,
+          endpoint: `${signerUrl}/verify`,
+          endpointType: ENDPOINT_TYPE,
+          userId,
+          userIdType: 'hex',
+          disclosures: {},
+        })
+
         const app = new SelfAppBuilder({
           version: 2,
           appName: APP_NAME,
