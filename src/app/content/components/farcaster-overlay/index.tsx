@@ -106,6 +106,7 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
   )
 
   const handleStart = useCallback(async () => {
+    console.log('[Farcaster] handleStart isMiniApp=', isMiniApp, 'isMobile=', isMobile, 'userAgent=', navigator.userAgent)
     setConnecting(true)
 
     // Open a blank window synchronously during the user gesture so the browser
