@@ -1,4 +1,5 @@
 import runOAuthVerification from './run-oauth-verification'
+import isMobileDevice from './is-mobile-device'
 import runZKTLSVerification from './run-zktls-verification'
 import runInternalVerification from './run-internal-verification'
 import submitOAuthVerification from './submit-oauth-verification'
@@ -34,6 +35,7 @@ import isValidAuthSuccessPayload from './is-valid-auth-success-payload'
 import defineTaskIcon from './define-task-icon'
 import generateRequestId from './generate-request-id'
 import { getAppSemaphoreGroupId, getAllScores } from './registry-contract'
+import prepareProofs from './prepare-proofs'
 
 export {
     isValidZKTLSErrorMessage,
@@ -69,8 +71,10 @@ export {
   defineGroupForAuth,
   getAppSemaphoreGroupId,
   getAllScores,
+  isMobileDevice,
   runOAuthVerification,
   runZKTLSVerification,
   runInternalVerification,
   submitOAuthVerification,
+  prepareProofs,
 }

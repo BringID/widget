@@ -28,6 +28,15 @@ const defineMessageTitle = (
     case 'MANUAL_OPEN_LINK':
       return 'Action required'
 
+    case 'ZKTLS_MOBILE_NOT_SUPPORTED':
+      return 'Desktop required'
+
+    case 'MISSING_REDIRECT_URL':
+      return 'Configuration required'
+
+    case 'MISSING_VERIFICATION_URL':
+      return 'Configuration error'
+
     default:
       return null
   }
@@ -47,6 +56,15 @@ const defineMessageText = (
     case 'MANUAL_OPEN_LINK':
       return <>Please copy this link and paste in your system browser (iOS safari, etc)</>
 
+    case 'ZKTLS_MOBILE_NOT_SUPPORTED':
+      return <>ZK-TLS verification requires the BringID browser extension, which is only available on desktop. Please open this on a desktop browser.</>
+
+    case 'MISSING_REDIRECT_URL':
+      return <>This verification requires a redirect URL to work inside a mini-app. Please contact the application developer.</>
+
+    case 'MISSING_VERIFICATION_URL':
+      return <>verificationUrl is required. Please check the tasks config.</>
+
     default:
       return null
   }
@@ -64,6 +82,9 @@ const defineMessageAction = (
       return copyText ? <CopyText text={copyText} /> : null
 
     case 'NOT_ENOUGH_SCORE':
+    case 'ZKTLS_MOBILE_NOT_SUPPORTED':
+    case 'MISSING_REDIRECT_URL':
+    case 'MISSING_VERIFICATION_URL':
       return null
 
     default:

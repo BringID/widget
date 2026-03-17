@@ -3,6 +3,7 @@ function api<T>(
   method = 'GET',
   headers: Record<string, string> = {},
   body: Record<string, any> = {},
+  credentials?: RequestCredentials,
 ): Promise<T> {
   return fetch(url, {
     method,
@@ -14,6 +15,7 @@ function api<T>(
       ...headers,
       'content-type': 'application/json',
     },
+    credentials,
   }).then(async (response) => {
     if (!response.ok) {
       const data = await response.json();

@@ -252,6 +252,7 @@ const InnerContent: FC<TProps> = ({
           dispatch(setRedirectUrl(payload?.redirectUrl ? decodeURIComponent(payload.redirectUrl) : null));
           dispatch(setIsMiniApp(payload?.isMiniApp ?? false));
 
+          addLog(`[PROOFS_REQUEST] isMiniApp: ${payload?.isMiniApp ?? 'undefined'}`)
           addLog(`[PROOFS_REQUEST] verificationSignature: ${payload?.verificationSignature ?? 'none'}`)
           addLog(`[PROOFS_REQUEST] verificationMessage: ${payload?.verificationMessage ?? 'none'}`)
 
@@ -481,7 +482,6 @@ const InnerContent: FC<TProps> = ({
           if (alreadyVerified) {
             setPendingVerification(null)
             dispatch(setRedirectUrl(null))
-            dispatch(setIsMiniApp(false))
           } else {
           setAutoVerifyingTaskId(matchingTask.id)
           try {
@@ -540,7 +540,6 @@ const InnerContent: FC<TProps> = ({
           setAutoVerifyingTaskId(null)
           setPendingVerification(null)
           dispatch(setRedirectUrl(null))
-          dispatch(setIsMiniApp(false))
           } // end else (not alreadyVerified)
         }
       }
@@ -617,9 +616,8 @@ const InnerContent: FC<TProps> = ({
       errorText={autoVerifyError}
       onClose={() => setAutoVerifyError(null)}
     />}
-    {(debugLogs.length > 0 || true) && (
+    {false && (debugLogs.length > 0) && (
       <div style={{
-        display: 'none',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -636,6 +634,7 @@ const InnerContent: FC<TProps> = ({
         <div>configs: {configsPhase} | flow: {flowPhase}</div>
         <div>isMiniApp: {String(user.isMiniApp)} | hasKey: {String(!!user.key)}</div>
         <div>redirectUrl: {user.redirectUrl ?? 'null'}</div>
+        <div>ua: {navigator.userAgent}</div>
         {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
       </div>
     )}

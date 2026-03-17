@@ -8,13 +8,13 @@ type TTask = {
   description?: string;
   icon: string;
   verificationType: TVerificationType
-  verificationUrl: string
+  verificationUrl?: string
   groups: TTaskGroup[];
   service: string;
   permissionUrl?: string[],
   steps: any
   domain?: string;
-  internal?: boolean;
+  messageSignerUrl?: string;
 };
 
 export default TTask;

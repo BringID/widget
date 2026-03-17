@@ -7,16 +7,16 @@ import { TModeConfigs, TTask, TVerification, TVerificationStatus } from '@/types
 import {
   runOAuthVerification,
   runZKTLSVerification,
-  runInternalVerification,
   submitOAuthVerification,
   defineGroupForAuth,
+  isMobileDevice,
 } from '@/utils'
 import { addVerification } from '@/app/content/store/reducers/verifications'
 import { useDispatch } from 'react-redux'
 import { useUser } from '@/app/content/store/reducers/user'
 import { useConfigs } from '@/app/content/store/reducers/configs'
 import { usePlausible } from 'next-plausible'
-import { FarcasterOverlay } from '@/app/content/components'
+import { FarcasterOverlay, ZKPassportOverlay, SelfOverlay } from '@/app/content/components'
 
 const defineTaskContent = (
   status: TVerificationStatus,
@@ -61,6 +61,8 @@ const Task: FC<TProps> = ({
 
   const [loading, setLoading] = useState(false)
   const [showFarcasterOverlay, setShowFarcasterOverlay] = useState(false)
+  const [showZKPassportOverlay, setShowZKPassportOverlay] = useState(false)
+  const [showSelfOverlay, setShowSelfOverlay] = useState(false)
 
   const isAutoVerifying = autoVerifyingTaskId === task.id
 
@@ -77,21 +79,66 @@ const Task: FC<TProps> = ({
     messageCallback: onMessage,
   }
 
+  const service = task.service?.toLowerCase()
+  const isRedirectAuthService = service === 'zkpassport' || service === 'self'
+
   const handleClick = async () => {
     try {
-      if (task.internal) {
-        runInternalVerification(() => setShowFarcasterOverlay(true))
+      // zktls — blocked on mobile and miniapp (requires desktop extension)
+      if (task.verificationType === 'zktls') {
+        if (isMobileDevice() || user.isMiniApp) {
+          onMessage('ZKTLS_MOBILE_NOT_SUPPORTED')
+          return
+        }
+        await runZKTLSVerification(baseParams)
         return
       }
 
-      if (task.verificationType === 'zktls') {
-        await runZKTLSVerification(baseParams)
-      } else {
+      if (user.isMiniApp) {
+        // oauth and redirect-based auth (zkpassport, self) require a redirectUrl in miniapp
+        if (task.verificationType === 'oauth' || (task.verificationType === 'auth' && isRedirectAuthService)) {
+          if (!user.redirectUrl) {
+            onMessage('MISSING_REDIRECT_URL')
+            return
+          }
+          await runOAuthVerification({
+            ...baseParams,
+            redirectUrl: user.redirectUrl,
+            isMiniApp: true,
+          })
+          return
+        }
+
+        // auth with messageSignerUrl (e.g. farcaster) — show overlay
+        if (service === 'farcaster') {
+          setShowFarcasterOverlay(true)
+        }
+        return
+      }
+
+      // not miniapp
+      if (task.verificationType === 'oauth') {
         await runOAuthVerification({
           ...baseParams,
-          redirectUrl: user.redirectUrl,
-          isMiniApp: user.isMiniApp,
+          redirectUrl: null,
+          isMiniApp: false,
         })
+        return
+      }
+
+      // auth — show the appropriate overlay
+      if (service === 'farcaster') {
+        setShowFarcasterOverlay(true)
+      } else if (service === 'self' && isMobileDevice()) {
+        await runOAuthVerification({
+          ...baseParams,
+          redirectUrl: null,
+          isMiniApp: false,
+        })
+      } else if (service === 'self') {
+        setShowSelfOverlay(true)
+      } else {
+        setShowZKPassportOverlay(true)
       }
     } catch (err) {
       setLoading(false)
@@ -106,8 +153,11 @@ const Task: FC<TProps> = ({
     }
   }
 
-  const handleFarcasterComplete = async ({ message, signature }: { message: any; signature: string }) => {
-    setShowFarcasterOverlay(false)
+  const handleInternalComplete = async (
+    hideOverlay: () => void,
+    { message, signature }: { message: { domain: string; user_id: string; score: number; timestamp: number }; signature: string }
+  ) => {
+    hideOverlay()
     setLoading(true)
     setIsActive(true)
     try {
@@ -148,9 +198,27 @@ const Task: FC<TProps> = ({
         <FarcasterOverlay
           task={task}
           isMiniApp={user.isMiniApp}
-          onComplete={handleFarcasterComplete}
+          onComplete={(data) => handleInternalComplete(() => setShowFarcasterOverlay(false), data)}
           onError={(err) => { setShowFarcasterOverlay(false); onError(err) }}
           onClose={() => setShowFarcasterOverlay(false)}
+        />
+      )}
+      {showZKPassportOverlay && (
+        <ZKPassportOverlay
+          task={task}
+          isMiniApp={user.isMiniApp}
+          onComplete={(data) => handleInternalComplete(() => setShowZKPassportOverlay(false), data)}
+          onError={(err) => { setShowZKPassportOverlay(false); onError(err) }}
+          onClose={() => setShowZKPassportOverlay(false)}
+        />
+      )}
+      {showSelfOverlay && (
+        <SelfOverlay
+          task={task}
+          isMiniApp={user.isMiniApp}
+          onComplete={(data) => handleInternalComplete(() => setShowSelfOverlay(false), data)}
+          onError={(err) => { setShowSelfOverlay(false); onError(err) }}
+          onClose={() => setShowSelfOverlay(false)}
         />
       )}
       <Value>{content}</Value>

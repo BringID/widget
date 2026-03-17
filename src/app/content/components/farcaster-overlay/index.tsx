@@ -1,7 +1,10 @@
 'use client'
 import { FC, useState, useEffect, useRef, useCallback } from 'react'
 import { createAppClient, viemConnector } from '@farcaster/auth-client'
+import { messageSignerApi } from '../../api'
 import QRCode from 'react-qr-code'
+import { useTheme } from 'styled-components'
+import isMobileDevice from '@/utils/is-mobile-device'
 import {
   Container,
   Content,
@@ -10,13 +13,12 @@ import {
   ButtonStyled,
   SpinnerStyled,
   QRWrapper,
+  QRContainer,
   QRHint,
 } from './styled-components'
 import { TProps } from './types'
 
 const RELAY = process.env.NEXT_PUBLIC_FARCASTER_RELAY || 'https://relay.farcaster.xyz'
-const DOMAIN = process.env.NEXT_PUBLIC_FARCASTER_DOMAIN || 'widget.bringid.org'
-const SIWE_URI = process.env.NEXT_PUBLIC_FARCASTER_SIWE_URI || 'https://widget.bringid.org'
 const POLL_INTERVAL_MS = 1500
 
 function generateNonce(): string {
@@ -25,20 +27,16 @@ function generateNonce(): string {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-const isMobileDevice = () =>
-  typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
 const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, onClose }) => {
   const [connecting, setConnecting] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [waiting, setWaiting] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
-
   const nonceRef = useRef(generateNonce())
-  const channelTokenRef = useRef<string | null>(null)
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const preOpenedWindowRef = useRef<Window | null>(null)
   const isMobile = isMobileDevice() || isMiniApp
+  const theme = useTheme()
 
   const appClient = useRef(
     createAppClient({
@@ -74,30 +72,19 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
             stopPolling()
             const win = preOpenedWindowRef.current
             if (win && !win.closed) {
-              // Navigate to our own page so window.close() works reliably
-              // (direct cross-origin close is unreliable on mobile browsers)
               win.location.href = window.location.origin + '/verification-finished'
             }
             preOpenedWindowRef.current = null
             setProcessing(true)
 
             try {
-              const apiRes = await fetch('/api/farcaster/sign-score', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  message: data.message,
-                  signature: data.signature,
-                  nonce: nonceRef.current,
-                }),
-              })
-
-              if (!apiRes.ok) {
-                const errData = await apiRes.json()
-                throw new Error(errData.error || 'Failed to sign score')
-              }
-
-              const { message: scoreMessage, signature: scoreSignature } = await apiRes.json()
+              const { message: scoreMessage, signature: scoreSignature } = await messageSignerApi.signFarcaster(
+                task.messageSignerUrl!,
+                data.message,
+                data.signature,
+                nonceRef.current,
+                window.location.hostname,
+              )
               onComplete({ message: scoreMessage, signature: scoreSignature })
             } catch (err) {
               onError(err instanceof Error ? err.message : 'Unknown error')
@@ -127,8 +114,8 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
     try {
       const res = await appClient.current.createChannel({
-        siweUri: SIWE_URI,
-        domain: DOMAIN,
+        siweUri: window.location.origin,
+        domain: window.location.hostname,
         nonce: nonceRef.current,
       })
 
@@ -139,7 +126,6 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
       }
 
       const { channelToken, url: connectUrl } = res.data
-      channelTokenRef.current = channelToken
       setUrl(connectUrl)
 
       if (isMobile) {
@@ -172,7 +158,9 @@ const FarcasterOverlay: FC<TProps> = ({ task, isMiniApp, onComplete, onError, on
 
     return (
       <QRWrapper>
-        <QRCode value={url} size={200} />
+        <QRContainer>
+          <QRCode value={url} size={180} fgColor={theme.highlightColor} bgColor="transparent" />
+        </QRContainer>
         <QRHint>Scan with your Farcaster app</QRHint>
       </QRWrapper>
     )
